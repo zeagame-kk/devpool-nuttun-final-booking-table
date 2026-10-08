@@ -19,13 +19,47 @@ func NewRepository(db *gorm.DB) *repository {
 	return &repository{db: db}
 }
 
-// viewQuery selects reservations with their restaurant's name. A plain JOIN on the table does not
-// apply the soft-delete filter, which is what we want: a deleted restaurant keeps its name here.
+// viewQuery selects reservations with their restaurant's and booker's names. A plain JOIN on
+// the table does not apply the soft-delete filter, which is what we want: a deleted restaurant
+// keeps its name here. Only the name of the booker is read, never the email.
 func (repo *repository) viewQuery(ctx context.Context) *gorm.DB {
 	return repo.db.WithContext(ctx).
 		Table("reservations").
-		Select("reservations.*, restaurants.name AS restaurant_name").
-		Joins("JOIN restaurants ON restaurants.id = reservations.restaurant_id")
+		Select("reservations.*, restaurants.name AS restaurant_name, COALESCE(users.name, '') AS customer_name").
+		Joins("JOIN restaurants ON restaurants.id = reservations.restaurant_id").
+		Joins("LEFT JOIN users ON users.id = reservations.user_id")
+}
+
+// RestaurantOwner returns who owns an active (not deleted) restaurant.
+func (repo *repository) RestaurantOwner(ctx context.Context, restaurantID int) (uuid.UUID, error) {
+	var owners []uuid.UUID
+	if err := repo.db.WithContext(ctx).
+		Table("restaurants").
+		Where("id = ? AND deleted_at IS NULL", restaurantID).
+		Pluck("owner_id", &owners).Error; err != nil {
+		return uuid.Nil, fmt.Errorf("find owner of restaurant %d: %w", restaurantID, err)
+	}
+	if len(owners) == 0 {
+		return uuid.Nil, ErrRestaurantNotFound
+	}
+
+	return owners[0], nil
+}
+
+// ListByRestaurant returns a restaurant's reservations, newest start first. An empty status
+// means every status.
+func (repo *repository) ListByRestaurant(ctx context.Context, restaurantID int, status string) ([]ReservationView, error) {
+	query := repo.viewQuery(ctx).Where("reservations.restaurant_id = ?", restaurantID)
+	if status != "" {
+		query = query.Where("reservations.status = ?", status)
+	}
+
+	views := []ReservationView{}
+	if err := query.Order("reservations.start_at DESC, reservations.id DESC").Scan(&views).Error; err != nil {
+		return nil, fmt.Errorf("list reservations of restaurant %d: %w", restaurantID, err)
+	}
+
+	return views, nil
 }
 
 func (repo *repository) FindView(ctx context.Context, id int) (*ReservationView, error) {

@@ -13,6 +13,8 @@ type Repository interface {
 	InTx(ctx context.Context, restaurantID int, fn func(tx TxRepo) error) error
 	FindView(ctx context.Context, id int) (*ReservationView, error)
 	ListByUser(ctx context.Context, userID uuid.UUID) ([]ReservationView, error)
+	RestaurantOwner(ctx context.Context, restaurantID int) (uuid.UUID, error)
+	ListByRestaurant(ctx context.Context, restaurantID int, status string) ([]ReservationView, error)
 }
 
 // TxRepo is the repository inside a transaction that holds the restaurant's row lock.
@@ -140,6 +142,29 @@ func (svc *service) ListMine(ctx context.Context, userID uuid.UUID) ([]Reservati
 	views, err := svc.repository.ListByUser(ctx, userID)
 	if err != nil {
 		return nil, fmt.Errorf("list reservations: %w", err)
+	}
+
+	return views, nil
+}
+
+// ListForRestaurant is the owner's read-only view of who has booked. status is "", "confirmed"
+// or "cancelled".
+func (svc *service) ListForRestaurant(ctx context.Context, ownerID uuid.UUID, restaurantID int, status string) ([]ReservationView, error) {
+	if status != "" && status != StatusConfirmed && status != StatusCancelled {
+		return nil, ErrInvalidInput
+	}
+
+	actualOwner, err := svc.repository.RestaurantOwner(ctx, restaurantID)
+	if err != nil {
+		return nil, fmt.Errorf("list reservations of restaurant: %w", err)
+	}
+	if actualOwner != ownerID {
+		return nil, ErrForbidden
+	}
+
+	views, err := svc.repository.ListByRestaurant(ctx, restaurantID, status)
+	if err != nil {
+		return nil, fmt.Errorf("list reservations of restaurant: %w", err)
 	}
 
 	return views, nil

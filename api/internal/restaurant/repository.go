@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"strings"
+	"time"
 
 	"github.com/google/uuid"
 	"gorm.io/gorm"
@@ -150,14 +151,42 @@ func (repo *repository) Replace(ctx context.Context, restaurant Restaurant) erro
 	return nil
 }
 
-// Delete soft-deletes the restaurant; its opening hours stay so nothing dangles.
-func (repo *repository) Delete(ctx context.Context, id int) error {
-	result := repo.db.WithContext(ctx).Delete(&Restaurant{}, id)
-	if result.Error != nil {
-		return fmt.Errorf("soft-delete restaurant %d: %w", id, result.Error)
-	}
-	if result.RowsAffected == 0 {
-		return ErrRestaurantNotFound
+// DeleteIfNoActiveReservations soft-deletes the restaurant unless a confirmed reservation has
+// not ended yet. It takes the same row lock that creating a reservation takes, so a booking
+// cannot slip in between the check and the delete: either the booking commits first and the
+// delete is refused, or the delete commits first and the booking finds no restaurant.
+// The opening hours stay so nothing dangles.
+func (repo *repository) DeleteIfNoActiveReservations(ctx context.Context, id int, now time.Time) error {
+	err := repo.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
+		var locked []int
+		if err := tx.Clauses(clause.Locking{Strength: "UPDATE"}).
+			Table("restaurants").
+			Where("id = ? AND deleted_at IS NULL", id).
+			Pluck("id", &locked).Error; err != nil {
+			return err
+		}
+		if len(locked) == 0 {
+			return ErrRestaurantNotFound
+		}
+
+		var active int64
+		if err := tx.Table("reservations").
+			Where("restaurant_id = ? AND status = 'confirmed' AND end_at > ?", id, now).
+			Count(&active).Error; err != nil {
+			return err
+		}
+		if active > 0 {
+			return ErrHasActiveReservations
+		}
+
+		return tx.Delete(&Restaurant{}, id).Error
+	})
+	if err != nil {
+		if errors.Is(err, ErrRestaurantNotFound) || errors.Is(err, ErrHasActiveReservations) {
+			return err
+		}
+
+		return fmt.Errorf("soft-delete restaurant %d: %w", id, err)
 	}
 
 	return nil

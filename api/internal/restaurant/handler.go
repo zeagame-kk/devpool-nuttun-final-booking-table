@@ -219,6 +219,7 @@ func (hdr *handler) Replace(ctx *gin.Context) {
 //	@Failure		401	{object}	httputil.ErrorResponse
 //	@Failure		403	{object}	httputil.ErrorResponse
 //	@Failure		404	{object}	httputil.ErrorResponse
+//	@Failure		409	{object}	httputil.ErrorResponse
 //	@Router			/restaurants/{id} [delete]
 func (hdr *handler) Delete(ctx *gin.Context) {
 	userID, ok := reqctx.UserID(ctx.Request.Context())
@@ -240,6 +241,12 @@ func (hdr *handler) Delete(ctx *gin.Context) {
 
 		case errors.Is(err, ErrForbidden):
 			ctx.AbortWithStatusJSON(http.StatusForbidden, httputil.ErrorResponse{Message: "forbidden"})
+
+		case errors.Is(err, ErrHasActiveReservations):
+			ctx.AbortWithStatusJSON(http.StatusConflict, httputil.ErrorResponse{
+				Message: "restaurant has active reservations",
+				Code:    "restaurant_has_active_reservations",
+			})
 
 		default:
 			ctx.AbortWithStatusJSON(http.StatusInternalServerError, httputil.ErrorResponse{Message: "internal server error"})

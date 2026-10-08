@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"regexp"
 	"strings"
+	"time"
 
 	"github.com/google/uuid"
 )
@@ -13,16 +14,17 @@ type Repository interface {
 	Create(ctx context.Context, restaurant Restaurant) (*Restaurant, error)
 	FindByID(ctx context.Context, id int, viewerID uuid.UUID) (*Restaurant, error)
 	Replace(ctx context.Context, restaurant Restaurant) error
-	Delete(ctx context.Context, id int) error
+	DeleteIfNoActiveReservations(ctx context.Context, id int, now time.Time) error
 	List(ctx context.Context, viewerID uuid.UUID, query ListQuery) ([]Restaurant, int64, error)
 }
 
 type service struct {
 	repository Repository
+	now        func() time.Time
 }
 
-func NewService(repo Repository) *service {
-	return &service{repository: repo}
+func NewService(repo Repository, now func() time.Time) *service {
+	return &service{repository: repo, now: now}
 }
 
 func (svc *service) Create(ctx context.Context, ownerID uuid.UUID, restaurant Restaurant) (*Restaurant, error) {
@@ -91,7 +93,7 @@ func (svc *service) Delete(ctx context.Context, id int, userID uuid.UUID) error 
 		return fmt.Errorf("delete restaurant: %w", err)
 	}
 
-	if err := svc.repository.Delete(ctx, id); err != nil {
+	if err := svc.repository.DeleteIfNoActiveReservations(ctx, id, svc.now()); err != nil {
 		return fmt.Errorf("delete restaurant: %w", err)
 	}
 

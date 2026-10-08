@@ -55,6 +55,40 @@ func NewListMyReservationsResponse(views []ReservationView) httputil.ListRespons
 	return httputil.ListResponse[MyReservationResponse]{Total: int64(len(results)), Results: results}
 }
 
+type PersonRef struct {
+	ID   string `json:"id"`
+	Name string `json:"name"`
+}
+
+// OwnerReservationResponse is a reservation as the restaurant's owner sees it: who booked (by
+// name only, never an email), and when.
+type OwnerReservationResponse struct {
+	ID        int       `json:"id"`
+	Customer  PersonRef `json:"customer"`
+	StartAt   time.Time `json:"startAt"`
+	EndAt     time.Time `json:"endAt"`
+	Guests    int       `json:"guests"`
+	Status    string    `json:"status"`
+	CreatedAt time.Time `json:"createdAt"`
+}
+
+func NewListOwnerReservationsResponse(views []ReservationView) httputil.ListResponse[OwnerReservationResponse] {
+	results := make([]OwnerReservationResponse, len(views))
+	for index, view := range views {
+		results[index] = OwnerReservationResponse{
+			ID:        view.ID,
+			Customer:  PersonRef{ID: view.UserID.String(), Name: view.CustomerName},
+			StartAt:   view.StartAt,
+			EndAt:     view.EndAt,
+			Guests:    view.Guests,
+			Status:    view.Status,
+			CreatedAt: view.CreatedAt,
+		}
+	}
+
+	return httputil.ListResponse[OwnerReservationResponse]{Total: int64(len(results)), Results: results}
+}
+
 type CreateReservationResponse struct {
 	ID int `json:"id"`
 }

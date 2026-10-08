@@ -18,6 +18,7 @@ type Service interface {
 	Update(ctx context.Context, userID uuid.UUID, id int, in Input) (*ReservationView, error)
 	Cancel(ctx context.Context, userID uuid.UUID, id int) error
 	ListMine(ctx context.Context, userID uuid.UUID) ([]ReservationView, error)
+	ListForRestaurant(ctx context.Context, ownerID uuid.UUID, restaurantID int, status string) ([]ReservationView, error)
 }
 
 type handler struct {
@@ -176,6 +177,43 @@ func (hdr *handler) ListMine(ctx *gin.Context) {
 	}
 
 	ctx.JSON(http.StatusOK, NewListMyReservationsResponse(views))
+}
+
+// ListForRestaurant godoc
+//
+//	@Summary		การจองของร้าน (มุมมองเจ้าของ)
+//	@Description	อ่านอย่างเดียว เฉพาะเจ้าของร้าน แสดงชื่อลูกค้าแต่ไม่แสดงอีเมล กรองตามสถานะได้
+//	@Tags			reservations
+//	@Produce		json
+//	@Security		BearerAuth
+//	@Param			id		path		int		true	"Restaurant ID"
+//	@Param			status	query		string	false	"confirmed or cancelled (default: all)"
+//	@Success		200		{object}	httputil.ListResponse[OwnerReservationResponse]
+//	@Failure		400		{object}	httputil.ErrorResponse
+//	@Failure		401		{object}	httputil.ErrorResponse
+//	@Failure		403		{object}	httputil.ErrorResponse
+//	@Failure		404		{object}	httputil.ErrorResponse
+//	@Router			/restaurants/{id}/reservations [get]
+func (hdr *handler) ListForRestaurant(ctx *gin.Context) {
+	ownerID, ok := reqctx.UserID(ctx.Request.Context())
+	if !ok {
+		ctx.AbortWithStatusJSON(http.StatusUnauthorized, httputil.ErrorResponse{Message: "unauthorized"})
+		return
+	}
+
+	restaurantID, err := strconv.Atoi(ctx.Param("id"))
+	if err != nil {
+		ctx.AbortWithStatusJSON(http.StatusBadRequest, httputil.ErrorResponse{Message: "invalid request"})
+		return
+	}
+
+	views, err := hdr.service.ListForRestaurant(ctx.Request.Context(), ownerID, restaurantID, ctx.Query("status"))
+	if err != nil {
+		abortWithError(ctx, err)
+		return
+	}
+
+	ctx.JSON(http.StatusOK, NewListOwnerReservationsResponse(views))
 }
 
 // abortWithError maps a service error to the HTTP status and code the contract promises.

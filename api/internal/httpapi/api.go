@@ -25,7 +25,7 @@ type Deps struct {
 // Unlike the auth and user routes, which main.go wires itself, these are wired here so the
 // production server and the HTTP-seam tests build exactly the same handlers.
 func RegisterAPI(v1 *gin.RouterGroup, d Deps) {
-	restaurantHandler := restaurant.NewHandler(restaurant.NewService(restaurant.NewRepository(d.DB)))
+	restaurantHandler := restaurant.NewHandler(restaurant.NewService(restaurant.NewRepository(d.DB), d.Now))
 	reservationHandler := reservation.NewHandler(reservation.NewService(reservation.NewRepository(d.DB), d.Now))
 
 	restaurants := v1.Group("/restaurants")
@@ -36,6 +36,7 @@ func RegisterAPI(v1 *gin.RouterGroup, d Deps) {
 	restaurants.PUT("/:id", restaurantHandler.Replace)
 	restaurants.DELETE("/:id", restaurantHandler.Delete)
 	restaurants.POST("/:id/reservations", reservationHandler.Create)
+	restaurants.GET("/:id/reservations", reservationHandler.ListForRestaurant)
 
 	reservations := v1.Group("/reservations")
 	reservations.Use(d.Auth)
