@@ -27,7 +27,7 @@ Final Exam MVP ของนักเรียน Full-Stack: เว็บจอ�
 | 2. Spec | สังเคราะห์เป็น user stories, ข้อตกลงด้านการออกแบบ และจุดที่ต้องทดสอบ | [SPEC.md](SPEC.md) |
 | 3. Plan | แตกเป็นงานย่อยที่ทำตามได้ทีละขั้น: backend 13 งาน (Task 0–12), frontend 10 งาน (Task 0–9) | [Backend_PLAN.md](Backend_PLAN.md), [Frontend_PLAN.md](Frontend_PLAN.md) |
 | 4. Implement | ทำเป็นรอบ ผ่าน code-review ทุกรอบ แล้วติดแท็ก (ด้านล่าง) | ประวัติ git |
-| 5. หลังแผน | ธีมเขียวแบบ LINE, รูปร้านตัวอย่างจาก Unsplash, README, สคริปต์ทดสอบด้วยเบราว์เซอร์, จัดระเบียบโปรเจกต์ | ประวัติ git |
+| 5. หลังแผน | ธีมสี (โทนฟ้าแบบ Facebook), รูปร้านตัวอย่างจาก Unsplash, README, สคริปต์ทดสอบด้วยเบราว์เซอร์, จัดระเบียบโปรเจกต์ | ประวัติ git |
 
 รอบการ implement (แท็กใน git):
 
@@ -52,5 +52,5 @@ Final Exam MVP ของนักเรียน Full-Stack: เว็บจอ�
 - `Backend_PLAN.md` แนะนำให้เพิ่ม `keycloak` ใน `/etc/hosts` ซึ่งผิด (พอร์ต 8080 คือ API) ของจริงใช้ `keycloak.localhost:8180` กับ `extra_hosts` ใน `compose.yml`
 - `SPEC.md` เขียนว่าโปรเจกต์ไม่ใช่ git repo และยังไม่ตั้งค่า issue tracker (ตอนนี้เป็น git repo แล้ว ไม่ใช้ issue tracker)
 - `Frontend_PLAN.md` ตั้ง script `typecheck` เป็น `tsc --noEmit` ของจริงเป็น `next typegen && tsc --noEmit` และใช้ฟอนต์ Geist ของจริงใช้ Noto Sans Thai
-- ธีมสีในแผนยังเป็นของ template (ม่วง) ของจริงเปลี่ยนเป็นเขียวแบบ LINE แล้ว
+- ธีมสีในแผนยังเป็นของ template (ม่วง) ของจริงเป็นโทนฟ้าแบบ Facebook แล้ว
 - ข้อความที่ระบุตัวเลขหรือรายการสถานะ (เช่น "รอผู้ใช้ตรวจไฟล์" ใน `design.md`) เป็นสถานะ ณ ตอนนั้น

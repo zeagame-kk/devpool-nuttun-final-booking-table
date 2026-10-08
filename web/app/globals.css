@@ -53,24 +53,24 @@
 }
 
 :root {
-  --background: hsl(0 0% 98%);
-  --foreground: hsl(240 6% 10%);
+  --background: #f0f2f5; /* Facebook's page grey: white cards stand out on it */
+  --foreground: #050505;
   --card: hsl(0 0% 100%);
   --card-foreground: hsl(240 6% 10%);
   --popover: oklch(1 0 0);
   --popover-foreground: oklch(0.145 0 0);
-  /* LINE green (#06C755), a little deeper so white text on it stays readable: 3.2:1 */
-  --primary: #05a647;
+  /* Facebook blue for buttons and focus (the current button blue, not the older #1877f2, so white text on it is 4.8:1) */
+  --primary: #0866ff;
   --primary-foreground: hsl(0 0% 100%);
-  --primary-hover: #049a42;
-  --primary-subtle: #e6f7ec;
-  --primary-border: #bfe8ce;
-  /* green for text on a light background (links, brand): 4.8:1 on the page, 4.5:1 on --primary-subtle */
-  --primary-strong: #04803a;
-  --secondary: hsl(240 6% 94%);
-  --secondary-foreground: hsl(240 5% 26%);
-  --muted: hsl(240 5% 96%);
-  --muted-foreground: hsl(240 4% 46%);
+  --primary-hover: #0759e0;
+  --primary-subtle: #e7f3ff;
+  --primary-border: #cfe3ff;
+  /* blue for text on a light background (links, brand): 5.3:1 on white, 4.7:1 on the page grey and on --primary-subtle */
+  --primary-strong: #1568d8;
+  --secondary: #e4e6eb;
+  --secondary-foreground: #050505;
+  --muted: #e4e6eb;
+  --muted-foreground: #65676b;
   --accent: hsl(35 100% 55%);
   --accent-foreground: hsl(33 100% 12%);
   --accent-subtle: hsl(36 100% 93%);
@@ -80,10 +80,10 @@
   --destructive-subtle: hsl(0 86% 97%);
   --success: hsl(157 78% 27%);
   --success-subtle: hsl(156 47% 93%);
-  --border: hsl(240 6% 90%);
+  --border: #ced0d4;
   --border-subtle: hsl(0 0% 94%);
-  --input: hsl(240 6% 90%);
-  --ring: #05a647;
+  --input: #ced0d4;
+  --ring: #0866ff;
   --chart-1: oklch(0.87 0 0);
   --chart-2: oklch(0.556 0 0);
   --chart-3: oklch(0.439 0 0);

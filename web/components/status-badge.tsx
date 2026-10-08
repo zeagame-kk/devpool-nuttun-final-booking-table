@@ -7,7 +7,7 @@ export const STATUS_LABELS: Record<ReservationStatus, string> = {
 };
 
 export function StatusBadge({ status }: { status: ReservationStatus }) {
-  // "confirmed" is a soft green chip: small white text on the bright brand green is hard to read.
+  // "confirmed" is a soft blue chip: small white text on the bright brand blue is harder to read.
   return status === "confirmed" ? (
     <Badge className="bg-primary-subtle text-primary-strong">{STATUS_LABELS[status]}</Badge>
   ) : (
