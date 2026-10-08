@@ -332,6 +332,7 @@ func TestReservationCreate_ConcurrentRequestsNeverOverbook(t *testing.T) {
 	restaurantID := a.seedRestaurant(owner, restaurantOpts{Capacity: 10})
 
 	const requests = 5
+	a.warmPool(requests)
 	customers := make([]uuid.UUID, requests)
 	for index := range customers {
 		customers[index] = a.newUser("ลูกค้า " + strconv.Itoa(index))

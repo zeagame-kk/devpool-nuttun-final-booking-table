@@ -13,6 +13,7 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+	"sync"
 	"testing"
 	"time"
 
@@ -134,6 +135,14 @@ func startPostgres(ctx context.Context) (testcontainers.Container, *gorm.DB, err
 		return container, nil, err
 	}
 
+	// database/sql keeps only 2 idle connections by default. Concurrency tests would then open
+	// their connections one after another and never really overlap.
+	sqlDB, err := db.DB()
+	if err != nil {
+		return container, nil, err
+	}
+	sqlDB.SetMaxIdleConns(32)
+
 	return container, db, nil
 }
 
@@ -217,6 +226,22 @@ func fakeAuth(ctx *gin.Context) {
 }
 
 func (a *app) setNow(now time.Time) { a.now = now }
+
+// warmPool opens n connections at the same moment and leaves them idle, so that the next n
+// simultaneous requests all start immediately instead of waiting for a connection to be made.
+func (a *app) warmPool(n int) {
+	a.t.Helper()
+
+	var wg sync.WaitGroup
+	for range n {
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			_ = a.db.Exec("SELECT pg_sleep(0.1)").Error
+		}()
+	}
+	wg.Wait()
+}
 
 // do sends a JSON request as the given user (uuid.Nil = no credentials). path is relative
 // to /api/v1. A string body is sent as-is so tests can send malformed JSON.

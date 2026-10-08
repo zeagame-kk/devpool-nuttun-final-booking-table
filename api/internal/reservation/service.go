@@ -11,6 +11,8 @@ import (
 
 type Repository interface {
 	InTx(ctx context.Context, restaurantID int, fn func(tx TxRepo) error) error
+	FindView(ctx context.Context, id int) (*ReservationView, error)
+	ListByUser(ctx context.Context, userID uuid.UUID) ([]ReservationView, error)
 }
 
 // TxRepo is the repository inside a transaction that holds the restaurant's row lock.
@@ -18,6 +20,8 @@ type TxRepo interface {
 	Restaurant() RestaurantInfo
 	Overlapping(ctx context.Context, start, end time.Time, excludeID int) ([]Booking, error)
 	Create(ctx context.Context, reservation Reservation) (*Reservation, error)
+	Reservation(ctx context.Context, id int) (*Reservation, error)
+	Save(ctx context.Context, reservation Reservation) (*Reservation, error)
 }
 
 type service struct {
@@ -65,6 +69,112 @@ func (svc *service) Create(ctx context.Context, userID uuid.UUID, restaurantID i
 	}
 
 	return created, nil
+}
+
+// Update moves or resizes a reservation. Only its booker may, only while it is still active and
+// the cancellation lead time (counted from the original start) has not run out, and the new
+// time must satisfy every booking rule again, not counting the seats this reservation holds now.
+func (svc *service) Update(ctx context.Context, userID uuid.UUID, id int, in Input) (*ReservationView, error) {
+	existing, err := svc.findOwned(ctx, userID, id)
+	if err != nil {
+		return nil, fmt.Errorf("update reservation: %w", err)
+	}
+
+	if err := svc.repository.InTx(ctx, existing.RestaurantID, func(tx TxRepo) error {
+		current, err := tx.Reservation(ctx, id)
+		if err != nil {
+			return err
+		}
+		if err := svc.ensureChangeable(tx, *current, ErrTooLateToModify); err != nil {
+			return err
+		}
+		if err := svc.check(ctx, tx, in, id); err != nil {
+			return err
+		}
+
+		current.StartAt, current.EndAt, current.Guests = in.StartAt, in.EndAt, in.Guests
+		_, err = tx.Save(ctx, *current)
+
+		return err
+	}); err != nil {
+		return nil, fmt.Errorf("update reservation: %w", err)
+	}
+
+	view, err := svc.repository.FindView(ctx, id)
+	if err != nil {
+		return nil, fmt.Errorf("update reservation: %w", err)
+	}
+
+	return view, nil
+}
+
+// Cancel marks a reservation cancelled, under the same rules as Update about who, when and how
+// late. A cancelled reservation no longer counts towards capacity.
+func (svc *service) Cancel(ctx context.Context, userID uuid.UUID, id int) error {
+	existing, err := svc.findOwned(ctx, userID, id)
+	if err != nil {
+		return fmt.Errorf("cancel reservation: %w", err)
+	}
+
+	if err := svc.repository.InTx(ctx, existing.RestaurantID, func(tx TxRepo) error {
+		current, err := tx.Reservation(ctx, id)
+		if err != nil {
+			return err
+		}
+		if err := svc.ensureChangeable(tx, *current, ErrTooLateToCancel); err != nil {
+			return err
+		}
+
+		current.Status = StatusCancelled
+		_, err = tx.Save(ctx, *current)
+
+		return err
+	}); err != nil {
+		return fmt.Errorf("cancel reservation: %w", err)
+	}
+
+	return nil
+}
+
+func (svc *service) ListMine(ctx context.Context, userID uuid.UUID) ([]ReservationView, error) {
+	views, err := svc.repository.ListByUser(ctx, userID)
+	if err != nil {
+		return nil, fmt.Errorf("list reservations: %w", err)
+	}
+
+	return views, nil
+}
+
+// findOwned loads a reservation and checks it belongs to userID. Whether it may still be
+// changed is decided later, inside the transaction, from fresh data.
+func (svc *service) findOwned(ctx context.Context, userID uuid.UUID, id int) (*ReservationView, error) {
+	view, err := svc.repository.FindView(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+
+	if view.UserID != userID {
+		return nil, ErrForbidden
+	}
+
+	return view, nil
+}
+
+// ensureChangeable is the one rule behind both modifying and cancelling: the reservation must
+// be confirmed and not started, and its original start must be at least the restaurant's lead
+// time away. tooLate says which error to report when that last part fails.
+func (svc *service) ensureChangeable(tx TxRepo, current Reservation, tooLate error) error {
+	now := svc.now()
+
+	if current.Status != StatusConfirmed || !current.StartAt.After(now) {
+		return ErrNotActive
+	}
+
+	if !leadTimeOK(current.StartAt, now, tx.Restaurant().LeadMinutes) {
+		return tooLate
+	}
+
+	return nil
 }
 
 // check applies the booking rules, cheapest first, to a request made against the locked

@@ -25,6 +25,14 @@ type Reservation struct {
 	UpdatedAt    time.Time
 }
 
+// ReservationView is a reservation joined with the names a response needs. The restaurant is
+// joined without hiding deleted ones, so old reservations keep showing where they were.
+type ReservationView struct {
+	Reservation
+	RestaurantName string
+	CustomerName   string
+}
+
 // Input is what a customer chooses when booking or changing a reservation.
 type Input struct {
 	StartAt time.Time

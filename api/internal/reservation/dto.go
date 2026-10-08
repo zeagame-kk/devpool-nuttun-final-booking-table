@@ -1,6 +1,10 @@
 package reservation
 
-import "time"
+import (
+	"time"
+
+	"bookingtable/internal/httputil"
+)
 
 // SaveReservationRequest is the body of both booking and changing a reservation. The user
 // comes from the token and the restaurant from the path, never from the body.
@@ -12,6 +16,43 @@ type SaveReservationRequest struct {
 
 func (req SaveReservationRequest) ToInput() Input {
 	return Input{StartAt: req.StartAt, EndAt: req.EndAt, Guests: req.Guests}
+}
+
+type RestaurantRef struct {
+	ID   int    `json:"id"`
+	Name string `json:"name"`
+}
+
+// MyReservationResponse is a reservation as its booker sees it.
+type MyReservationResponse struct {
+	ID         int           `json:"id"`
+	Restaurant RestaurantRef `json:"restaurant"`
+	StartAt    time.Time     `json:"startAt"`
+	EndAt      time.Time     `json:"endAt"`
+	Guests     int           `json:"guests"`
+	Status     string        `json:"status"`
+	CreatedAt  time.Time     `json:"createdAt"`
+}
+
+func NewMyReservationResponse(view ReservationView) MyReservationResponse {
+	return MyReservationResponse{
+		ID:         view.ID,
+		Restaurant: RestaurantRef{ID: view.RestaurantID, Name: view.RestaurantName},
+		StartAt:    view.StartAt,
+		EndAt:      view.EndAt,
+		Guests:     view.Guests,
+		Status:     view.Status,
+		CreatedAt:  view.CreatedAt,
+	}
+}
+
+func NewListMyReservationsResponse(views []ReservationView) httputil.ListResponse[MyReservationResponse] {
+	results := make([]MyReservationResponse, len(views))
+	for index, view := range views {
+		results[index] = NewMyReservationResponse(view)
+	}
+
+	return httputil.ListResponse[MyReservationResponse]{Total: int64(len(results)), Results: results}
 }
 
 type CreateReservationResponse struct {
