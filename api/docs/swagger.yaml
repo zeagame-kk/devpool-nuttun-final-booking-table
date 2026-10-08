@@ -1,0 +1,788 @@
+basePath: /api/v1
+definitions:
+  internal_auth.Credential:
+    properties:
+      accessToken:
+        type: string
+      bearerType:
+        type: string
+      expiresAt:
+        type: string
+      refreshToken:
+        type: string
+    type: object
+  internal_auth.ExchangeRequest:
+    properties:
+      ticket:
+        example: pQx7...base64url...
+        type: string
+    required:
+    - ticket
+    type: object
+  internal_auth.LogoutRequest:
+    properties:
+      refreshToken:
+        example: eyJhbGci...
+        type: string
+    required:
+    - refreshToken
+    type: object
+  internal_auth.RefreshTokenRequest:
+    properties:
+      refreshToken:
+        example: eyJhbGci...
+        type: string
+    required:
+    - refreshToken
+    type: object
+  internal_recipe.CreateRecipeRequest:
+    properties:
+      description:
+        type: string
+      difficultyId:
+        type: string
+      durationId:
+        type: string
+      imageUrl:
+        type: string
+      ingredients:
+        items:
+          $ref: '#/definitions/internal_recipe.RecipeIngredientRequest'
+        type: array
+      instructions:
+        items:
+          $ref: '#/definitions/internal_recipe.RecipeInstructionRequest'
+        type: array
+      name:
+        type: string
+    required:
+    - description
+    - difficultyId
+    - durationId
+    - ingredients
+    - instructions
+    - name
+    type: object
+  internal_recipe.CreateRecipeResponse:
+    properties:
+      id:
+        type: integer
+    type: object
+  internal_recipe.CreatorResponse:
+    properties:
+      id:
+        type: string
+      name:
+        type: string
+    type: object
+  internal_recipe.DifficultyResponse:
+    properties:
+      id:
+        type: string
+      name:
+        type: string
+    type: object
+  internal_recipe.DurationResponse:
+    properties:
+      id:
+        type: string
+      name:
+        type: string
+    type: object
+  internal_recipe.IngredientResponse:
+    properties:
+      description:
+        type: string
+      id:
+        type: integer
+    type: object
+  internal_recipe.InstructionResponse:
+    properties:
+      description:
+        type: string
+      id:
+        type: integer
+    type: object
+  internal_recipe.ListRecipesResponse:
+    properties:
+      results:
+        items:
+          $ref: '#/definitions/internal_recipe.RecipeResponse'
+        type: array
+      total:
+        type: integer
+    type: object
+  internal_recipe.RateRecipeRequest:
+    properties:
+      rating:
+        maximum: 5
+        minimum: 1
+        type: integer
+    required:
+    - rating
+    type: object
+  internal_recipe.RatingResponse:
+    properties:
+      average:
+        type: number
+      total:
+        type: integer
+    type: object
+  internal_recipe.RecipeIngredientRequest:
+    properties:
+      description:
+        type: string
+    required:
+    - description
+    type: object
+  internal_recipe.RecipeInstructionRequest:
+    properties:
+      description:
+        type: string
+    required:
+    - description
+    type: object
+  internal_recipe.RecipeResponse:
+    properties:
+      createdAt:
+        type: string
+      creator:
+        $ref: '#/definitions/internal_recipe.CreatorResponse'
+      description:
+        type: string
+      difficulty:
+        $ref: '#/definitions/internal_recipe.DifficultyResponse'
+      duration:
+        $ref: '#/definitions/internal_recipe.DurationResponse'
+      id:
+        type: integer
+      imageUrl:
+        type: string
+      ingredients:
+        items:
+          $ref: '#/definitions/internal_recipe.IngredientResponse'
+        type: array
+      instructions:
+        items:
+          $ref: '#/definitions/internal_recipe.InstructionResponse'
+        type: array
+      isFavorite:
+        type: boolean
+      name:
+        type: string
+      rating:
+        $ref: '#/definitions/internal_recipe.RatingResponse'
+      updatedAt:
+        type: string
+    type: object
+  internal_recipe.ReplaceRecipeRequest:
+    properties:
+      description:
+        type: string
+      difficultyId:
+        type: string
+      durationId:
+        type: string
+      imageUrl:
+        type: string
+      ingredients:
+        items:
+          $ref: '#/definitions/internal_recipe.RecipeIngredientRequest'
+        type: array
+      instructions:
+        items:
+          $ref: '#/definitions/internal_recipe.RecipeInstructionRequest'
+        type: array
+      name:
+        type: string
+    required:
+    - description
+    - difficultyId
+    - durationId
+    - ingredients
+    - instructions
+    - name
+    type: object
+  internal_user.UpdateUserRequest:
+    properties:
+      bio:
+        example: Home cook who loves spicy food.
+        type: string
+      imageUrl:
+        example: https://images.example.com/avatar.jpg
+        type: string
+    type: object
+  internal_user.UserResponse:
+    properties:
+      bio:
+        example: Home cook who loves spicy food.
+        type: string
+      email:
+        example: somchai@pea.co.th
+        type: string
+      id:
+        example: 3f0c1a7e-2b19-4c5e-9f3a
+        type: string
+      imageUrl:
+        example: https://images.example.com/avatar.jpg
+        type: string
+      name:
+        example: สมชาย ใจดี
+        type: string
+    type: object
+  bookingtable_internal_httputil.ErrorResponse:
+    properties:
+      code:
+        type: string
+      message:
+        type: string
+    type: object
+host: localhost:8080
+info:
+  contact: {}
+  description: API สำหรับจัดการกับระบบสูตรอาหาร
+  title: BookingTable API
+  version: "1.0"
+paths:
+  /auth/callback:
+    get:
+      description: Keycloak redirect มาที่นี่เองอัตโนมัติ ไม่ใช่สิ่งที่ frontend เรียกตรงๆ
+      parameters:
+      - description: Authorization code
+        in: query
+        name: code
+        required: true
+        type: string
+      - description: State ที่ตรงกับตอน /auth/login
+        in: query
+        name: state
+        required: true
+        type: string
+      responses:
+        "302":
+          description: Redirect กลับ frontend พร้อม ticket
+          schema:
+            type: string
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/bookingtable_internal_httputil.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/bookingtable_internal_httputil.ErrorResponse'
+        "502":
+          description: Bad Gateway
+          schema:
+            $ref: '#/definitions/bookingtable_internal_httputil.ErrorResponse'
+      summary: รับ callback จาก Keycloak
+      tags:
+      - auth
+  /auth/exchange:
+    post:
+      consumes:
+      - application/json
+      description: Frontend เรียกผ่าน axios หลังถูก redirect กลับมาพร้อม ticket
+      parameters:
+      - description: ticket
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/internal_auth.ExchangeRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/internal_auth.Credential'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/bookingtable_internal_httputil.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/bookingtable_internal_httputil.ErrorResponse'
+      summary: แลก ticket เป็น credential จริง
+      tags:
+      - auth
+  /auth/login:
+    get:
+      description: Redirect ไปหน้า login ของ Keycloak
+      responses:
+        "302":
+          description: Redirect ไป Keycloak
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/bookingtable_internal_httputil.ErrorResponse'
+      summary: เริ่ม login ผ่าน Keycloak
+      tags:
+      - auth
+  /auth/logout:
+    post:
+      consumes:
+      - application/json
+      description: Revoke refresh token ที่ Keycloak จริง
+      parameters:
+      - description: refresh token
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/internal_auth.LogoutRequest'
+      responses:
+        "204":
+          description: Logout สำเร็จ
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/bookingtable_internal_httputil.ErrorResponse'
+        "502":
+          description: Bad Gateway
+          schema:
+            $ref: '#/definitions/bookingtable_internal_httputil.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: ออกจากระบบ
+      tags:
+      - auth
+  /auth/refresh-token:
+    post:
+      consumes:
+      - application/json
+      description: แลก refresh token เดิมเป็น credential ชุดใหม่จาก Keycloak
+      parameters:
+      - description: refresh token
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/internal_auth.RefreshTokenRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/internal_auth.Credential'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/bookingtable_internal_httputil.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/bookingtable_internal_httputil.ErrorResponse'
+      summary: ขอ access token ใหม่ด้วย refresh token
+      tags:
+      - auth
+  /recipes:
+    get:
+      description: ค้นหาสูตรอาหารทั้งหมด และสามารถกรองด้วย ชื่อ, ความยาก และเรียงตามเวลาที่สร้างได้
+      parameters:
+      - description: ชื่อของสูตรอาหาร
+        in: query
+        name: name
+        type: string
+      - description: Id ของความยากในการทำ
+        in: query
+        name: difficulty
+        type: string
+      - description: 'กรองสูตรอาหารตามสถานะรายการโปรดของผู้ใช้ปัจจุบัน: true = เฉพาะที่ถูกใจไว้,
+          false = เฉพาะที่ไม่ได้ถูกใจไว้'
+        in: query
+        name: favorite
+        type: boolean
+      - default: DESC
+        description: เรียงลำดับตามเวลาที่สร้าง
+        enum:
+        - ASC
+        - DESC
+        in: query
+        name: sort
+        type: string
+      - default: 1
+        description: หน้าที่ต้องการแสดง
+        in: query
+        minimum: 1
+        name: page
+        type: integer
+      - default: 12
+        description: จำนวนรายการต่อหน้า
+        in: query
+        maximum: 100
+        minimum: 1
+        name: limit
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/internal_recipe.ListRecipesResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/bookingtable_internal_httputil.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/bookingtable_internal_httputil.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/bookingtable_internal_httputil.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/bookingtable_internal_httputil.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: เรียกดูสูตรอาหารทั้งหมด
+      tags:
+      - recipes
+    post:
+      consumes:
+      - application/json
+      description: สร้างสูตรอาหารจากข้อมูลที่ระบุ โดยผู้ใช้ที่ยืนยันตัวตนแล้วจะเป็นผู้สร้างสูตร
+      parameters:
+      - description: Recipe data
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/internal_recipe.CreateRecipeRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/internal_recipe.CreateRecipeResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/bookingtable_internal_httputil.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/bookingtable_internal_httputil.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/bookingtable_internal_httputil.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: สร้างสูตรอาหาร
+      tags:
+      - recipes
+  /recipes/{id}:
+    delete:
+      description: ลบสูตรอาหารแบบ soft delete โดยผู้สร้างสูตรเท่านั้นที่ลบได้
+      parameters:
+      - description: Recipe ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      responses:
+        "204":
+          description: No Content
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/bookingtable_internal_httputil.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/bookingtable_internal_httputil.ErrorResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/bookingtable_internal_httputil.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/bookingtable_internal_httputil.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/bookingtable_internal_httputil.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: ลบสูตรอาหาร
+      tags:
+      - recipes
+    get:
+      description: ค้นหาสูตรอาหารจาก id แล้วคืนข้อมูลสูตรอาหารแบบสมบูรณ์
+      parameters:
+      - description: Recipe ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/internal_recipe.RecipeResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/bookingtable_internal_httputil.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/bookingtable_internal_httputil.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/bookingtable_internal_httputil.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/bookingtable_internal_httputil.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: เรียกดูสูตรอาหารแบบรายรายการ
+      tags:
+      - recipes
+    put:
+      consumes:
+      - application/json
+      description: แทนที่ข้อมูลสูตรอาหารทั้งหมดด้วยข้อมูลที่ระบุ โดยผู้สร้างสูตรเท่านั้นที่แก้ไขได้
+      parameters:
+      - description: Recipe ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Recipe data
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/internal_recipe.ReplaceRecipeRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/internal_recipe.RecipeResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/bookingtable_internal_httputil.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/bookingtable_internal_httputil.ErrorResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/bookingtable_internal_httputil.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/bookingtable_internal_httputil.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/bookingtable_internal_httputil.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: แก้ไขสูตรอาหารทั้งหมด
+      tags:
+      - recipes
+  /recipes/{id}/favorite:
+    delete:
+      description: ลบสูตรอาหารที่ระบุออกจากรายการโปรดของผู้ใช้ที่ยืนยันตัวตนแล้วแบบ
+        hard delete หากไม่เคยเพิ่มไว้จะไม่มีผล
+      parameters:
+      - description: Recipe ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      responses:
+        "204":
+          description: No Content
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/bookingtable_internal_httputil.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/bookingtable_internal_httputil.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/bookingtable_internal_httputil.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: ลบสูตรอาหารออกจากรายการโปรด
+      tags:
+      - recipes
+    post:
+      description: เพิ่มสูตรอาหารที่ระบุเข้ารายการโปรดของผู้ใช้ที่ยืนยันตัวตนแล้ว
+        หากเคยเพิ่มไว้แล้วจะไม่มีผลซ้ำ
+      parameters:
+      - description: Recipe ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      responses:
+        "204":
+          description: No Content
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/bookingtable_internal_httputil.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/bookingtable_internal_httputil.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/bookingtable_internal_httputil.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: เพิ่มสูตรอาหารในรายการโปรด
+      tags:
+      - recipes
+  /recipes/{id}/rating:
+    post:
+      consumes:
+      - application/json
+      description: ให้คะแนนสูตรอาหารที่ระบุ ผู้ใช้แต่ละคนให้คะแนนสูตรอาหารแต่ละสูตรได้เพียงครั้งเดียว
+        คำขอซ้ำจะไม่มีผล และค่าเฉลี่ยของสูตรจะถูกคำนวณใหม่ทุกครั้งที่บันทึกคะแนน
+      parameters:
+      - description: Recipe ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Rating data
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/internal_recipe.RateRecipeRequest'
+      responses:
+        "204":
+          description: No Content
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/bookingtable_internal_httputil.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/bookingtable_internal_httputil.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/bookingtable_internal_httputil.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: ให้คะแนนสูตรอาหาร
+      tags:
+      - recipes
+  /users/{id}:
+    get:
+      description: ค้นหาข้อมูล User จาก UUID แล้วคืนข้อมูล User ที่เจอกลับมา
+      parameters:
+      - description: User ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/internal_user.UserResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/bookingtable_internal_httputil.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/bookingtable_internal_httputil.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/bookingtable_internal_httputil.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: ดึงข้อมูลจาก user แบบรายคน
+      tags:
+      - users
+    put:
+      consumes:
+      - application/json
+      description: แก้ไข imageUrl และ bio ของผู้ใช้ที่กำลังเข้าสู่ระบบ (name และ email
+        มาจาก Keycloak แก้ไขผ่าน API นี้ไม่ได้)
+      parameters:
+      - description: User ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Updated profile
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/internal_user.UpdateUserRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/internal_user.UserResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/bookingtable_internal_httputil.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/bookingtable_internal_httputil.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/bookingtable_internal_httputil.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/bookingtable_internal_httputil.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: แก้ไขข้อมูลโปรไฟล์ผู้ใช้
+      tags:
+      - users
+securityDefinitions:
+  BearerAuth:
+    description: พิมพ์ "Bearer" ตามด้วย space แล้วตามด้วย access token เช่น "Bearer
+      eyJhbGci..."
+    in: header
+    name: Authorization
+    type: apiKey
+swagger: "2.0"
