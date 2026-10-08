@@ -4,6 +4,7 @@ import (
 	"math"
 
 	"bookingtable/internal/convutil"
+	"bookingtable/internal/httputil"
 
 	"github.com/google/uuid"
 )
@@ -12,11 +13,11 @@ import (
 // Owner and image are deliberately absent: the owner comes from the token and the image is
 // only set through the upload endpoint.
 type SaveRestaurantRequest struct {
-	Name                    string               `json:"name" binding:"required"`
+	Name                    string               `json:"name" binding:"required,max=255"`
 	Address                 string               `json:"address" binding:"required"`
 	Description             *string              `json:"description"`
-	SeatingCapacity         int                  `json:"seatingCapacity" binding:"required,min=1"`
-	CancellationLeadMinutes int                  `json:"cancellationLeadMinutes" binding:"required,min=30"`
+	SeatingCapacity         int                  `json:"seatingCapacity" binding:"required,min=1,max=2147483647"`
+	CancellationLeadMinutes int                  `json:"cancellationLeadMinutes" binding:"required,min=30,max=2147483647"`
 	OpeningHours            []OpeningHourRequest `json:"openingHours" binding:"required,min=1,dive"`
 }
 
@@ -45,8 +46,9 @@ func (req SaveRestaurantRequest) ToRestaurant() Restaurant {
 }
 
 // Pagination follows the recipe convention: page defaults to 1, limit to 12 (at most 100).
+// Page is capped so the SQL offset (page-1)*limit cannot overflow.
 type Pagination struct {
-	Page  int `form:"page" binding:"omitempty,min=1"`
+	Page  int `form:"page" binding:"omitempty,min=1,max=1000000"`
 	Limit int `form:"limit" binding:"omitempty,min=1,max=100"`
 }
 
@@ -74,23 +76,13 @@ type ListQuery struct {
 	Mine *bool  `form:"mine"`
 }
 
-func (query *ListQuery) Ensure() {
-	query.Pagination.Ensure()
-}
-
-// ListResponse is the {total, results} envelope used by every list endpoint.
-type ListResponse[T any] struct {
-	Total   int64 `json:"total"`
-	Results []T   `json:"results"`
-}
-
-func NewListRestaurantsResponse(restaurants []Restaurant, total int64) ListResponse[RestaurantResponse] {
+func NewListRestaurantsResponse(restaurants []Restaurant, total int64) httputil.ListResponse[RestaurantResponse] {
 	results := make([]RestaurantResponse, len(restaurants))
 	for index, restaurant := range restaurants {
 		results[index] = NewRestaurantResponse(restaurant)
 	}
 
-	return ListResponse[RestaurantResponse]{Total: total, Results: results}
+	return httputil.ListResponse[RestaurantResponse]{Total: total, Results: results}
 }
 
 type CreateRestaurantResponse struct {
@@ -167,7 +159,7 @@ func NewRestaurantResponse(restaurant Restaurant) RestaurantResponse {
 func NewRestaurantDetailResponse(restaurant Restaurant, viewerID uuid.UUID) RestaurantDetailResponse {
 	hours := make([]OpeningHourResponse, len(restaurant.OpeningHours))
 	for index, hour := range restaurant.OpeningHours {
-		hours[index] = OpeningHourResponse{Weekday: hour.Weekday, Open: clock(hour.OpenTime), Close: clock(hour.CloseTime)}
+		hours[index] = OpeningHourResponse{Weekday: hour.Weekday, Open: trimToHHMM(hour.OpenTime), Close: trimToHHMM(hour.CloseTime)}
 	}
 
 	detail := RestaurantDetailResponse{
@@ -186,8 +178,8 @@ func NewRestaurantDetailResponse(restaurant Restaurant, viewerID uuid.UUID) Rest
 	return detail
 }
 
-// clock trims a PostgreSQL TIME ("11:00:00") to "HH:MM".
-func clock(value string) string {
+// trimToHHMM trims a PostgreSQL TIME ("11:00:00") to "HH:MM".
+func trimToHHMM(value string) string {
 	if len(value) >= 5 {
 		return value[:5]
 	}

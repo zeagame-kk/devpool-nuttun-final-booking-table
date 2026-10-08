@@ -29,7 +29,7 @@ func (repo *repository) Create(ctx context.Context, restaurant Restaurant) (*Res
 
 		return insertOpeningHours(tx, restaurant.ID, hours)
 	}); err != nil {
-		return nil, fmt.Errorf("create restaurant: %w", err)
+		return nil, fmt.Errorf("insert restaurant: %w", err)
 	}
 
 	return &restaurant, nil
@@ -68,7 +68,7 @@ func (repo *repository) List(ctx context.Context, viewerID uuid.UUID, query List
 		Offset((query.Page - 1) * query.Limit).
 		Limit(query.Limit).
 		Scan(&page).Error; err != nil {
-		return nil, 0, fmt.Errorf("list restaurants: %w", err)
+		return nil, 0, fmt.Errorf("select restaurant page: %w", err)
 	}
 	if len(page) == 0 {
 		return []Restaurant{}, total, nil
@@ -144,7 +144,7 @@ func (repo *repository) Replace(ctx context.Context, restaurant Restaurant) erro
 			return err
 		}
 
-		return fmt.Errorf("replace restaurant %d: %w", restaurant.ID, err)
+		return fmt.Errorf("update restaurant %d: %w", restaurant.ID, err)
 	}
 
 	return nil
@@ -154,7 +154,7 @@ func (repo *repository) Replace(ctx context.Context, restaurant Restaurant) erro
 func (repo *repository) Delete(ctx context.Context, id int) error {
 	result := repo.db.WithContext(ctx).Delete(&Restaurant{}, id)
 	if result.Error != nil {
-		return fmt.Errorf("delete restaurant %d: %w", id, result.Error)
+		return fmt.Errorf("soft-delete restaurant %d: %w", id, result.Error)
 	}
 	if result.RowsAffected == 0 {
 		return ErrRestaurantNotFound

@@ -32,10 +32,19 @@ func (svc *service) Create(ctx context.Context, ownerID uuid.UUID, restaurant Re
 
 	restaurant.OwnerID = ownerID
 
-	return svc.repository.Create(ctx, restaurant)
+	created, err := svc.repository.Create(ctx, restaurant)
+	if err != nil {
+		return nil, fmt.Errorf("create restaurant: %w", err)
+	}
+
+	return created, nil
 }
 
 func (svc *service) List(ctx context.Context, viewerID uuid.UUID, query ListQuery) ([]Restaurant, int64, error) {
+	if hasNUL(query.Name) {
+		return nil, 0, ErrInvalidInput
+	}
+
 	query.Ensure()
 
 	restaurants, total, err := svc.repository.List(ctx, viewerID, query)
@@ -56,13 +65,8 @@ func (svc *service) Get(ctx context.Context, id int, viewerID uuid.UUID) (*Resta
 }
 
 func (svc *service) Replace(ctx context.Context, id int, userID uuid.UUID, restaurant Restaurant) (*Restaurant, error) {
-	existing, err := svc.repository.FindByID(ctx, id, userID)
-	if err != nil {
+	if _, err := svc.findOwned(ctx, id, userID); err != nil {
 		return nil, fmt.Errorf("replace restaurant: %w", err)
-	}
-
-	if existing.OwnerID != userID {
-		return nil, ErrForbidden
 	}
 
 	if err := validate(restaurant); err != nil {
@@ -71,35 +75,64 @@ func (svc *service) Replace(ctx context.Context, id int, userID uuid.UUID, resta
 
 	restaurant.ID = id
 	if err := svc.repository.Replace(ctx, restaurant); err != nil {
-		return nil, err
+		return nil, fmt.Errorf("replace restaurant: %w", err)
 	}
 
-	return svc.repository.FindByID(ctx, id, userID)
+	replaced, err := svc.repository.FindByID(ctx, id, userID)
+	if err != nil {
+		return nil, fmt.Errorf("replace restaurant: %w", err)
+	}
+
+	return replaced, nil
 }
 
 func (svc *service) Delete(ctx context.Context, id int, userID uuid.UUID) error {
-	existing, err := svc.repository.FindByID(ctx, id, userID)
-	if err != nil {
+	if _, err := svc.findOwned(ctx, id, userID); err != nil {
 		return fmt.Errorf("delete restaurant: %w", err)
 	}
 
-	if existing.OwnerID != userID {
-		return ErrForbidden
+	if err := svc.repository.Delete(ctx, id); err != nil {
+		return fmt.Errorf("delete restaurant: %w", err)
 	}
 
-	return svc.repository.Delete(ctx, id)
+	return nil
 }
 
-// validate holds the rules the binding tags cannot express.
+// findOwned loads an active restaurant and checks that userID owns it: ErrRestaurantNotFound
+// if there is none, ErrForbidden if it belongs to someone else.
+func (svc *service) findOwned(ctx context.Context, id int, userID uuid.UUID) (*Restaurant, error) {
+	restaurant, err := svc.repository.FindByID(ctx, id, userID)
+	if err != nil {
+		return nil, err
+	}
+
+	if restaurant.OwnerID != userID {
+		return nil, ErrForbidden
+	}
+
+	return restaurant, nil
+}
+
+// validate holds the rules the binding tags cannot express. PostgreSQL text cannot contain a
+// NUL byte, so one in any text field would otherwise surface as a 500.
 func validate(restaurant Restaurant) error {
 	if strings.TrimSpace(restaurant.Name) == "" || strings.TrimSpace(restaurant.Address) == "" {
+		return ErrInvalidInput
+	}
+
+	if hasNUL(restaurant.Name) || hasNUL(restaurant.Address) {
+		return ErrInvalidInput
+	}
+	if restaurant.Description != nil && hasNUL(*restaurant.Description) {
 		return ErrInvalidInput
 	}
 
 	return validateOpeningHours(restaurant.OpeningHours)
 }
 
-var clockPattern = regexp.MustCompile(`^([01]\d|2[0-3]):[0-5]\d$`)
+func hasNUL(text string) bool { return strings.ContainsRune(text, 0) }
+
+var hhmmPattern = regexp.MustCompile(`^([01]\d|2[0-3]):[0-5]\d$`)
 
 // validateOpeningHours requires at least one day, one entry per weekday, "HH:MM" times and
 // close after open. Zero-padded "HH:MM" strings compare correctly as text.
@@ -115,7 +148,7 @@ func validateOpeningHours(hours []OpeningHour) error {
 		}
 		seen[hour.Weekday] = true
 
-		if !clockPattern.MatchString(hour.OpenTime) || !clockPattern.MatchString(hour.CloseTime) {
+		if !hhmmPattern.MatchString(hour.OpenTime) || !hhmmPattern.MatchString(hour.CloseTime) {
 			return ErrInvalidOpeningHours
 		}
 		if hour.CloseTime <= hour.OpenTime {

@@ -57,7 +57,7 @@ func (hdr *handler) Create(ctx *gin.Context) {
 
 	restaurant, err := hdr.service.Create(ctx.Request.Context(), ownerID, req.ToRestaurant())
 	if err != nil {
-		if errors.Is(err, ErrInvalidInput) || errors.Is(err, ErrInvalidOpeningHours) {
+		if errors.Is(err, ErrInvalidInput) {
 			ctx.AbortWithStatusJSON(http.StatusBadRequest, httputil.ErrorResponse{Message: "invalid request"})
 			return
 		}
@@ -81,7 +81,7 @@ func (hdr *handler) Create(ctx *gin.Context) {
 //	@Param			mine	query		bool	false	"Only my restaurants"
 //	@Param			page	query		int		false	"Page (default 1)"
 //	@Param			limit	query		int		false	"Page size (default 12, max 100)"
-//	@Success		200		{object}	ListResponse[RestaurantResponse]
+//	@Success		200		{object}	httputil.ListResponse[RestaurantResponse]
 //	@Failure		400		{object}	httputil.ErrorResponse
 //	@Failure		401		{object}	httputil.ErrorResponse
 //	@Router			/restaurants [get]
@@ -100,6 +100,11 @@ func (hdr *handler) List(ctx *gin.Context) {
 
 	restaurants, total, err := hdr.service.List(ctx.Request.Context(), viewerID, query)
 	if err != nil {
+		if errors.Is(err, ErrInvalidInput) {
+			ctx.AbortWithStatusJSON(http.StatusBadRequest, httputil.ErrorResponse{Message: "invalid request"})
+			return
+		}
+
 		ctx.AbortWithStatusJSON(http.StatusInternalServerError, httputil.ErrorResponse{Message: "internal server error"})
 		return
 	}
@@ -190,7 +195,7 @@ func (hdr *handler) Replace(ctx *gin.Context) {
 		case errors.Is(err, ErrForbidden):
 			ctx.AbortWithStatusJSON(http.StatusForbidden, httputil.ErrorResponse{Message: "forbidden"})
 
-		case errors.Is(err, ErrInvalidInput), errors.Is(err, ErrInvalidOpeningHours):
+		case errors.Is(err, ErrInvalidInput):
 			ctx.AbortWithStatusJSON(http.StatusBadRequest, httputil.ErrorResponse{Message: "invalid request"})
 
 		default:

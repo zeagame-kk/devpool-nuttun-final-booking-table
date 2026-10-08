@@ -2,8 +2,11 @@ package apitest
 
 import (
 	"net/http"
+	"strconv"
+	"strings"
 	"testing"
 
+	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -74,7 +77,7 @@ func TestRestaurantCreate_Success(t *testing.T) {
 	id := decode[idJSON](t, created).ID
 	require.Positive(t, id)
 
-	asOwner := a.do(owner, http.MethodGet, "/restaurants/"+itoa(id), nil)
+	asOwner := a.do(owner, http.MethodGet, "/restaurants/"+strconv.Itoa(id), nil)
 	require.Equal(t, http.StatusOK, asOwner.Code, asOwner.Body.String())
 	got := decode[restaurantJSON](t, asOwner)
 
@@ -91,7 +94,7 @@ func TestRestaurantCreate_Success(t *testing.T) {
 	assert.True(t, got.IsOwner)
 	assert.Nil(t, got.MyReview)
 
-	asOther := decode[restaurantJSON](t, a.do(other, http.MethodGet, "/restaurants/"+itoa(id), nil))
+	asOther := decode[restaurantJSON](t, a.do(other, http.MethodGet, "/restaurants/"+strconv.Itoa(id), nil))
 	assert.False(t, asOther.IsOwner)
 }
 
@@ -120,7 +123,7 @@ func TestRestaurantCreate_SundayWeekdayZeroAccepted(t *testing.T) {
 	created := a.do(owner, http.MethodPost, "/restaurants", body)
 	require.Equal(t, http.StatusCreated, created.Code, created.Body.String())
 
-	got := decode[restaurantJSON](t, a.do(owner, http.MethodGet, "/restaurants/"+itoa(decode[idJSON](t, created).ID), nil))
+	got := decode[restaurantJSON](t, a.do(owner, http.MethodGet, "/restaurants/"+strconv.Itoa(decode[idJSON](t, created).ID), nil))
 	assert.Equal(t, []openingHourJSON{{Weekday: 0, Open: "11:00", Close: "22:00"}}, got.OpeningHours)
 }
 
@@ -149,6 +152,12 @@ func TestRestaurantCreate_Validation(t *testing.T) {
 		"open not a time":           func(b map[string]any) { b["openingHours"] = hours(1, "ab:cd", "22:00") },
 		"close equal to open":       func(b map[string]any) { b["openingHours"] = hours(1, "11:00", "11:00") },
 		"close before open":         func(b map[string]any) { b["openingHours"] = hours(1, "22:00", "11:00") },
+		"name over 255 characters":  func(b map[string]any) { b["name"] = strings.Repeat("ก", 256) },
+		"capacity beyond int32":     func(b map[string]any) { b["seatingCapacity"] = 2147483648 },
+		"lead time beyond int32":    func(b map[string]any) { b["cancellationLeadMinutes"] = 2147483648 },
+		"NUL byte in name":          func(b map[string]any) { b["name"] = "ชาบู\x00ทอง" },
+		"NUL byte in address":       func(b map[string]any) { b["address"] = "ที่อยู่\x00" },
+		"NUL byte in description":   func(b map[string]any) { b["description"] = "คำอธิบาย\x00" },
 	}
 
 	for name, change := range cases {
@@ -178,6 +187,7 @@ func TestRestaurantCreate_Validation(t *testing.T) {
 			b["cancellationLeadMinutes"] = 30
 			b["seatingCapacity"] = 1
 			b["openingHours"] = hours(6, "00:00", "23:59")
+			b["name"] = strings.Repeat("ก", 255)
 		}))
 
 		assert.Equal(t, http.StatusCreated, response.Code, response.Body.String())
@@ -200,7 +210,7 @@ func TestRestaurantCreate_IgnoresClientOwnerAndImage(t *testing.T) {
 	created := a.do(owner, http.MethodPost, "/restaurants", body)
 	require.Equal(t, http.StatusCreated, created.Code, created.Body.String())
 
-	got := decode[restaurantJSON](t, a.do(owner, http.MethodGet, "/restaurants/"+itoa(decode[idJSON](t, created).ID), nil))
+	got := decode[restaurantJSON](t, a.do(owner, http.MethodGet, "/restaurants/"+strconv.Itoa(decode[idJSON](t, created).ID), nil))
 	assert.Equal(t, owner.String(), got.Owner.ID)
 	assert.Nil(t, got.ImageURL)
 }
@@ -212,7 +222,7 @@ func TestRestaurant_RequiresAuth(t *testing.T) {
 		{http.MethodPost, "/restaurants"},
 		{http.MethodGet, "/restaurants/1"},
 	} {
-		response := a.do(uuidNil, route.method, route.path, nil)
+		response := a.do(uuid.Nil, route.method, route.path, nil)
 		assert.Equal(t, http.StatusUnauthorized, response.Code, route.method+" "+route.path)
 	}
 }
@@ -224,7 +234,7 @@ func TestRestaurantGet_NotFoundAndInvalidID(t *testing.T) {
 	require.NoError(t, a.db.Exec("UPDATE restaurants SET deleted_at = now() WHERE id = ?", deleted).Error)
 
 	assert.Equal(t, http.StatusNotFound, a.do(owner, http.MethodGet, "/restaurants/9999", nil).Code)
-	assert.Equal(t, http.StatusNotFound, a.do(owner, http.MethodGet, "/restaurants/"+itoa(deleted), nil).Code, "soft-deleted restaurant")
+	assert.Equal(t, http.StatusNotFound, a.do(owner, http.MethodGet, "/restaurants/"+strconv.Itoa(deleted), nil).Code, "soft-deleted restaurant")
 	assert.Equal(t, http.StatusBadRequest, a.do(owner, http.MethodGet, "/restaurants/abc", nil).Code)
 }
 
@@ -248,7 +258,7 @@ func TestRestaurantReplace(t *testing.T) {
 		owner := a.newUser("สมชาย")
 		id := a.seedRestaurant(owner, restaurantOpts{ImageURL: "/uploads/restaurants/1-abc.png"})
 
-		response := a.do(owner, http.MethodPut, "/restaurants/"+itoa(id), replacement())
+		response := a.do(owner, http.MethodPut, "/restaurants/"+strconv.Itoa(id), replacement())
 		require.Equal(t, http.StatusOK, response.Code, response.Body.String())
 		got := decode[restaurantJSON](t, response)
 
@@ -267,7 +277,7 @@ func TestRestaurantReplace(t *testing.T) {
 		assert.Equal(t, "/uploads/restaurants/1-abc.png", *got.ImageURL)
 		assert.True(t, got.IsOwner)
 
-		again := decode[restaurantJSON](t, a.do(owner, http.MethodGet, "/restaurants/"+itoa(id), nil))
+		again := decode[restaurantJSON](t, a.do(owner, http.MethodGet, "/restaurants/"+strconv.Itoa(id), nil))
 		assert.Equal(t, got.OpeningHours, again.OpeningHours, "what PUT returned is what is stored")
 	})
 
@@ -275,11 +285,11 @@ func TestRestaurantReplace(t *testing.T) {
 		a := newApp(t)
 		owner := a.newUser("สมชาย")
 		id := a.seedRestaurant(owner, restaurantOpts{})
-		require.Equal(t, http.StatusOK, a.do(owner, http.MethodPut, "/restaurants/"+itoa(id), replacement()).Code)
+		require.Equal(t, http.StatusOK, a.do(owner, http.MethodPut, "/restaurants/"+strconv.Itoa(id), replacement()).Code)
 
 		body := replacement()
 		delete(body, "description")
-		got := decode[restaurantJSON](t, a.do(owner, http.MethodPut, "/restaurants/"+itoa(id), body))
+		got := decode[restaurantJSON](t, a.do(owner, http.MethodPut, "/restaurants/"+strconv.Itoa(id), body))
 
 		assert.Nil(t, got.Description)
 	})
@@ -290,10 +300,10 @@ func TestRestaurantReplace(t *testing.T) {
 		other := a.newUser("สมหญิง")
 		id := a.seedRestaurant(owner, restaurantOpts{Name: "ร้านเดิม"})
 
-		response := a.do(other, http.MethodPut, "/restaurants/"+itoa(id), replacement())
+		response := a.do(other, http.MethodPut, "/restaurants/"+strconv.Itoa(id), replacement())
 
 		assert.Equal(t, http.StatusForbidden, response.Code)
-		got := decode[restaurantJSON](t, a.do(owner, http.MethodGet, "/restaurants/"+itoa(id), nil))
+		got := decode[restaurantJSON](t, a.do(owner, http.MethodGet, "/restaurants/"+strconv.Itoa(id), nil))
 		assert.Equal(t, "ร้านเดิม", got.Name)
 		assert.Len(t, got.OpeningHours, 7)
 	})
@@ -305,7 +315,7 @@ func TestRestaurantReplace(t *testing.T) {
 		require.NoError(t, a.db.Exec("UPDATE restaurants SET deleted_at = now() WHERE id = ?", deleted).Error)
 
 		assert.Equal(t, http.StatusNotFound, a.do(owner, http.MethodPut, "/restaurants/9999", replacement()).Code)
-		assert.Equal(t, http.StatusNotFound, a.do(owner, http.MethodPut, "/restaurants/"+itoa(deleted), replacement()).Code)
+		assert.Equal(t, http.StatusNotFound, a.do(owner, http.MethodPut, "/restaurants/"+strconv.Itoa(deleted), replacement()).Code)
 	})
 
 	t.Run("invalid body is 400 and nothing changes", func(t *testing.T) {
@@ -315,13 +325,13 @@ func TestRestaurantReplace(t *testing.T) {
 
 		body := replacement()
 		body["cancellationLeadMinutes"] = 29
-		assert.Equal(t, http.StatusBadRequest, a.do(owner, http.MethodPut, "/restaurants/"+itoa(id), body).Code)
+		assert.Equal(t, http.StatusBadRequest, a.do(owner, http.MethodPut, "/restaurants/"+strconv.Itoa(id), body).Code)
 
 		body = replacement()
 		body["openingHours"] = hours(1, "22:00", "11:00")
-		assert.Equal(t, http.StatusBadRequest, a.do(owner, http.MethodPut, "/restaurants/"+itoa(id), body).Code)
+		assert.Equal(t, http.StatusBadRequest, a.do(owner, http.MethodPut, "/restaurants/"+strconv.Itoa(id), body).Code)
 
-		got := decode[restaurantJSON](t, a.do(owner, http.MethodGet, "/restaurants/"+itoa(id), nil))
+		got := decode[restaurantJSON](t, a.do(owner, http.MethodGet, "/restaurants/"+strconv.Itoa(id), nil))
 		assert.Equal(t, "ร้านเดิม", got.Name)
 		assert.Len(t, got.OpeningHours, 7, "a rejected replacement keeps the old opening hours")
 	})
@@ -329,7 +339,7 @@ func TestRestaurantReplace(t *testing.T) {
 	t.Run("requires auth", func(t *testing.T) {
 		a := newApp(t)
 
-		assert.Equal(t, http.StatusUnauthorized, a.do(uuidNil, http.MethodPut, "/restaurants/1", replacement()).Code)
+		assert.Equal(t, http.StatusUnauthorized, a.do(uuid.Nil, http.MethodPut, "/restaurants/1", replacement()).Code)
 	})
 }
 
@@ -339,17 +349,17 @@ func TestRestaurantDelete(t *testing.T) {
 		owner := a.newUser("สมชาย")
 		id := a.seedRestaurant(owner, restaurantOpts{})
 
-		response := a.do(owner, http.MethodDelete, "/restaurants/"+itoa(id), nil)
+		response := a.do(owner, http.MethodDelete, "/restaurants/"+strconv.Itoa(id), nil)
 
 		assert.Equal(t, http.StatusNoContent, response.Code, response.Body.String())
 		assert.Empty(t, response.Body.String())
-		assert.Equal(t, http.StatusNotFound, a.do(owner, http.MethodGet, "/restaurants/"+itoa(id), nil).Code)
+		assert.Equal(t, http.StatusNotFound, a.do(owner, http.MethodGet, "/restaurants/"+strconv.Itoa(id), nil).Code)
 
 		var softDeleted int64
 		require.NoError(t, a.db.Raw("SELECT count(*) FROM restaurants WHERE id = ? AND deleted_at IS NOT NULL", id).Scan(&softDeleted).Error)
 		assert.Equal(t, int64(1), softDeleted, "the row is kept, only marked deleted")
 
-		assert.Equal(t, http.StatusNotFound, a.do(owner, http.MethodDelete, "/restaurants/"+itoa(id), nil).Code, "deleting twice")
+		assert.Equal(t, http.StatusNotFound, a.do(owner, http.MethodDelete, "/restaurants/"+strconv.Itoa(id), nil).Code, "deleting twice")
 	})
 
 	t.Run("another user is forbidden", func(t *testing.T) {
@@ -358,8 +368,8 @@ func TestRestaurantDelete(t *testing.T) {
 		other := a.newUser("สมหญิง")
 		id := a.seedRestaurant(owner, restaurantOpts{})
 
-		assert.Equal(t, http.StatusForbidden, a.do(other, http.MethodDelete, "/restaurants/"+itoa(id), nil).Code)
-		assert.Equal(t, http.StatusOK, a.do(owner, http.MethodGet, "/restaurants/"+itoa(id), nil).Code, "still there")
+		assert.Equal(t, http.StatusForbidden, a.do(other, http.MethodDelete, "/restaurants/"+strconv.Itoa(id), nil).Code)
+		assert.Equal(t, http.StatusOK, a.do(owner, http.MethodGet, "/restaurants/"+strconv.Itoa(id), nil).Code, "still there")
 	})
 
 	t.Run("unknown id, bad id and missing credentials", func(t *testing.T) {
@@ -368,6 +378,6 @@ func TestRestaurantDelete(t *testing.T) {
 
 		assert.Equal(t, http.StatusNotFound, a.do(owner, http.MethodDelete, "/restaurants/9999", nil).Code)
 		assert.Equal(t, http.StatusBadRequest, a.do(owner, http.MethodDelete, "/restaurants/abc", nil).Code)
-		assert.Equal(t, http.StatusUnauthorized, a.do(uuidNil, http.MethodDelete, "/restaurants/1", nil).Code)
+		assert.Equal(t, http.StatusUnauthorized, a.do(uuid.Nil, http.MethodDelete, "/restaurants/1", nil).Code)
 	})
 }

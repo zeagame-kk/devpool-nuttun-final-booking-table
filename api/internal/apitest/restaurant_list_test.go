@@ -98,7 +98,11 @@ func TestRestaurantList_InvalidParams(t *testing.T) {
 	a := newApp(t)
 	user := a.newUser("สมชาย")
 
-	for _, query := range []string{"?limit=101", "?limit=abc", "?page=-1", "?page=abc", "?sort=name", "?mine=maybe"} {
+	for _, query := range []string{
+		"?limit=101", "?limit=abc", "?page=-1", "?page=abc", "?sort=name", "?mine=maybe",
+		"?page=1000001", "?page=9223372036854775807", // the offset (page-1)*limit must not overflow
+		"?name=a%00b", // PostgreSQL cannot store or compare a NUL byte
+	} {
 		response := a.do(user, http.MethodGet, "/restaurants"+query, nil)
 		assert.Equal(t, http.StatusBadRequest, response.Code, query)
 	}
@@ -120,7 +124,7 @@ func TestRestaurantList_HidesSoftDeleted(t *testing.T) {
 func TestRestaurantList_RequiresAuth(t *testing.T) {
 	a := newApp(t)
 
-	assert.Equal(t, http.StatusUnauthorized, a.do(uuidNil, http.MethodGet, "/restaurants", nil).Code)
+	assert.Equal(t, http.StatusUnauthorized, a.do(uuid.Nil, http.MethodGet, "/restaurants", nil).Code)
 }
 
 // seedRated creates four restaurants owned by owner and returns their ids by name:

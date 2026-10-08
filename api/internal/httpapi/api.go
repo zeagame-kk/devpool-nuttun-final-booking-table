@@ -19,7 +19,10 @@ type Deps struct {
 	UploadDir string
 }
 
-// RegisterAPI registers the restaurant, reservation and review routes under v1.
+// RegisterAPI registers the booking routes under v1 (so far: restaurants).
+//
+// Unlike the auth and user routes, which main.go wires itself, these are wired here so the
+// production server and the HTTP-seam tests build exactly the same handlers.
 func RegisterAPI(v1 *gin.RouterGroup, d Deps) {
 	restaurantHandler := restaurant.NewHandler(restaurant.NewService(restaurant.NewRepository(d.DB)))
 
