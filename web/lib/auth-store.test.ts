@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { localStorageAuthStore } from "./auth-store";
-import type { Credential } from "./types";
+import { localStorageAuthStore } from "@/lib/auth-store";
+import type { Credential } from "@/lib/types";
 
 const credential: Credential = {
   accessToken: "a1",

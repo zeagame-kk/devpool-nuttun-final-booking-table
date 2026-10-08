@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { fromApiDateTime, toApiDateTime, WEEKDAY_LABELS } from "./datetime";
+import { fromApiDateTime, toApiDateTime, WEEKDAY_LABELS } from "@/lib/datetime";
 
 // npm test runs with TZ=America/New_York, so any code that leans on the machine's zone fails here.
 

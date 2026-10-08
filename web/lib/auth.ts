@@ -1,11 +1,10 @@
-import { API_BASE, apiFetch } from "./api";
-import { localStorageAuthStore } from "./auth-store";
-import type { Credential } from "./types";
+import { apiFetch, LOGIN_URL } from "@/lib/api";
+import { localStorageAuthStore } from "@/lib/auth-store";
+import type { Credential } from "@/lib/types";
 
 /** Sign in is a full-page navigation (API -> Keycloak -> API -> /auth/callback), never a fetch. */
 export function startLogin(): void {
-  // eslint-disable-next-line @next/next/no-location-assign-relative-destination -- API_BASE is an absolute URL on the API, not a Next route
-  window.location.href = `${API_BASE}/auth/login`;
+  window.location.href = LOGIN_URL;
 }
 
 /** Trade the one-time ticket from the callback URL for a credential and keep it. A ticket works only once. */

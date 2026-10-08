@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { messageForError } from "./errors";
+import { messageForError } from "@/lib/errors";
 
 describe("messageForError", () => {
   it.each([

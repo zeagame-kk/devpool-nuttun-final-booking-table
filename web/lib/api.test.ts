@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from "vitest";
-import { ApiError, createApiFetch } from "./api";
-import type { AuthStore } from "./auth-store";
-import type { Credential } from "./types";
+import { ApiError, createApiFetch } from "@/lib/api";
+import type { AuthStore } from "@/lib/auth-store";
+import type { Credential } from "@/lib/types";
 
 const BASE = "http://api.test/v1";
 

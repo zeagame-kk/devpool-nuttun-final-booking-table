@@ -1,5 +1,5 @@
-import { WEEKDAY_LABELS } from "./datetime";
-import type { OpeningHour } from "./types";
+import { WEEKDAY_LABELS } from "@/lib/datetime";
+import type { OpeningHour } from "@/lib/types";
 
 /** One row of the weekly editor: a day that is either closed or open between two "HH:MM" times. */
 export interface DayRow {
@@ -47,9 +47,9 @@ export function rowsToHours(rows: DayRow[]): OpeningHour[] {
 
 /** First problem in Thai, or null when the week can be sent. "HH:MM" strings compare correctly as text. */
 export function validateRows(rows: DayRow[]): string | null {
-  const open = rows.filter((r) => r.enabled);
-  if (open.length === 0) return "ต้องเปิดอย่างน้อย 1 วัน";
-  const bad = open.find((r) => r.close <= r.open);
+  const openRows = rows.filter((r) => r.enabled);
+  if (openRows.length === 0) return "ต้องเปิดอย่างน้อย 1 วัน";
+  const bad = openRows.find((r) => r.close <= r.open);
   if (bad) return `เวลาปิดต้องหลังเวลาเปิด (${WEEKDAY_LABELS[bad.weekday]})`;
   return null;
 }

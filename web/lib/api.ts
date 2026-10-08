@@ -1,7 +1,10 @@
-import { localStorageAuthStore, type AuthStore } from "./auth-store";
-import type { Credential } from "./types";
+import { localStorageAuthStore, type AuthStore } from "@/lib/auth-store";
+import type { Credential } from "@/lib/types";
 
 export const API_BASE: string = process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:8080/api/v1";
+
+/** Signing in is a full-page navigation to the API (which redirects to Keycloak), never a fetch. */
+export const LOGIN_URL = `${API_BASE}/auth/login`;
 
 export class ApiError extends Error {
   status: number;
@@ -61,7 +64,7 @@ export function createApiFetch(deps: ApiDeps) {
   // and sign the user out; every request that hits a 401 meanwhile waits for this same promise.
   let refreshing: Promise<string | null> | null = null;
 
-  function sessionLost(): null {
+  function endSession(): null {
     store.clear();
     deps.onAuthLost();
     return null;
@@ -69,9 +72,11 @@ export function createApiFetch(deps: ApiDeps) {
 
   async function refresh(): Promise<string | null> {
     const refreshToken = store.get()?.refreshToken;
-    if (!refreshToken) return sessionLost();
+    if (!refreshToken) return endSession();
+    // A network failure here is deliberately not "session lost": it propagates, so a brief outage
+    // does not sign the user out. Only an answer from the API (refresh refused) ends the session.
     const res = await send("/auth/refresh-token", { method: "POST", body: { refreshToken }, auth: false }, null);
-    if (!res.ok) return sessionLost();
+    if (!res.ok) return endSession();
     const credential = (await res.json()) as Credential;
     store.set(credential);
     return credential.accessToken;
@@ -110,8 +115,8 @@ export const apiFetch = createApiFetch({
   baseUrl: API_BASE,
   onAuthLost: () => {
     localStorageAuthStore.clear();
-    // eslint-disable-next-line @next/next/no-location-assign-relative-destination -- API_BASE is an absolute URL on the API, not a Next route
-    if (typeof window !== "undefined") window.location.href = `${API_BASE}/auth/login`;
+    // eslint-disable-next-line @next/next/no-location-assign-relative-destination -- LOGIN_URL is an absolute URL on the API, not a Next route
+    if (typeof window !== "undefined") window.location.href = LOGIN_URL;
   },
 });
 

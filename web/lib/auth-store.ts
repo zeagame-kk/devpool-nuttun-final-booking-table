@@ -1,4 +1,4 @@
-import type { Credential } from "./types";
+import type { Credential } from "@/lib/types";
 
 export interface AuthStore {
   get(): Credential | null;
@@ -29,10 +29,10 @@ export const localStorageAuthStore: AuthStore = {
       return null;
     }
   },
-  set(c) {
+  set(credential) {
     if (typeof window === "undefined") return;
     try {
-      localStorage.setItem(KEY, JSON.stringify(c));
+      localStorage.setItem(KEY, JSON.stringify(credential));
     } catch {
       // Not stored: the user simply has to sign in again next time.
     }

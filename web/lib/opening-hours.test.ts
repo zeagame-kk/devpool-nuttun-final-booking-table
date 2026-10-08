@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { emptyDayRows, rowsFromHours, rowsToHours, validateRows } from "./opening-hours";
+import { emptyDayRows, rowsFromHours, rowsToHours, validateRows } from "@/lib/opening-hours";
 
 describe("emptyDayRows", () => {
   it("gives seven closed days, Sunday (0) to Saturday (6), with default hours", () => {
