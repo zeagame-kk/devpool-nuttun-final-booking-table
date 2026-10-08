@@ -23,6 +23,11 @@ COPY cmd/ ./cmd/
 COPY internal/ ./internal/
 COPY docs/*.go ./docs/
 
+# The folder for uploaded pictures. The runtime image has no shell, so it is created here and
+# copied over with the owner of the non-root user below; a fresh named volume mounted on it
+# inherits that owner, which is what lets the API write to it.
+RUN mkdir -p /out/uploads
+
 # Build a statically linked Linux binary.
 RUN --mount=type=cache,target=/root/.cache/go-build \
   --mount=type=cache,target=/go/pkg/mod \
@@ -42,6 +47,7 @@ WORKDIR /app
 # the application to load named time zones such as Asia/Bangkok.
 COPY --from=builder /usr/share/zoneinfo /usr/share/zoneinfo
 COPY --from=builder /out/api /app/api
+COPY --from=builder --chown=65532:65532 /out/uploads /app/uploads
 
 USER 65532:65532
 

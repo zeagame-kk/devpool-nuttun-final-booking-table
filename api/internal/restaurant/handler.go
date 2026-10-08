@@ -3,6 +3,7 @@ package restaurant
 import (
 	"context"
 	"errors"
+	"io"
 	"net/http"
 	"strconv"
 
@@ -18,6 +19,8 @@ type Service interface {
 	Get(ctx context.Context, id int, viewerID uuid.UUID) (*Restaurant, error)
 	Replace(ctx context.Context, id int, userID uuid.UUID, restaurant Restaurant) (*Restaurant, error)
 	Delete(ctx context.Context, id int, userID uuid.UUID) error
+	SetImage(ctx context.Context, id int, userID uuid.UUID, file io.Reader) (*Restaurant, error)
+	RemoveImage(ctx context.Context, id int, userID uuid.UUID) error
 	List(ctx context.Context, viewerID uuid.UUID, query ListQuery) ([]Restaurant, int64, error)
 }
 
@@ -255,4 +258,115 @@ func (hdr *handler) Delete(ctx *gin.Context) {
 	}
 
 	ctx.Status(http.StatusNoContent)
+}
+
+// SetImage godoc
+//
+//	@Summary		อัปโหลดรูปร้าน
+//	@Description	เฉพาะเจ้าของร้าน multipart ฟิลด์ file รับ JPEG, PNG, WebP ไม่เกิน 2 MB ตรวจชนิดจากเนื้อไฟล์ และแทนที่รูปเดิม
+//	@Tags			restaurants
+//	@Accept			mpfd
+//	@Produce		json
+//	@Security		BearerAuth
+//	@Param			id		path		int		true	"Restaurant ID"
+//	@Param			file	formData	file	true	"Picture (JPEG, PNG or WebP, at most 2 MB)"
+//	@Success		200		{object}	RestaurantDetailResponse
+//	@Failure		400		{object}	httputil.ErrorResponse
+//	@Failure		401		{object}	httputil.ErrorResponse
+//	@Failure		403		{object}	httputil.ErrorResponse
+//	@Failure		404		{object}	httputil.ErrorResponse
+//	@Router			/restaurants/{id}/image [post]
+func (hdr *handler) SetImage(ctx *gin.Context) {
+	userID, ok := reqctx.UserID(ctx.Request.Context())
+	if !ok {
+		ctx.AbortWithStatusJSON(http.StatusUnauthorized, httputil.ErrorResponse{Message: "unauthorized"})
+		return
+	}
+
+	id, err := strconv.Atoi(ctx.Param("id"))
+	if err != nil {
+		ctx.AbortWithStatusJSON(http.StatusBadRequest, httputil.ErrorResponse{Message: "invalid request"})
+		return
+	}
+
+	// Refuse to even read a request body much larger than the picture limit (the extra megabyte
+	// is room for the multipart framing).
+	ctx.Request.Body = http.MaxBytesReader(ctx.Writer, ctx.Request.Body, MaxImageBytes+(1<<20))
+
+	header, err := ctx.FormFile("file")
+	if err != nil {
+		abortInvalidImage(ctx)
+		return
+	}
+
+	file, err := header.Open()
+	if err != nil {
+		abortInvalidImage(ctx)
+		return
+	}
+	defer file.Close()
+
+	restaurant, err := hdr.service.SetImage(ctx.Request.Context(), id, userID, file)
+	if err != nil {
+		abortWithImageError(ctx, err)
+		return
+	}
+
+	ctx.JSON(http.StatusOK, NewRestaurantDetailResponse(*restaurant, userID))
+}
+
+// RemoveImage godoc
+//
+//	@Summary		ลบรูปร้าน
+//	@Tags			restaurants
+//	@Security		BearerAuth
+//	@Param			id	path	int	true	"Restaurant ID"
+//	@Success		204
+//	@Failure		400	{object}	httputil.ErrorResponse
+//	@Failure		401	{object}	httputil.ErrorResponse
+//	@Failure		403	{object}	httputil.ErrorResponse
+//	@Failure		404	{object}	httputil.ErrorResponse
+//	@Router			/restaurants/{id}/image [delete]
+func (hdr *handler) RemoveImage(ctx *gin.Context) {
+	userID, ok := reqctx.UserID(ctx.Request.Context())
+	if !ok {
+		ctx.AbortWithStatusJSON(http.StatusUnauthorized, httputil.ErrorResponse{Message: "unauthorized"})
+		return
+	}
+
+	id, err := strconv.Atoi(ctx.Param("id"))
+	if err != nil {
+		ctx.AbortWithStatusJSON(http.StatusBadRequest, httputil.ErrorResponse{Message: "invalid request"})
+		return
+	}
+
+	if err := hdr.service.RemoveImage(ctx.Request.Context(), id, userID); err != nil {
+		abortWithImageError(ctx, err)
+		return
+	}
+
+	ctx.Status(http.StatusNoContent)
+}
+
+func abortInvalidImage(ctx *gin.Context) {
+	ctx.AbortWithStatusJSON(http.StatusBadRequest, httputil.ErrorResponse{
+		Message: "invalid image: send a JPEG, PNG or WebP of at most 2 MB in the 'file' field",
+		Code:    "invalid_image",
+	})
+}
+
+func abortWithImageError(ctx *gin.Context, err error) {
+	switch {
+	case errors.Is(err, ErrRestaurantNotFound):
+		ctx.AbortWithStatusJSON(http.StatusNotFound, httputil.ErrorResponse{Message: "restaurant not found"})
+
+	case errors.Is(err, ErrForbidden):
+		ctx.AbortWithStatusJSON(http.StatusForbidden, httputil.ErrorResponse{Message: "forbidden"})
+
+	case errors.Is(err, ErrInvalidImage):
+		abortInvalidImage(ctx)
+
+	default:
+		ctx.AbortWithStatusJSON(http.StatusInternalServerError, httputil.ErrorResponse{Message: "internal server error"})
+	}
 }

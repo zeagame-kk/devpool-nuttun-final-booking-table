@@ -294,10 +294,17 @@ func (a *app) do(as uuid.UUID, method, path string, body any) *httptest.Response
 func (a *app) upload(as uuid.UUID, path, filename string, content []byte) *httptest.ResponseRecorder {
 	a.t.Helper()
 
+	return a.uploadField(as, path, "file", filename, content)
+}
+
+// uploadField is upload with a choice of form field name.
+func (a *app) uploadField(as uuid.UUID, path, field, filename string, content []byte) *httptest.ResponseRecorder {
+	a.t.Helper()
+
 	var buf bytes.Buffer
 	writer := multipart.NewWriter(&buf)
 	header := textproto.MIMEHeader{}
-	header.Set("Content-Disposition", fmt.Sprintf(`form-data; name="file"; filename=%q`, filename))
+	header.Set("Content-Disposition", fmt.Sprintf(`form-data; name=%q; filename=%q`, field, filename))
 	part, err := writer.CreatePart(header)
 	require.NoError(a.t, err)
 	_, err = part.Write(content)
@@ -311,6 +318,23 @@ func (a *app) upload(as uuid.UUID, path, filename string, content []byte) *httpt
 	}
 
 	return a.serve(req)
+}
+
+// storedImages lists the file names currently in the upload folder.
+func (a *app) storedImages() []string {
+	a.t.Helper()
+
+	entries, err := os.ReadDir(filepath.Join(a.uploadDir, "restaurants"))
+	if os.IsNotExist(err) {
+		return nil
+	}
+	require.NoError(a.t, err)
+
+	names := make([]string, len(entries))
+	for index, entry := range entries {
+		names[index] = entry.Name()
+	}
+	return names
 }
 
 func (a *app) serve(req *http.Request) *httptest.ResponseRecorder {

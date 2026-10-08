@@ -18,6 +18,7 @@ type Config struct {
 	Redis    Redis
 	Keycloak Keycloak
 	Logging  Logging
+	Upload   Upload
 }
 
 func Load() (Config, error) {
@@ -40,5 +41,6 @@ func (cfg Config) Validate() error {
 		cfg.Redis.Validate(),
 		cfg.Keycloak.Validate(),
 		cfg.Logging.Validate(),
+		cfg.Upload.Validate(),
 	)
 }

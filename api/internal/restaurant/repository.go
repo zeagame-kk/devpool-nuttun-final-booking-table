@@ -120,6 +120,19 @@ func orderBy(sort string) string {
 	}
 }
 
+// SetImageURL stores (or, with nil, clears) the restaurant's picture.
+func (repo *repository) SetImageURL(ctx context.Context, id int, imageURL *string) error {
+	result := repo.db.WithContext(ctx).Model(&Restaurant{}).Where("id = ?", id).Update("image_url", imageURL)
+	if result.Error != nil {
+		return fmt.Errorf("set image of restaurant %d: %w", id, result.Error)
+	}
+	if result.RowsAffected == 0 {
+		return ErrRestaurantNotFound
+	}
+
+	return nil
+}
+
 // Replace overwrites the editable columns and swaps the whole opening-hours set in one
 // transaction. The image is not editable here, and the owner never changes.
 func (repo *repository) Replace(ctx context.Context, restaurant Restaurant) error {

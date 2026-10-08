@@ -1,8 +1,13 @@
 package restaurant
 
 import (
+	"bytes"
 	"context"
+	"errors"
 	"fmt"
+	"io"
+	"log/slog"
+	"net/http"
 	"regexp"
 	"strings"
 	"time"
@@ -10,21 +15,30 @@ import (
 	"github.com/google/uuid"
 )
 
+// ImageStorage keeps the picture files. The service decides the names; the storage only
+// writes and removes them.
+type ImageStorage interface {
+	Save(name string, content io.Reader) error
+	Delete(name string) error
+}
+
 type Repository interface {
 	Create(ctx context.Context, restaurant Restaurant) (*Restaurant, error)
 	FindByID(ctx context.Context, id int, viewerID uuid.UUID) (*Restaurant, error)
 	Replace(ctx context.Context, restaurant Restaurant) error
 	DeleteIfNoActiveReservations(ctx context.Context, id int, now time.Time) error
 	List(ctx context.Context, viewerID uuid.UUID, query ListQuery) ([]Restaurant, int64, error)
+	SetImageURL(ctx context.Context, id int, imageURL *string) error
 }
 
 type service struct {
 	repository Repository
+	images     ImageStorage
 	now        func() time.Time
 }
 
-func NewService(repo Repository, now func() time.Time) *service {
-	return &service{repository: repo, now: now}
+func NewService(repo Repository, images ImageStorage, now func() time.Time) *service {
+	return &service{repository: repo, images: images, now: now}
 }
 
 func (svc *service) Create(ctx context.Context, ownerID uuid.UUID, restaurant Restaurant) (*Restaurant, error) {
@@ -98,6 +112,98 @@ func (svc *service) Delete(ctx context.Context, id int, userID uuid.UUID) error 
 	}
 
 	return nil
+}
+
+// MaxImageBytes is the largest picture accepted.
+const MaxImageBytes = 2 << 20
+
+// imageURLPrefix is where uploaded pictures are served from, relative to the API's base URL.
+const imageURLPrefix = "/uploads/restaurants/"
+
+// imageExtensions maps what the bytes of a picture say it is to the file extension we store
+// it under. Anything else, SVG and GIF included, is refused.
+var imageExtensions = map[string]string{
+	"image/jpeg": ".jpg",
+	"image/png":  ".png",
+	"image/webp": ".webp",
+}
+
+// SetImage replaces the restaurant's picture. The type is decided from the content (never the
+// client's file name or content type), and the file is stored under a name made here.
+func (svc *service) SetImage(ctx context.Context, id int, userID uuid.UUID, file io.Reader) (*Restaurant, error) {
+	existing, err := svc.findOwned(ctx, id, userID)
+	if err != nil {
+		return nil, fmt.Errorf("set restaurant image: %w", err)
+	}
+
+	// Read one byte past the limit: that is how an oversized file is told from one that fits.
+	data, err := io.ReadAll(io.LimitReader(file, MaxImageBytes+1))
+	if err != nil {
+		var tooLarge *http.MaxBytesError
+		if errors.As(err, &tooLarge) {
+			return nil, ErrInvalidImage
+		}
+
+		return nil, fmt.Errorf("read image: %w", err)
+	}
+	if len(data) == 0 || len(data) > MaxImageBytes {
+		return nil, ErrInvalidImage
+	}
+
+	extension, allowed := imageExtensions[http.DetectContentType(data)]
+	if !allowed {
+		return nil, ErrInvalidImage
+	}
+
+	name := fmt.Sprintf("%d-%s%s", id, uuid.NewString(), extension)
+	if err := svc.images.Save(name, bytes.NewReader(data)); err != nil {
+		return nil, fmt.Errorf("set restaurant image: %w", err)
+	}
+
+	imageURL := imageURLPrefix + name
+	if err := svc.repository.SetImageURL(ctx, id, &imageURL); err != nil {
+		svc.removeFile(ctx, name)
+		return nil, fmt.Errorf("set restaurant image: %w", err)
+	}
+	svc.removeFileAt(ctx, existing.ImageURL)
+
+	updated, err := svc.repository.FindByID(ctx, id, userID)
+	if err != nil {
+		return nil, fmt.Errorf("set restaurant image: %w", err)
+	}
+
+	return updated, nil
+}
+
+// RemoveImage clears the restaurant's picture and deletes the file. Having no picture already
+// is fine.
+func (svc *service) RemoveImage(ctx context.Context, id int, userID uuid.UUID) error {
+	existing, err := svc.findOwned(ctx, id, userID)
+	if err != nil {
+		return fmt.Errorf("remove restaurant image: %w", err)
+	}
+
+	if err := svc.repository.SetImageURL(ctx, id, nil); err != nil {
+		return fmt.Errorf("remove restaurant image: %w", err)
+	}
+	svc.removeFileAt(ctx, existing.ImageURL)
+
+	return nil
+}
+
+// removeFileAt deletes the file a stored image URL points to, if it is one of ours.
+func (svc *service) removeFileAt(ctx context.Context, imageURL *string) {
+	if imageURL != nil && strings.HasPrefix(*imageURL, imageURLPrefix) {
+		svc.removeFile(ctx, strings.TrimPrefix(*imageURL, imageURLPrefix))
+	}
+}
+
+// removeFile is best effort: a file that cannot be deleted is logged, and does not fail the
+// request that has already changed the database.
+func (svc *service) removeFile(ctx context.Context, name string) {
+	if err := svc.images.Delete(name); err != nil {
+		slog.WarnContext(ctx, "could not delete restaurant image file", "name", name, "error", err)
+	}
 }
 
 // findOwned loads an active restaurant and checks that userID owns it: ErrRestaurantNotFound

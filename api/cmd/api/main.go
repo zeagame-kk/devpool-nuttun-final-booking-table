@@ -128,9 +128,10 @@ func run() error {
 
 	// Restaurant, reservation and review resources
 	httpapi.RegisterAPI(v1, httpapi.Deps{
-		DB:   db,
-		Auth: middleware.JWT(oidcVerifer, userService),
-		Now:  time.Now,
+		DB:        db,
+		Auth:      middleware.JWT(oidcVerifer, userService),
+		Now:       time.Now,
+		UploadDir: cfg.Upload.Dir,
 	})
 
 	// Register swagger
