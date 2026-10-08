@@ -44,6 +44,55 @@ func (req SaveRestaurantRequest) ToRestaurant() Restaurant {
 	}
 }
 
+// Pagination follows the recipe convention: page defaults to 1, limit to 12 (at most 100).
+type Pagination struct {
+	Page  int `form:"page" binding:"omitempty,min=1"`
+	Limit int `form:"limit" binding:"omitempty,min=1,max=100"`
+}
+
+func (pg *Pagination) Ensure() {
+	if pg.Page <= 0 {
+		pg.Page = 1
+	}
+
+	if pg.Limit <= 0 || pg.Limit > 100 {
+		pg.Limit = 12
+	}
+}
+
+// Values of the sort query parameter; without one, the newest restaurants come first.
+const (
+	SortRating  = "rating"
+	SortReviews = "reviews"
+)
+
+// ListQuery is the query string of GET /restaurants.
+type ListQuery struct {
+	Pagination
+	Name string `form:"name"`
+	Sort string `form:"sort" binding:"omitempty,oneof=rating reviews"`
+	Mine *bool  `form:"mine"`
+}
+
+func (query *ListQuery) Ensure() {
+	query.Pagination.Ensure()
+}
+
+// ListResponse is the {total, results} envelope used by every list endpoint.
+type ListResponse[T any] struct {
+	Total   int64 `json:"total"`
+	Results []T   `json:"results"`
+}
+
+func NewListRestaurantsResponse(restaurants []Restaurant, total int64) ListResponse[RestaurantResponse] {
+	results := make([]RestaurantResponse, len(restaurants))
+	for index, restaurant := range restaurants {
+		results[index] = NewRestaurantResponse(restaurant)
+	}
+
+	return ListResponse[RestaurantResponse]{Total: total, Results: results}
+}
+
 type CreateRestaurantResponse struct {
 	ID int `json:"id"`
 }

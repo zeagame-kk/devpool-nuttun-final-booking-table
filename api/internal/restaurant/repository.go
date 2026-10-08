@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"strings"
 
 	"github.com/google/uuid"
 	"gorm.io/gorm"
@@ -32,6 +33,90 @@ func (repo *repository) Create(ctx context.Context, restaurant Restaurant) (*Res
 	}
 
 	return &restaurant, nil
+}
+
+// listStats is one row of the list query: which restaurant, and its review totals.
+type listStats struct {
+	ID            int
+	AverageRating float64
+	ReviewCount   int64
+}
+
+// List returns one page of active restaurants plus the total count. The page is chosen with
+// a query that joins the review totals (so it can sort by them); the full rows are then
+// loaded by id and put back in that order.
+func (repo *repository) List(ctx context.Context, viewerID uuid.UUID, query ListQuery) ([]Restaurant, int64, error) {
+	db := repo.db.WithContext(ctx).Model(&Restaurant{}).
+		Joins("LEFT JOIN (SELECT restaurant_id, AVG(rating) AS avg_rating, COUNT(*) AS review_count FROM reviews GROUP BY restaurant_id) rs ON rs.restaurant_id = restaurants.id")
+
+	if name := strings.TrimSpace(query.Name); name != "" {
+		db = db.Where(`restaurants.name ILIKE ? ESCAPE '\'`, "%"+escapeLike(name)+"%")
+	}
+	if query.Mine != nil && *query.Mine {
+		db = db.Where("restaurants.owner_id = ?", viewerID)
+	}
+
+	var total int64
+	if err := db.Count(&total).Error; err != nil {
+		return nil, 0, fmt.Errorf("count restaurants: %w", err)
+	}
+
+	var page []listStats
+	if err := db.
+		Select("restaurants.id AS id, COALESCE(rs.avg_rating, 0) AS average_rating, COALESCE(rs.review_count, 0) AS review_count").
+		Order(orderBy(query.Sort)).
+		Offset((query.Page - 1) * query.Limit).
+		Limit(query.Limit).
+		Scan(&page).Error; err != nil {
+		return nil, 0, fmt.Errorf("list restaurants: %w", err)
+	}
+	if len(page) == 0 {
+		return []Restaurant{}, total, nil
+	}
+
+	pageIDs := make([]int, len(page))
+	for index, row := range page {
+		pageIDs[index] = row.ID
+	}
+
+	var loaded []Restaurant
+	if err := repo.db.WithContext(ctx).Preload("Owner").Where("id IN ?", pageIDs).Find(&loaded).Error; err != nil {
+		return nil, 0, fmt.Errorf("load restaurants: %w", err)
+	}
+	byID := make(map[int]Restaurant, len(loaded))
+	for _, restaurant := range loaded {
+		byID[restaurant.ID] = restaurant
+	}
+
+	restaurants := make([]Restaurant, 0, len(page))
+	for _, row := range page {
+		restaurant, ok := byID[row.ID]
+		if !ok {
+			continue
+		}
+		restaurant.AverageRating = row.AverageRating
+		restaurant.ReviewCount = row.ReviewCount
+		restaurants = append(restaurants, restaurant)
+	}
+
+	return restaurants, total, nil
+}
+
+// likeEscaper makes a search term literal: without it a typed % or _ would act as a wildcard.
+var likeEscaper = strings.NewReplacer(`\`, `\\`, `%`, `\%`, `_`, `\_`)
+
+func escapeLike(term string) string { return likeEscaper.Replace(term) }
+
+// orderBy maps the sort option to an ORDER BY. Ties always fall back to the id so pages are stable.
+func orderBy(sort string) string {
+	switch sort {
+	case SortRating:
+		return "COALESCE(rs.avg_rating, 0) DESC, restaurants.id ASC"
+	case SortReviews:
+		return "COALESCE(rs.review_count, 0) DESC, restaurants.id ASC"
+	default:
+		return "restaurants.created_at DESC, restaurants.id ASC"
+	}
 }
 
 // Replace overwrites the editable columns and swaps the whole opening-hours set in one

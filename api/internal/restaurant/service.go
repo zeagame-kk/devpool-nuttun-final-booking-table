@@ -14,6 +14,7 @@ type Repository interface {
 	FindByID(ctx context.Context, id int, viewerID uuid.UUID) (*Restaurant, error)
 	Replace(ctx context.Context, restaurant Restaurant) error
 	Delete(ctx context.Context, id int) error
+	List(ctx context.Context, viewerID uuid.UUID, query ListQuery) ([]Restaurant, int64, error)
 }
 
 type service struct {
@@ -32,6 +33,17 @@ func (svc *service) Create(ctx context.Context, ownerID uuid.UUID, restaurant Re
 	restaurant.OwnerID = ownerID
 
 	return svc.repository.Create(ctx, restaurant)
+}
+
+func (svc *service) List(ctx context.Context, viewerID uuid.UUID, query ListQuery) ([]Restaurant, int64, error) {
+	query.Ensure()
+
+	restaurants, total, err := svc.repository.List(ctx, viewerID, query)
+	if err != nil {
+		return nil, 0, fmt.Errorf("list restaurants: %w", err)
+	}
+
+	return restaurants, total, nil
 }
 
 func (svc *service) Get(ctx context.Context, id int, viewerID uuid.UUID) (*Restaurant, error) {

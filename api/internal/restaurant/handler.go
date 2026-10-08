@@ -18,6 +18,7 @@ type Service interface {
 	Get(ctx context.Context, id int, viewerID uuid.UUID) (*Restaurant, error)
 	Replace(ctx context.Context, id int, userID uuid.UUID, restaurant Restaurant) (*Restaurant, error)
 	Delete(ctx context.Context, id int, userID uuid.UUID) error
+	List(ctx context.Context, viewerID uuid.UUID, query ListQuery) ([]Restaurant, int64, error)
 }
 
 type handler struct {
@@ -66,6 +67,44 @@ func (hdr *handler) Create(ctx *gin.Context) {
 	}
 
 	ctx.JSON(http.StatusCreated, NewCreateRestaurantResponse(*restaurant))
+}
+
+// List godoc
+//
+//	@Summary		รายการร้านอาหาร
+//	@Description	ค้นหาตามชื่อ เรียงตามคะแนนเฉลี่ยหรือจำนวนรีวิว กรองเฉพาะร้านของตัวเอง และแบ่งหน้า
+//	@Tags			restaurants
+//	@Produce		json
+//	@Security		BearerAuth
+//	@Param			name	query		string	false	"Search by name"
+//	@Param			sort	query		string	false	"rating or reviews (default: newest first)"
+//	@Param			mine	query		bool	false	"Only my restaurants"
+//	@Param			page	query		int		false	"Page (default 1)"
+//	@Param			limit	query		int		false	"Page size (default 12, max 100)"
+//	@Success		200		{object}	ListResponse[RestaurantResponse]
+//	@Failure		400		{object}	httputil.ErrorResponse
+//	@Failure		401		{object}	httputil.ErrorResponse
+//	@Router			/restaurants [get]
+func (hdr *handler) List(ctx *gin.Context) {
+	viewerID, ok := reqctx.UserID(ctx.Request.Context())
+	if !ok {
+		ctx.AbortWithStatusJSON(http.StatusUnauthorized, httputil.ErrorResponse{Message: "unauthorized"})
+		return
+	}
+
+	var query ListQuery
+	if err := ctx.ShouldBindQuery(&query); err != nil {
+		ctx.AbortWithStatusJSON(http.StatusBadRequest, httputil.ErrorResponse{Message: "invalid request"})
+		return
+	}
+
+	restaurants, total, err := hdr.service.List(ctx.Request.Context(), viewerID, query)
+	if err != nil {
+		ctx.AbortWithStatusJSON(http.StatusInternalServerError, httputil.ErrorResponse{Message: "internal server error"})
+		return
+	}
+
+	ctx.JSON(http.StatusOK, NewListRestaurantsResponse(restaurants, total))
 }
 
 // Get godoc

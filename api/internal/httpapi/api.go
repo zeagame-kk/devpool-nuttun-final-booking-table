@@ -26,6 +26,7 @@ func RegisterAPI(v1 *gin.RouterGroup, d Deps) {
 	restaurants := v1.Group("/restaurants")
 	restaurants.Use(d.Auth)
 	restaurants.POST("", restaurantHandler.Create)
+	restaurants.GET("", restaurantHandler.List)
 	restaurants.GET("/:id", restaurantHandler.Get)
 	restaurants.PUT("/:id", restaurantHandler.Replace)
 	restaurants.DELETE("/:id", restaurantHandler.Delete)
