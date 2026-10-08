@@ -1,360 +1,241 @@
-# Recipe API contract
+# Booking Table API contract
 
-This hand-authored contract covers recipe, user, and auth endpoints (all fully implemented) plus reference-data endpoints (contract only — not yet implemented, see [Reference data](#reference-data)). Generated Swagger files intentionally describe only implemented routes.
+Hand-written contract for the restaurant reservation and review API. The generated Swagger UI
+(`/swagger/index.html`) lists the same routes; this document adds the rules behind them. Where the two
+differ, the code and its tests (`api/internal/apitest`) are the truth.
 
 ## Conventions
 
 - Base path: `/api/v1`.
-- All endpoints require `Authorization: Bearer <access-token>`.
-- Request bodies use `Content-Type: application/json`; responses are JSON.
-- Fields use camelCase; timestamps are RFC 3339 strings.
-- Recipe, ingredient, and instruction IDs are JSON integers, never strings.
-- Errors are `{ "message": "..." }`. The response type reserves a `code` field, but no endpoint populates it yet — treat the HTTP status as authoritative.
+- Every endpoint needs `Authorization: Bearer <access-token>`, except `/auth/*` and the picture files
+  under `/uploads/*`.
+- Request bodies are JSON (`Content-Type: application/json`), except the picture upload (see
+  [Pictures](#pictures)). Responses are JSON. Field names are camelCase.
+- Timestamps are RFC 3339 strings with any offset (`2026-10-12T18:00:00+07:00` and
+  `2026-10-12T11:00:00Z` are the same moment). Opening hours are `"HH:MM"` strings.
+- The user is always taken from the token. A body or query never names the owner or the booker.
+  Unknown fields in a body are ignored, so sending `ownerId`, `userId` or `status` has no effect.
+- Create answers `201 {"id": <int>}`. `PUT` answers `200` with the whole resource. `DELETE` and actions
+  without a result (`cancel`) answer `204` with no body.
+- Lists answer `{"total": <int>, "results": [...]}`. An empty list is `"results": []`, never `null`.
+  Restaurants are paged (`page`, `limit`); reservations and reviews are not.
+- Errors are `{"message": "...", "code": "..."}`. `code` is only present for the business rules listed in
+  [Error codes](#error-codes); otherwise rely on the HTTP status.
 
-Unless otherwise specified: `400` is invalid input, `401` is a missing/invalid token, and `500` is an unexpected failure.
+| Status | Meaning |
+| --- | --- |
+| 400 | Invalid input, or a booking rule about the request itself (past, outside opening hours) |
+| 401 | Missing, invalid or expired token |
+| 403 | You are not allowed to do this to this resource (not the owner / not the booker) |
+| 404 | The restaurant, reservation or review does not exist (a deleted restaurant does not exist) |
+| 409 | The request conflicts with the current state (full, too late, already reviewed, ...) |
+| 500 | Unexpected failure |
+
+## Sign in
+
+Unchanged from the course project: the API is the OAuth client of Keycloak, and the browser only ever
+holds a short-lived one-time ticket.
+
+| Method | Path | Notes |
+| --- | --- | --- |
+| GET | `/auth/login` | Navigate the whole page here (do not `fetch`). 302 to Keycloak. |
+| GET | `/auth/callback` | Keycloak redirects here; the API then redirects to `{FRONTEND_URL}/auth/callback?ticket=...`. |
+| POST | `/auth/exchange` | Body `{"ticket": "..."}`. The ticket works once and for 30 seconds. Answers `{accessToken, refreshToken, bearerType, expiresAt}`. |
+| POST | `/auth/refresh-token` | Body `{"refreshToken": "..."}`. Answers a new credential. |
+| POST | `/auth/logout` | Body `{"refreshToken": "..."}`. 204. |
+| GET | `/users/me` | `{id, name, email, imageUrl, bio}`. |
+| PUT | `/users/me` | Body `{imageUrl?, bio?}`. |
+
+Accounts sign in with their **email address**. A person is created in the `users` table the first time they
+sign in. Everyone is both a possible owner and a possible customer; there are no roles.
 
 ## Representations
 
-Reference data:
-
-```json
-{ "id": "easy", "name": "Easy" }
-```
-
-Recipe:
+Restaurant, as listed (`GET /restaurants`):
 
 ```json
 {
-  "id": 42,
-  "name": "Tom yum soup",
-  "description": "A bright, spicy Thai soup.",
-  "imageUrl": "https://images.example.com/tom-yum.jpg",
-  "difficulty": { "id": "medium", "name": "Medium" },
-  "duration": { "id": "30m", "name": "10 - 30 mins" },
-  "ingredients": [{ "id": 101, "description": "2 cups stock" }],
-  "instructions": [{ "id": 201, "description": "Bring the stock to a simmer." }],
-  "creator": { "id": "3f0c1a7e-2b19-4c5e-9f3a-000000000000", "name": "Somchai" },
-  "isFavorite": false,
-  "rating": { "average": 4.9, "total": 128 },
-  "createdAt": "2026-08-20T10:00:00Z",
-  "updatedAt": "2026-08-20T10:00:00Z"
+  "id": 9001,
+  "name": "ชาบูทองคำ",
+  "address": "123 ถ.สุขุมวิท แขวงคลองเตย กรุงเทพฯ",
+  "description": "ชาบูหม้อไฟ ...",
+  "imageUrl": "/uploads/restaurants/9001-3f6c...c1.png",
+  "seatingCapacity": 40,
+  "cancellationLeadMinutes": 60,
+  "owner": { "id": "5eed0000-0000-4000-8000-000000000001", "name": "คุณสมชาย เจ้าของร้าน" },
+  "rating": { "average": 4.7, "total": 3 }
 }
 ```
 
-`imageUrl` is `null` when absent. `creator.name` is a string. Only active ingredients and instructions are returned; no `deletedAt` field is exposed. `isFavorite` is `true` when the authenticated caller has favorited this recipe (a matching row exists in `user_favorites`), `false` otherwise — see [Favorites](#favorites). `rating.average` is `recipes.average_rating` rounded to 1 decimal place; `rating.total` is the count of ratings for this recipe. Both are `0` when the recipe has no ratings yet — see [Ratings](#ratings).
+`description` and `imageUrl` are `null` when absent. `rating.total` is the number of reviews;
+`rating.average` is their mean rounded to one decimal, and both are `0` when there are no reviews.
 
-Create and replace use a complete write body. `name`, `description`, `difficultyId`, `durationId`, `ingredients`, and `instructions` are required; `imageUrl` is optional. Ingredient/instruction arrays may be empty, and each item has a required non-empty `description`.
+Restaurant detail (`GET /restaurants/{id}`, and the answer of `PUT` and of the picture upload) adds:
 
 ```json
 {
-  "name": "Tom yum soup",
-  "description": "A bright, spicy Thai soup.",
-  "imageUrl": "https://images.example.com/tom-yum.jpg",
-  "difficultyId": "medium",
-  "durationId": "30m",
-  "ingredients": [{ "description": "2 cups stock" }],
-  "instructions": [{ "description": "Bring the stock to a simmer." }]
+  "...": "everything above",
+  "openingHours": [ { "weekday": 1, "open": "11:00", "close": "22:00" } ],
+  "isOwner": false,
+  "myReview": { "id": 3, "rating": 5, "comment": "..." }
 }
 ```
 
-`difficultyId` and `durationId` must reference active master-data records; otherwise the response is `400 invalid_request` (not `404`, despite the name). The `ingredients`/`instructions` keys must be present in the body — an explicit `[]` is fine, but omitting the key or sending `null` fails validation. When present, `imageUrl` must be a valid URL.
+`weekday` is 0 (Sunday) to 6 (Saturday); a weekday that is not listed is a closed day.
+`isOwner` says whether the caller owns the restaurant. `myReview` is the caller's own review, or `null`.
 
-User:
+Reservation, as its booker sees it (`GET /reservations`, answer of `PUT /reservations/{id}`):
 
 ```json
 {
-  "id": "3f0c1a7e-2b19-4c5e-9f3a-000000000000",
-  "name": "Somchai",
-  "email": "somchai@example.com",
-  "imageUrl": "https://images.example.com/avatar.jpg",
-  "bio": "Home cook who loves spicy food."
+  "id": 7,
+  "restaurant": { "id": 9001, "name": "ชาบูทองคำ" },
+  "startAt": "2026-10-12T11:00:00Z",
+  "endAt": "2026-10-12T13:00:00Z",
+  "guests": 4,
+  "status": "confirmed",
+  "createdAt": "2026-10-08T09:00:00Z"
 }
 ```
 
-`name` and `email` are sourced from Keycloak (refreshed on every login from the ID token's claims) and are read-only through this API. `id` is an internally generated UUID, not the Keycloak subject — the Keycloak subject (`sub`) is stored server-side as a separate, unexposed field used only to look up the local user record. `imageUrl` and `bio` are `null` when absent.
+`status` is `confirmed` or `cancelled`. The restaurant's name is kept even after the restaurant is deleted.
 
-## Reference data
+Reservation, as the restaurant's owner sees it (`GET /restaurants/{id}/reservations`): the same, with
+`"customer": {"id", "name"}` instead of `restaurant`. The customer's email is never included.
 
-**Not implemented yet.** No route, handler, service, or repository exists for `/difficulties` or `/durations` — calling them currently 404s at the router level (no matching route), not via the handler's own 404 logic. `difficulties` and `durations` tables exist (with the seed rows below) and are already read internally by the recipe package (`Repository.HasActiveReferences`, `Repository.DifficultyExists`) to validate `difficultyId`/`durationId` on recipe writes and the `difficulty` list filter — only the standalone list endpoints described below are missing. The contract below is the target shape for when they're built.
-
-### `GET /difficulties`
-
-Returns active difficulties as `{ "total": 3, "results": [<reference-data>, ...] }`.
-
-| Status   | Meaning            |
-| -------- | ------------------ |
-| 200      | Active master data |
-| 401, 500 | Error body         |
-
-Fixed values: `easy` (Easy), `medium` (Medium), `hard` (Hard).
-
-### `GET /durations`
-
-Returns active durations as `{ "total": 4, "results": [<reference-data>, ...] }`.
-
-| Status   | Meaning            |
-| -------- | ------------------ |
-| 200      | Active master data |
-| 401, 500 | Error body         |
-
-Fixed values: `10m` (5 - 10 mins), `30m` (10 - 30 mins), `60m` (~1 Hour), and `long` (More than 1 hour).
-
-## Recipes
-
-### `POST /recipes`
-
-Send the complete write body. The authenticated user becomes the creator. On success, the response body is **`{ "id": <int> }` only** — not the full recipe.
-
-| Status | Meaning                                                                          |
-| ------ | -------------------------------------------------------------------------------- |
-| 201    | `{ "id": <int> }`                                                                |
-| 400    | Missing/malformed body, or referenced `difficultyId`/`durationId` does not exist |
-| 401    | Error body                                                                       |
-| 500    | Error body                                                                       |
-
-An invalid/malformed body and an unresolvable `difficultyId`/`durationId` both currently return `400 { "message": "invalid request" }` — there is no distinct `404` case for this endpoint despite reference-data lookups happening server-side.
-
-### `GET /recipes/{recipeId}`
-
-`recipeId` is a required integer.
-
-| Status | Meaning                           |
-| ------ | --------------------------------- |
-| 200    | Complete recipe response          |
-| 400    | Invalid `recipeId`                |
-| 401    | Error body                        |
-| 404    | Recipe is missing or soft-deleted |
-| 500    | Error body                        |
-
-### `GET /recipes`
-
-Requires `Authorization: Bearer <access-token>` like all recipe routes — this list endpoint is not public. Returns only active recipes.
-
-| Parameter    | Type            | Meaning                                                              |
-| ------------ | --------------- | -------------------------------------------------------------------- |
-| `name`       | string          | Optional case-insensitive substring filter on recipe name            |
-| `difficulty` | string          | Optional difficulty ID filter; must reference an existing difficulty |
-| `favorite`   | boolean         | Optional tri-state filter on the caller's favorites — see below      |
-| `sort`       | `ASC` or `DESC` | Case-sensitive; orders by `createdAt`; default `DESC`                |
-| `page`       | int             | Optional, minimum 1, default 1                                       |
-| `limit`      | int             | Optional, 1-100, default 12                                          |
-
-`favorite` is a tri-state filter on `user_favorites` for the authenticated caller: omitted applies no filter, `true` returns only recipes the caller favorited, `false` returns only recipes the caller has **not** favorited.
-
-The success body is `{ "total": 1, "results": [<complete-recipe>, ...] }`; `total` is the count after all filters. Each recipe in `results` includes `isFavorite` and `rating` (see [Representations](#representations)); when `favorite=true` every returned recipe has `isFavorite: true`, and when `favorite=false` every returned recipe has `isFavorite: false`.
-
-| Status | Meaning                                                                                        |
-| ------ | ---------------------------------------------------------------------------------------------- |
-| 200    | Filtered results                                                                               |
-| 400    | Invalid query — malformed `page`/`limit`, unsupported `sort` value, or an unknown `difficulty` |
-| 401    | Error body                                                                                     |
-| 500    | Error body                                                                                     |
-
-An unknown `difficulty` filter currently returns `400`, not `404`.
-
-Known current limitation: `page` has no effect on the returned rows (a server-side pagination bug bypasses offsetting); every page currently returns the same first `limit` rows ordered by `sort`.
-
-### `PUT /recipes/{recipeId}`
-
-`recipeId` is a required integer. Send a complete write body: omitted required fields are not preserved. The response is the complete replacement recipe, including integer `id`.
-
-| Status | Meaning                                                               |
-| ------ | --------------------------------------------------------------------- |
-| 200    | Complete recipe response                                              |
-| 400    | Invalid path parameter or body                                        |
-| 401    | Error body                                                            |
-| 403    | Another user owns the active recipe                                   |
-| 404    | Recipe is missing/soft-deleted, or difficulty/duration is unavailable |
-| 500    | Error body                                                            |
-
-### `DELETE /recipes/{recipeId}`
-
-`recipeId` is a required integer. Deletion sets only `recipes.deleted_at`; that recipe is then omitted from detail and list results.
-
-| Status | Meaning                             |
-| ------ | ----------------------------------- |
-| 204    | No response body                    |
-| 400    | Invalid path parameter              |
-| 401    | Error body                          |
-| 403    | Another user owns the active recipe |
-| 404    | Recipe is missing or soft-deleted   |
-| 500    | Error body                          |
-
-For update and delete, ownership is checked after locating an active recipe: another user's active recipe returns `403`; missing or soft-deleted recipes return `404`.
-
-## Favorites
-
-Favoriting is per-user: it marks a `(user_id, recipe_id)` row in `user_favorites` for the authenticated caller. There is no database uniqueness constraint on that pair — duplicate prevention is an application-level check, not a schema-level one. See [`GET /recipes`](#get-recipes) for reading favorite status (the `favorite` filter and the `isFavorite` field on each recipe).
-
-### `POST /recipes/{recipeId}/favorite`
-
-`recipeId` is a required integer. Adds the recipe to the authenticated caller's favorites.
-
-| Status | Meaning                     |
-| ------ | --------------------------- |
-| 204    | Favorited; no response body |
-| 400    | Invalid `recipeId`          |
-| 401    | Error body                  |
-| 500    | Error body                  |
-
-Calling this repeatedly for the same recipe is a no-op after the first call: if a `user_favorites` row for this `(user_id, recipe_id)` pair already exists, no duplicate row is inserted and the response is still `204`.
-
-### `DELETE /recipes/{recipeId}/favorite`
-
-`recipeId` is a required integer. Removes the recipe from the authenticated caller's favorites by deleting the matching `user_favorites` row outright — a hard delete, not the soft-delete pattern used for recipes (`deleted_at` is never set; the row is gone).
-
-| Status | Meaning                                                  |
-| ------ | -------------------------------------------------------- |
-| 204    | Unfavorited (or already not favorited); no response body |
-| 400    | Invalid `recipeId`                                       |
-| 401    | Error body                                               |
-| 500    | Error body                                               |
-
-If no matching `user_favorites` row exists, the response is still `204` — not `404` — and no row is deleted.
-
-## Ratings
-
-Rating is per-user: it records a `(user_id, recipe_id)` row in `recipe_ratings` for the authenticated caller. Duplicate prevention is an application-level check (not a database uniqueness constraint) — the service looks for an existing `recipe_ratings` row for that pair before inserting. See [`GET /recipes`](#get-recipes) and [Representations](#representations) for reading the aggregated rating (the `rating.average`/`rating.total` fields on each recipe).
-
-### `POST /recipes/{recipeId}/rating`
-
-`recipeId` is a required integer.
-
-```json
-{ "rating": 5 }
-```
-
-| Status | Meaning                    |
-| ------ | -------------------------- |
-| 204    | Rated; no response body    |
-| 400    | Invalid `recipeId` or body |
-| 401    | Error body                 |
-| 500    | Error body                 |
-
-Calling this repeatedly for the same recipe is a no-op after the first call: if a `recipe_ratings` row for this `(user_id, recipe_id)` pair already exists, the new rating is not recorded and the response is still `204` — a caller can only rate a given recipe once.
-
-On a successful (non-duplicate) rating, `recipes.average_rating` for that recipe is recomputed from all its `recipe_ratings` rows and persisted immediately, so the next read of that recipe reflects the new average.
-
-## Users
-
-`{id}` only accepts the literal `me`; the handler substitutes the authenticated user's ID from the middleware-attached context. Any other value returns `404` — there is no lookup-by-arbitrary-ID capability.
-
-### `GET /users/{id}`
-
-| Status | Meaning                |
-| ------ | ---------------------- |
-| 200    | Complete user response |
-| 401    | Error body             |
-| 404    | `{id}` is not `me`     |
-| 500    | Error body             |
-
-### `PUT /users/{id}`
-
-Send `imageUrl` and `bio`; both are optional and either may be `null` or omitted to clear the field — the two are indistinguishable server-side, so omitting a key has the same effect as sending it as `null`. `name` and `email` are not accepted here — they are sourced from Keycloak and cannot be changed through this API. The response is the complete, updated user representation.
+Review (`GET /restaurants/{id}/reviews`, answer of `PUT .../reviews/me`):
 
 ```json
 {
-  "imageUrl": "https://images.example.com/avatar.jpg",
-  "bio": "Home cook who loves spicy food."
+  "id": 3, "rating": 5, "comment": "น้ำซุปหอม",
+  "user": { "id": "...", "name": "สมศรี" },
+  "createdAt": "2026-10-08T09:00:00Z", "updatedAt": "2026-10-08T09:00:00Z"
 }
 ```
 
-| Status | Meaning                |
-| ------ | ---------------------- |
-| 200    | Complete user response |
-| 400    | Malformed body         |
-| 401    | Error body             |
-| 404    | `{id}` is not `me`     |
-| 500    | Error body             |
+## Restaurants
 
-## Auth
+| Method | Path | Who | Success |
+| --- | --- | --- | --- |
+| GET | `/restaurants` | anyone signed in | 200 list |
+| GET | `/restaurants/{id}` | anyone signed in | 200 detail |
+| POST | `/restaurants` | anyone signed in | 201 `{id}` |
+| PUT | `/restaurants/{id}` | the owner | 200 detail |
+| DELETE | `/restaurants/{id}` | the owner | 204 |
+| POST | `/restaurants/{id}/image` | the owner | 200 detail |
+| DELETE | `/restaurants/{id}/image` | the owner | 204 |
 
-`/auth/*` routes are exempt from the `Authorization: Bearer <access-token>` requirement in [Conventions](#conventions) — none of them sit behind the JWT middleware, including `POST /auth/logout` despite its generated Swagger doc carrying a `BearerAuth` security annotation (a doc artifact, not an enforced check). These routes drive the Keycloak login handshake and token lifecycle; `GET /auth/login` and `GET /auth/callback` are browser redirects, not JSON endpoints.
+**List query:** `name` (case-insensitive "contains" on the name; `%` and `_` are ordinary characters; blank
+means no filter), `sort` (`rating` or `reviews`, highest first; without it the newest restaurants come
+first; ties always fall back to the id), `mine=true` (only restaurants you own), `page` (default 1, at most
+1,000,000), `limit` (default 12, at most 100). Restaurants without reviews sort last by `rating` and `reviews`.
 
-State and tickets are single-use values stored in Redis (`oauth_state:<value>` key prefix) and atomically consumed with `GETDEL` — a second use of the same state or ticket always misses and fails with the "invalid or expired" case below, indistinguishable from actual expiry.
-
-Credential:
+**Create / replace body** (the same for `POST` and `PUT`; `PUT` replaces everything, the opening hours as a
+whole, and leaves the picture alone):
 
 ```json
 {
-  "accessToken": "eyJhbGci...",
-  "refreshToken": "eyJhbGci...",
-  "bearerType": "Bearer",
-  "expiresAt": "2026-08-22T11:00:00Z"
+  "name": "ชาบูทองคำ",
+  "address": "123 ...",
+  "description": "optional",
+  "seatingCapacity": 40,
+  "cancellationLeadMinutes": 60,
+  "openingHours": [ { "weekday": 0, "open": "11:00", "close": "22:00" } ]
 }
 ```
 
-### `GET /auth/login`
+- `name` (at most 255 characters) and `address` must not be blank. `seatingCapacity` is at least 1.
+  `cancellationLeadMinutes` is **at least 30**. Numbers must fit a 32-bit integer.
+- `openingHours` has at least one entry, at most one per weekday; `open`/`close` are `HH:MM` and `close` is
+  after `open` (a restaurant cannot stay open past midnight).
+- Text must not contain a NUL character. Any of the above broken: `400`.
+- Changing the capacity or the opening hours does **not** cancel or re-check existing reservations; only
+  new and changed bookings follow the new values.
 
-Generates a random state token, saves it to Redis with a 5-minute TTL, and redirects the browser to Keycloak's authorization endpoint with that state. Not called via `fetch`/`axios` — the frontend navigates the browser here directly.
+**Delete** is a soft delete. It answers `409 restaurant_has_active_reservations` while any confirmed
+reservation has not ended yet; once those are cancelled or over, it succeeds. The restaurant then
+disappears from lists and returns `404`, but customers' old reservations still show its name.
 
-| Status | Meaning                                    |
-| ------ | ------------------------------------------ |
-| 302    | Redirect to Keycloak's login page          |
-| 500    | Error body (failed to generate/save state) |
+## Pictures
 
-### `GET /auth/callback`
+- `POST /restaurants/{id}/image` is `multipart/form-data` with the picture in the field **`file`**.
+- JPEG, PNG or WebP, at most **2 MB**. The type is decided from the file's content, never its name or
+  `Content-Type`; an empty file, a GIF/SVG, a text file called `.png` or a file over the limit gives
+  `400 invalid_image` and changes nothing.
+- The server picks the file name. The answer is the restaurant detail whose `imageUrl` is a path such as
+  `/uploads/restaurants/9001-<uuid>.png`. A new upload replaces (and deletes) the old picture.
+- `DELETE /restaurants/{id}/image` removes it (204, also when there was none).
+- To show a picture, request `<API base URL><imageUrl>`: the files are public (`GET /api/v1/uploads/...`,
+  no token) because an `<img>` tag cannot send one. Responses carry `X-Content-Type-Options: nosniff`.
+- `imageUrl` cannot be set through `POST` or `PUT /restaurants`.
 
-Keycloak redirects here itself after the user authenticates — this is not an endpoint the frontend calls directly. Requires `code` and `state` query parameters.
+## Reservations
 
-| Parameter | Type   | Meaning                                     |
-| --------- | ------ | ------------------------------------------- |
-| `code`    | string | Authorization code issued by Keycloak       |
-| `state`   | string | Must match the state saved by `/auth/login` |
+| Method | Path | Who | Success |
+| --- | --- | --- | --- |
+| POST | `/restaurants/{id}/reservations` | anyone signed in | 201 `{id}` |
+| GET | `/reservations` | the caller | 200 list |
+| PUT | `/reservations/{id}` | the booker | 200 reservation |
+| POST | `/reservations/{id}/cancel` | the booker | 204 |
+| GET | `/restaurants/{id}/reservations?status=` | the restaurant's owner | 200 list |
 
-On success: consumes (`GETDEL`) the saved state, exchanges `code` for tokens with Keycloak, verifies the returned `id_token`, and upserts a local `user` row keyed by the Keycloak subject (`sub`) — creating it on first login or refreshing `email`/`name`/`preferredUsername`/`lastSignedInAt` on subsequent ones. It then mints a one-time ticket, stores the resulting `Credential` in Redis under that ticket for 30 seconds, and redirects to `{FRONTEND_URL}/auth/callback?ticket=<ticket>`.
+**Book / change body:** `{"startAt": "...", "endAt": "...", "guests": 4}`. A change cannot move the
+reservation to another restaurant.
 
-| Status | Meaning                                                                 |
-| ------ | ----------------------------------------------------------------------- |
-| 302    | Redirect to `{FRONTEND_URL}/auth/callback?ticket=<ticket>`              |
-| 400    | Missing `code` or `state` query parameter                               |
-| 401    | `state` not found/expired/already consumed                              |
-| 502    | Any other failure — code exchange, `id_token` verify, user upsert, etc. |
+**The booking rules.** A booking is the half-open interval `[startAt, endAt)`: one that ends at 12:00 and
+one that starts at 12:00 do not overlap. The server checks, in this order, and answers with the first
+that fails:
 
-### `POST /auth/exchange`
+1. `endAt` is after `startAt` and `guests` is at least 1 and fits a 32-bit integer, else `400`.
+2. `startAt` is not before now, else `400 start_in_past`.
+3. In **Bangkok time (UTC+7)** start and end fall on the same calendar day, the restaurant is open that
+   weekday, and the whole span lies inside that day's opening hours (the end may be exactly the closing
+   time), else `400 outside_opening_hours`. Times sent in any other offset are converted first.
+4. The most guests present at the same moment, with this booking added, does not exceed the seating
+   capacity, else `409 capacity_exceeded`. Confirmed bookings count; cancelled ones do not. When
+   **changing** a reservation, its own current seats are not counted against it.
 
-Frontend calls this via axios immediately after being redirected back with `?ticket=...`, trading the short-lived ticket for the real `Credential`.
+Everything is checked under a lock on the restaurant, so simultaneous requests can never fill the
+restaurant beyond its capacity. The restaurant must exist and not be deleted, else `404`. The owner may
+book their own restaurant.
 
-```json
-{ "ticket": "pQx7...base64url..." }
-```
+**Changing and cancelling** may only be done by the booker (`403` otherwise), and only while the reservation
+is `confirmed` and has not started (`409 reservation_not_active`). It must also be at least the
+restaurant's `cancellationLeadMinutes` away from its **original** start (exactly that many minutes is still
+allowed), else `409 too_late_to_modify` / `409 too_late_to_cancel`. A change then also has to pass rules 1-4.
+Cancelling sets the status to `cancelled`; the row is kept.
 
-Consumes (`GETDEL`) the ticket saved by `/auth/callback`; since that ticket has a 30-second TTL and is single-use, a delayed or repeated call fails with 401.
+**`GET /reservations`** lists every reservation the caller made, all statuses, newest start first.
+**`GET /restaurants/{id}/reservations`** is the owner's read-only view of who booked; `status=confirmed` or
+`status=cancelled` filters (anything else is `400`). The owner cannot change or cancel a customer's booking.
 
-| Status | Meaning                                   |
-| ------ | ----------------------------------------- |
-| 200    | `Credential` JSON                         |
-| 400    | Missing `ticket` in body                  |
-| 401    | Ticket not found/expired/already consumed |
-| 500    | Error body                                |
+## Reviews
 
-### `POST /auth/logout`
+| Method | Path | Who | Success |
+| --- | --- | --- | --- |
+| POST | `/restaurants/{id}/reviews` | anyone except the owner | 201 `{id}` |
+| PUT | `/restaurants/{id}/reviews/me` | the reviewer | 200 review |
+| GET | `/restaurants/{id}/reviews` | anyone signed in | 200 list, newest first |
 
-Revokes the given refresh token directly against Keycloak (`POST {realm}/protocol/openid-connect/logout`, form-encoded, with `client_id`/`client_secret`/`refresh_token`). No `Authorization` header is read or required — only the refresh token in the body identifies the session.
+**Body:** `{"rating": 1-5, "comment": "..."}`. `rating` is a whole number from 1 to 5 and `comment` must
+not be blank (and must not contain a NUL character), else `400`.
 
-```json
-{ "refreshToken": "eyJhbGci..." }
-```
+- The owner of a restaurant cannot review it: `403 cannot_review_own_restaurant`.
+- One review per person per restaurant: a second `POST` is `409 already_reviewed`. Change it with
+  `PUT .../reviews/me` (`404` if you have not reviewed yet). There is no way to delete a review.
+- A reservation is not required to write a review.
 
-| Status | Meaning                                                          |
-| ------ | ---------------------------------------------------------------- |
-| 204    | Logged out; no response body                                     |
-| 400    | Missing `refreshToken` in body                                   |
-| 502    | Keycloak did not return `204` (invalid token, unreachable, etc.) |
+## Error codes
 
-### `POST /auth/refresh-token`
-
-Exchanges a still-valid Keycloak refresh token for a new credential pair (`grant_type=refresh_token` against `POST {realm}/protocol/openid-connect/token`, form-encoded). No `Authorization` header is sent or required — refreshing happens precisely when the caller's access token is gone or expired.
-
-```json
-{ "refreshToken": "eyJhbGci..." }
-```
-
-Success response is the `Credential` representation above, with `expiresAt` computed as `now + expires_in` from Keycloak's token response.
-
-| Status | Meaning                                                                                                                                                   |
-| ------ | --------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 200    | New `Credential` JSON                                                                                                                                     |
-| 400    | Missing `refreshToken` in body                                                                                                                            |
-| 401    | Keycloak's token endpoint returned any non-`200` status (invalid/expired/revoked token, or a Keycloak-side failure) — the two cases are not distinguished |
-| 500    | Error body (request build/transport failure, or malformed response body from Keycloak)                                                                    |
+| `code` | Status | Meaning |
+| --- | --- | --- |
+| `start_in_past` | 400 | The reservation starts before now |
+| `outside_opening_hours` | 400 | Not on one open day, or outside that day's hours |
+| `capacity_exceeded` | 409 | Too many guests at the same time |
+| `too_late_to_cancel` | 409 | Less than the cancellation lead time before the start |
+| `too_late_to_modify` | 409 | Same, for changing |
+| `reservation_not_active` | 409 | Already cancelled, or already started |
+| `cannot_review_own_restaurant` | 403 | The owner tried to review their restaurant |
+| `already_reviewed` | 409 | You already reviewed this restaurant |
+| `restaurant_has_active_reservations` | 409 | Delete refused: a confirmed reservation has not ended |
+| `invalid_image` | 400 | Missing, empty, too large, or not a JPEG/PNG/WebP |

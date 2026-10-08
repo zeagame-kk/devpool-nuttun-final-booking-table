@@ -84,7 +84,7 @@ func (hdr *handler) Create(ctx *gin.Context) {
 //	@Param			mine	query		bool	false	"Only my restaurants"
 //	@Param			page	query		int		false	"Page (default 1)"
 //	@Param			limit	query		int		false	"Page size (default 12, max 100)"
-//	@Success		200		{object}	httputil.ListResponse[RestaurantResponse]
+//	@Success		200		{object}	httputil.ListResponse[restaurant.RestaurantResponse]
 //	@Failure		400		{object}	httputil.ErrorResponse
 //	@Failure		401		{object}	httputil.ErrorResponse
 //	@Router			/restaurants [get]

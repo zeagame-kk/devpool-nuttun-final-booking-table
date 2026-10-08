@@ -1,7 +1,7 @@
 {
     "swagger": "2.0",
     "info": {
-        "description": "API สำหรับจัดการกับระบบสูตรอาหาร",
+        "description": "API สำหรับระบบจองโต๊ะและรีวิวร้านอาหาร",
         "title": "BookingTable API",
         "contact": {},
         "version": "1.0"
@@ -220,74 +220,78 @@
                 }
             }
         },
-        "/recipes": {
+        "/reservations": {
             "get": {
                 "security": [
                     {
                         "BearerAuth": []
                     }
                 ],
-                "description": "ค้นหาสูตรอาหารทั้งหมด และสามารถกรองด้วย ชื่อ, ความยาก และเรียงตามเวลาที่สร้างได้",
+                "description": "ทุกสถานะ เรียงเวลาเริ่มใหม่ไปเก่า แสดงชื่อร้านแม้ร้านถูกลบแล้ว",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
-                    "recipes"
+                    "reservations"
                 ],
-                "summary": "เรียกดูสูตรอาหารทั้งหมด",
+                "summary": "การจองของฉัน",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/bookingtable_internal_httputil.ListResponse-internal_reservation_MyReservationResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/bookingtable_internal_httputil.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/reservations/{id}": {
+            "put": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "เฉพาะผู้จอง ตรวจ lead time จากเวลาเริ่มเดิม แล้วตรวจกฎการจองซ้ำ โดยไม่นับที่นั่งเดิมของตัวเอง",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "reservations"
+                ],
+                "summary": "แก้ไขการจอง",
                 "parameters": [
                     {
-                        "type": "string",
-                        "description": "ชื่อของสูตรอาหาร",
-                        "name": "name",
-                        "in": "query"
-                    },
-                    {
-                        "type": "string",
-                        "description": "Id ของความยากในการทำ",
-                        "name": "difficulty",
-                        "in": "query"
-                    },
-                    {
-                        "type": "boolean",
-                        "description": "กรองสูตรอาหารตามสถานะรายการโปรดของผู้ใช้ปัจจุบัน: true = เฉพาะที่ถูกใจไว้, false = เฉพาะที่ไม่ได้ถูกใจไว้",
-                        "name": "favorite",
-                        "in": "query"
-                    },
-                    {
-                        "enum": [
-                            "ASC",
-                            "DESC"
-                        ],
-                        "type": "string",
-                        "default": "DESC",
-                        "description": "เรียงลำดับตามเวลาที่สร้าง",
-                        "name": "sort",
-                        "in": "query"
-                    },
-                    {
-                        "minimum": 1,
                         "type": "integer",
-                        "default": 1,
-                        "description": "หน้าที่ต้องการแสดง",
-                        "name": "page",
-                        "in": "query"
+                        "description": "Reservation ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
                     },
                     {
-                        "maximum": 100,
-                        "minimum": 1,
-                        "type": "integer",
-                        "default": 12,
-                        "description": "จำนวนรายการต่อหน้า",
-                        "name": "limit",
-                        "in": "query"
+                        "description": "Reservation data",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/internal_reservation.SaveReservationRequest"
+                        }
                     }
                 ],
                 "responses": {
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/internal_recipe.ListRecipesResponse"
+                            "$ref": "#/definitions/internal_reservation.MyReservationResponse"
                         }
                     },
                     "400": {
@@ -302,14 +306,147 @@
                             "$ref": "#/definitions/bookingtable_internal_httputil.ErrorResponse"
                         }
                     },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/bookingtable_internal_httputil.ErrorResponse"
+                        }
+                    },
                     "404": {
                         "description": "Not Found",
                         "schema": {
                             "$ref": "#/definitions/bookingtable_internal_httputil.ErrorResponse"
                         }
                     },
-                    "500": {
-                        "description": "Internal Server Error",
+                    "409": {
+                        "description": "Conflict",
+                        "schema": {
+                            "$ref": "#/definitions/bookingtable_internal_httputil.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/reservations/{id}/cancel": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "เฉพาะผู้จอง ต้องก่อนเวลาเริ่มอย่างน้อยเท่า lead time ของร้าน การจองที่ยกเลิกแล้วไม่นับในความจุ",
+                "tags": [
+                    "reservations"
+                ],
+                "summary": "ยกเลิกการจอง",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Reservation ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No Content"
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/bookingtable_internal_httputil.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/bookingtable_internal_httputil.ErrorResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/bookingtable_internal_httputil.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/bookingtable_internal_httputil.ErrorResponse"
+                        }
+                    },
+                    "409": {
+                        "description": "Conflict",
+                        "schema": {
+                            "$ref": "#/definitions/bookingtable_internal_httputil.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/restaurants": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "ค้นหาตามชื่อ เรียงตามคะแนนเฉลี่ยหรือจำนวนรีวิว กรองเฉพาะร้านของตัวเอง และแบ่งหน้า",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "restaurants"
+                ],
+                "summary": "รายการร้านอาหาร",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Search by name",
+                        "name": "name",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "rating or reviews (default: newest first)",
+                        "name": "sort",
+                        "in": "query"
+                    },
+                    {
+                        "type": "boolean",
+                        "description": "Only my restaurants",
+                        "name": "mine",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Page (default 1)",
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Page size (default 12, max 100)",
+                        "name": "limit",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/bookingtable_internal_httputil.ListResponse-internal_restaurant_RestaurantResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/bookingtable_internal_httputil.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
                         "schema": {
                             "$ref": "#/definitions/bookingtable_internal_httputil.ErrorResponse"
                         }
@@ -322,7 +459,7 @@
                         "BearerAuth": []
                     }
                 ],
-                "description": "สร้างสูตรอาหารจากข้อมูลที่ระบุ โดยผู้ใช้ที่ยืนยันตัวตนแล้วจะเป็นผู้สร้างสูตร",
+                "description": "ผู้ใช้ที่ยืนยันตัวตนแล้วจะเป็นเจ้าของร้าน รูปร้านตั้งผ่าน endpoint อัปโหลดเท่านั้น",
                 "consumes": [
                     "application/json"
                 ],
@@ -330,17 +467,17 @@
                     "application/json"
                 ],
                 "tags": [
-                    "recipes"
+                    "restaurants"
                 ],
-                "summary": "สร้างสูตรอาหาร",
+                "summary": "สร้างร้านอาหาร",
                 "parameters": [
                     {
-                        "description": "Recipe data",
+                        "description": "Restaurant data",
                         "name": "request",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/internal_recipe.CreateRecipeRequest"
+                            "$ref": "#/definitions/internal_restaurant.SaveRestaurantRequest"
                         }
                     }
                 ],
@@ -348,7 +485,7 @@
                     "201": {
                         "description": "Created",
                         "schema": {
-                            "$ref": "#/definitions/internal_recipe.CreateRecipeResponse"
+                            "$ref": "#/definitions/internal_restaurant.CreateRestaurantResponse"
                         }
                     },
                     "400": {
@@ -362,35 +499,28 @@
                         "schema": {
                             "$ref": "#/definitions/bookingtable_internal_httputil.ErrorResponse"
                         }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/bookingtable_internal_httputil.ErrorResponse"
-                        }
                     }
                 }
             }
         },
-        "/recipes/{id}": {
+        "/restaurants/{id}": {
             "get": {
                 "security": [
                     {
                         "BearerAuth": []
                     }
                 ],
-                "description": "ค้นหาสูตรอาหารจาก id แล้วคืนข้อมูลสูตรอาหารแบบสมบูรณ์",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
-                    "recipes"
+                    "restaurants"
                 ],
-                "summary": "เรียกดูสูตรอาหารแบบรายรายการ",
+                "summary": "ดูรายละเอียดร้านอาหาร",
                 "parameters": [
                     {
                         "type": "integer",
-                        "description": "Recipe ID",
+                        "description": "Restaurant ID",
                         "name": "id",
                         "in": "path",
                         "required": true
@@ -400,7 +530,7 @@
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/internal_recipe.RecipeResponse"
+                            "$ref": "#/definitions/internal_restaurant.RestaurantDetailResponse"
                         }
                     },
                     "400": {
@@ -417,12 +547,6 @@
                     },
                     "404": {
                         "description": "Not Found",
-                        "schema": {
-                            "$ref": "#/definitions/bookingtable_internal_httputil.ErrorResponse"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
                         "schema": {
                             "$ref": "#/definitions/bookingtable_internal_httputil.ErrorResponse"
                         }
@@ -435,7 +559,7 @@
                         "BearerAuth": []
                     }
                 ],
-                "description": "แทนที่ข้อมูลสูตรอาหารทั้งหมดด้วยข้อมูลที่ระบุ โดยผู้สร้างสูตรเท่านั้นที่แก้ไขได้",
+                "description": "เฉพาะเจ้าของร้าน แทนที่รายละเอียดและเวลาเปิดทั้งชุด ไม่แตะรูปร้าน",
                 "consumes": [
                     "application/json"
                 ],
@@ -443,24 +567,24 @@
                     "application/json"
                 ],
                 "tags": [
-                    "recipes"
+                    "restaurants"
                 ],
-                "summary": "แก้ไขสูตรอาหารทั้งหมด",
+                "summary": "แทนที่ข้อมูลร้านอาหารทั้งก้อน",
                 "parameters": [
                     {
                         "type": "integer",
-                        "description": "Recipe ID",
+                        "description": "Restaurant ID",
                         "name": "id",
                         "in": "path",
                         "required": true
                     },
                     {
-                        "description": "Recipe data",
+                        "description": "Restaurant data",
                         "name": "request",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/internal_recipe.ReplaceRecipeRequest"
+                            "$ref": "#/definitions/internal_restaurant.SaveRestaurantRequest"
                         }
                     }
                 ],
@@ -468,7 +592,7 @@
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/internal_recipe.RecipeResponse"
+                            "$ref": "#/definitions/internal_restaurant.RestaurantDetailResponse"
                         }
                     },
                     "400": {
@@ -494,12 +618,6 @@
                         "schema": {
                             "$ref": "#/definitions/bookingtable_internal_httputil.ErrorResponse"
                         }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/bookingtable_internal_httputil.ErrorResponse"
-                        }
                     }
                 }
             },
@@ -509,15 +627,15 @@
                         "BearerAuth": []
                     }
                 ],
-                "description": "ลบสูตรอาหารแบบ soft delete โดยผู้สร้างสูตรเท่านั้นที่ลบได้",
+                "description": "เฉพาะเจ้าของร้าน เป็น soft delete",
                 "tags": [
-                    "recipes"
+                    "restaurants"
                 ],
-                "summary": "ลบสูตรอาหาร",
+                "summary": "ลบร้านอาหาร",
                 "parameters": [
                     {
                         "type": "integer",
-                        "description": "Recipe ID",
+                        "description": "Restaurant ID",
                         "name": "id",
                         "in": "path",
                         "required": true
@@ -551,8 +669,8 @@
                             "$ref": "#/definitions/bookingtable_internal_httputil.ErrorResponse"
                         }
                     },
-                    "500": {
-                        "description": "Internal Server Error",
+                    "409": {
+                        "description": "Conflict",
                         "schema": {
                             "$ref": "#/definitions/bookingtable_internal_httputil.ErrorResponse"
                         }
@@ -560,132 +678,227 @@
                 }
             }
         },
-        "/recipes/{id}/favorite": {
+        "/restaurants/{id}/image": {
             "post": {
                 "security": [
                     {
                         "BearerAuth": []
                     }
                 ],
-                "description": "เพิ่มสูตรอาหารที่ระบุเข้ารายการโปรดของผู้ใช้ที่ยืนยันตัวตนแล้ว หากเคยเพิ่มไว้แล้วจะไม่มีผลซ้ำ",
-                "tags": [
-                    "recipes"
-                ],
-                "summary": "เพิ่มสูตรอาหารในรายการโปรด",
-                "parameters": [
-                    {
-                        "type": "integer",
-                        "description": "Recipe ID",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "204": {
-                        "description": "No Content"
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/bookingtable_internal_httputil.ErrorResponse"
-                        }
-                    },
-                    "401": {
-                        "description": "Unauthorized",
-                        "schema": {
-                            "$ref": "#/definitions/bookingtable_internal_httputil.ErrorResponse"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/bookingtable_internal_httputil.ErrorResponse"
-                        }
-                    }
-                }
-            },
-            "delete": {
-                "security": [
-                    {
-                        "BearerAuth": []
-                    }
-                ],
-                "description": "ลบสูตรอาหารที่ระบุออกจากรายการโปรดของผู้ใช้ที่ยืนยันตัวตนแล้วแบบ hard delete หากไม่เคยเพิ่มไว้จะไม่มีผล",
-                "tags": [
-                    "recipes"
-                ],
-                "summary": "ลบสูตรอาหารออกจากรายการโปรด",
-                "parameters": [
-                    {
-                        "type": "integer",
-                        "description": "Recipe ID",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "204": {
-                        "description": "No Content"
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/bookingtable_internal_httputil.ErrorResponse"
-                        }
-                    },
-                    "401": {
-                        "description": "Unauthorized",
-                        "schema": {
-                            "$ref": "#/definitions/bookingtable_internal_httputil.ErrorResponse"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/bookingtable_internal_httputil.ErrorResponse"
-                        }
-                    }
-                }
-            }
-        },
-        "/recipes/{id}/rating": {
-            "post": {
-                "security": [
-                    {
-                        "BearerAuth": []
-                    }
-                ],
-                "description": "ให้คะแนนสูตรอาหารที่ระบุ ผู้ใช้แต่ละคนให้คะแนนสูตรอาหารแต่ละสูตรได้เพียงครั้งเดียว คำขอซ้ำจะไม่มีผล และค่าเฉลี่ยของสูตรจะถูกคำนวณใหม่ทุกครั้งที่บันทึกคะแนน",
+                "description": "เฉพาะเจ้าของร้าน multipart ฟิลด์ file รับ JPEG, PNG, WebP ไม่เกิน 2 MB ตรวจชนิดจากเนื้อไฟล์ และแทนที่รูปเดิม",
                 "consumes": [
+                    "multipart/form-data"
+                ],
+                "produces": [
                     "application/json"
                 ],
                 "tags": [
-                    "recipes"
+                    "restaurants"
                 ],
-                "summary": "ให้คะแนนสูตรอาหาร",
+                "summary": "อัปโหลดรูปร้าน",
                 "parameters": [
                     {
                         "type": "integer",
-                        "description": "Recipe ID",
+                        "description": "Restaurant ID",
                         "name": "id",
                         "in": "path",
                         "required": true
                     },
                     {
-                        "description": "Rating data",
+                        "type": "file",
+                        "description": "Picture (JPEG, PNG or WebP, at most 2 MB)",
+                        "name": "file",
+                        "in": "formData",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/internal_restaurant.RestaurantDetailResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/bookingtable_internal_httputil.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/bookingtable_internal_httputil.ErrorResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/bookingtable_internal_httputil.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/bookingtable_internal_httputil.ErrorResponse"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "tags": [
+                    "restaurants"
+                ],
+                "summary": "ลบรูปร้าน",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Restaurant ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No Content"
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/bookingtable_internal_httputil.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/bookingtable_internal_httputil.ErrorResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/bookingtable_internal_httputil.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/bookingtable_internal_httputil.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/restaurants/{id}/reservations": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "อ่านอย่างเดียว เฉพาะเจ้าของร้าน แสดงชื่อลูกค้าแต่ไม่แสดงอีเมล กรองตามสถานะได้",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "reservations"
+                ],
+                "summary": "การจองของร้าน (มุมมองเจ้าของ)",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Restaurant ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "confirmed or cancelled (default: all)",
+                        "name": "status",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/bookingtable_internal_httputil.ListResponse-internal_reservation_OwnerReservationResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/bookingtable_internal_httputil.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/bookingtable_internal_httputil.ErrorResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/bookingtable_internal_httputil.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/bookingtable_internal_httputil.ErrorResponse"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "ตรวจเวลาเปิด ย้อนหลัง และความจุที่ฝั่ง server การจองใหม่เป็น confirmed ทันที",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "reservations"
+                ],
+                "summary": "จองโต๊ะ",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Restaurant ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Reservation data",
                         "name": "request",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/internal_recipe.RateRecipeRequest"
+                            "$ref": "#/definitions/internal_reservation.SaveReservationRequest"
                         }
                     }
                 ],
                 "responses": {
-                    "204": {
-                        "description": "No Content"
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/internal_reservation.CreateReservationResponse"
+                        }
                     },
                     "400": {
                         "description": "Bad Request",
@@ -699,8 +912,203 @@
                             "$ref": "#/definitions/bookingtable_internal_httputil.ErrorResponse"
                         }
                     },
-                    "500": {
-                        "description": "Internal Server Error",
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/bookingtable_internal_httputil.ErrorResponse"
+                        }
+                    },
+                    "409": {
+                        "description": "Conflict",
+                        "schema": {
+                            "$ref": "#/definitions/bookingtable_internal_httputil.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/restaurants/{id}/reviews": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "ใหม่สุดก่อน แสดงชื่อผู้รีวิว ไม่แบ่งหน้า",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "reviews"
+                ],
+                "summary": "รีวิวทั้งหมดของร้าน",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Restaurant ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/bookingtable_internal_httputil.ListResponse-internal_review_ReviewResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/bookingtable_internal_httputil.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/bookingtable_internal_httputil.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/bookingtable_internal_httputil.ErrorResponse"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "คะแนนจำนวนเต็ม 1-5 พร้อมข้อความ รีวิวได้ครั้งเดียวต่อร้าน และรีวิวร้านตัวเองไม่ได้ ไม่ต้องเคยจองก่อน",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "reviews"
+                ],
+                "summary": "เขียนรีวิวร้าน",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Restaurant ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Review data",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/internal_review.SaveReviewRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/internal_review.CreateReviewResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/bookingtable_internal_httputil.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/bookingtable_internal_httputil.ErrorResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/bookingtable_internal_httputil.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/bookingtable_internal_httputil.ErrorResponse"
+                        }
+                    },
+                    "409": {
+                        "description": "Conflict",
+                        "schema": {
+                            "$ref": "#/definitions/bookingtable_internal_httputil.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/restaurants/{id}/reviews/me": {
+            "put": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "reviews"
+                ],
+                "summary": "แก้รีวิวของตัวเอง",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Restaurant ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Review data",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/internal_review.SaveReviewRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/internal_review.ReviewResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/bookingtable_internal_httputil.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/bookingtable_internal_httputil.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
                         "schema": {
                             "$ref": "#/definitions/bookingtable_internal_httputil.ErrorResponse"
                         }
@@ -830,6 +1238,73 @@
         }
     },
     "definitions": {
+        "bookingtable_internal_httputil.ErrorResponse": {
+            "type": "object",
+            "properties": {
+                "code": {
+                    "type": "string"
+                },
+                "message": {
+                    "type": "string"
+                }
+            }
+        },
+        "bookingtable_internal_httputil.ListResponse-internal_reservation_MyReservationResponse": {
+            "type": "object",
+            "properties": {
+                "results": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/internal_reservation.MyReservationResponse"
+                    }
+                },
+                "total": {
+                    "type": "integer"
+                }
+            }
+        },
+        "bookingtable_internal_httputil.ListResponse-internal_reservation_OwnerReservationResponse": {
+            "type": "object",
+            "properties": {
+                "results": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/internal_reservation.OwnerReservationResponse"
+                    }
+                },
+                "total": {
+                    "type": "integer"
+                }
+            }
+        },
+        "bookingtable_internal_httputil.ListResponse-internal_restaurant_RestaurantResponse": {
+            "type": "object",
+            "properties": {
+                "results": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/internal_restaurant.RestaurantResponse"
+                    }
+                },
+                "total": {
+                    "type": "integer"
+                }
+            }
+        },
+        "bookingtable_internal_httputil.ListResponse-internal_review_ReviewResponse": {
+            "type": "object",
+            "properties": {
+                "results": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/internal_review.ReviewResponse"
+                    }
+                },
+                "total": {
+                    "type": "integer"
+                }
+            }
+        },
         "internal_auth.Credential": {
             "type": "object",
             "properties": {
@@ -883,137 +1358,178 @@
                 }
             }
         },
-        "internal_recipe.CreateRecipeRequest": {
+        "internal_reservation.CreateReservationResponse": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "integer"
+                }
+            }
+        },
+        "internal_reservation.MyReservationResponse": {
+            "type": "object",
+            "properties": {
+                "createdAt": {
+                    "type": "string"
+                },
+                "endAt": {
+                    "type": "string"
+                },
+                "guests": {
+                    "type": "integer"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "restaurant": {
+                    "$ref": "#/definitions/internal_reservation.RestaurantRef"
+                },
+                "startAt": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "string"
+                }
+            }
+        },
+        "internal_reservation.OwnerReservationResponse": {
+            "type": "object",
+            "properties": {
+                "createdAt": {
+                    "type": "string"
+                },
+                "customer": {
+                    "$ref": "#/definitions/internal_reservation.PersonRef"
+                },
+                "endAt": {
+                    "type": "string"
+                },
+                "guests": {
+                    "type": "integer"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "startAt": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "string"
+                }
+            }
+        },
+        "internal_reservation.PersonRef": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                }
+            }
+        },
+        "internal_reservation.RestaurantRef": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "integer"
+                },
+                "name": {
+                    "type": "string"
+                }
+            }
+        },
+        "internal_reservation.SaveReservationRequest": {
             "type": "object",
             "required": [
-                "description",
-                "difficultyId",
-                "durationId",
-                "ingredients",
-                "instructions",
-                "name"
+                "endAt",
+                "guests",
+                "startAt"
             ],
             "properties": {
-                "description": {
+                "endAt": {
                     "type": "string"
                 },
-                "difficultyId": {
-                    "type": "string"
-                },
-                "durationId": {
-                    "type": "string"
-                },
-                "imageUrl": {
-                    "type": "string"
-                },
-                "ingredients": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/internal_recipe.RecipeIngredientRequest"
-                    }
-                },
-                "instructions": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/internal_recipe.RecipeInstructionRequest"
-                    }
-                },
-                "name": {
-                    "type": "string"
-                }
-            }
-        },
-        "internal_recipe.CreateRecipeResponse": {
-            "type": "object",
-            "properties": {
-                "id": {
-                    "type": "integer"
-                }
-            }
-        },
-        "internal_recipe.CreatorResponse": {
-            "type": "object",
-            "properties": {
-                "id": {
-                    "type": "string"
-                },
-                "name": {
-                    "type": "string"
-                }
-            }
-        },
-        "internal_recipe.DifficultyResponse": {
-            "type": "object",
-            "properties": {
-                "id": {
-                    "type": "string"
-                },
-                "name": {
-                    "type": "string"
-                }
-            }
-        },
-        "internal_recipe.DurationResponse": {
-            "type": "object",
-            "properties": {
-                "id": {
-                    "type": "string"
-                },
-                "name": {
-                    "type": "string"
-                }
-            }
-        },
-        "internal_recipe.IngredientResponse": {
-            "type": "object",
-            "properties": {
-                "description": {
-                    "type": "string"
-                },
-                "id": {
-                    "type": "integer"
-                }
-            }
-        },
-        "internal_recipe.InstructionResponse": {
-            "type": "object",
-            "properties": {
-                "description": {
-                    "type": "string"
-                },
-                "id": {
-                    "type": "integer"
-                }
-            }
-        },
-        "internal_recipe.ListRecipesResponse": {
-            "type": "object",
-            "properties": {
-                "results": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/internal_recipe.RecipeResponse"
-                    }
-                },
-                "total": {
-                    "type": "integer"
-                }
-            }
-        },
-        "internal_recipe.RateRecipeRequest": {
-            "type": "object",
-            "required": [
-                "rating"
-            ],
-            "properties": {
-                "rating": {
+                "guests": {
                     "type": "integer",
-                    "maximum": 5,
+                    "maximum": 2147483647,
                     "minimum": 1
+                },
+                "startAt": {
+                    "type": "string"
                 }
             }
         },
-        "internal_recipe.RatingResponse": {
+        "internal_restaurant.CreateRestaurantResponse": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "integer"
+                }
+            }
+        },
+        "internal_restaurant.MyReviewResponse": {
+            "type": "object",
+            "properties": {
+                "comment": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "rating": {
+                    "type": "integer"
+                }
+            }
+        },
+        "internal_restaurant.OpeningHourRequest": {
+            "type": "object",
+            "required": [
+                "close",
+                "open",
+                "weekday"
+            ],
+            "properties": {
+                "close": {
+                    "type": "string"
+                },
+                "open": {
+                    "type": "string"
+                },
+                "weekday": {
+                    "type": "integer",
+                    "maximum": 6,
+                    "minimum": 0
+                }
+            }
+        },
+        "internal_restaurant.OpeningHourResponse": {
+            "type": "object",
+            "properties": {
+                "close": {
+                    "type": "string"
+                },
+                "open": {
+                    "type": "string"
+                },
+                "weekday": {
+                    "type": "integer"
+                }
+            }
+        },
+        "internal_restaurant.PersonResponse": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                }
+            }
+        },
+        "internal_restaurant.RatingResponse": {
             "type": "object",
             "properties": {
                 "average": {
@@ -1024,45 +1540,17 @@
                 }
             }
         },
-        "internal_recipe.RecipeIngredientRequest": {
-            "type": "object",
-            "required": [
-                "description"
-            ],
-            "properties": {
-                "description": {
-                    "type": "string"
-                }
-            }
-        },
-        "internal_recipe.RecipeInstructionRequest": {
-            "type": "object",
-            "required": [
-                "description"
-            ],
-            "properties": {
-                "description": {
-                    "type": "string"
-                }
-            }
-        },
-        "internal_recipe.RecipeResponse": {
+        "internal_restaurant.RestaurantDetailResponse": {
             "type": "object",
             "properties": {
-                "createdAt": {
+                "address": {
                     "type": "string"
                 },
-                "creator": {
-                    "$ref": "#/definitions/internal_recipe.CreatorResponse"
+                "cancellationLeadMinutes": {
+                    "type": "integer"
                 },
                 "description": {
                     "type": "string"
-                },
-                "difficulty": {
-                    "$ref": "#/definitions/internal_recipe.DifficultyResponse"
-                },
-                "duration": {
-                    "$ref": "#/definitions/internal_recipe.DurationResponse"
                 },
                 "id": {
                     "type": "integer"
@@ -1070,69 +1558,159 @@
                 "imageUrl": {
                     "type": "string"
                 },
-                "ingredients": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/internal_recipe.IngredientResponse"
-                    }
-                },
-                "instructions": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/internal_recipe.InstructionResponse"
-                    }
-                },
-                "isFavorite": {
+                "isOwner": {
                     "type": "boolean"
+                },
+                "myReview": {
+                    "$ref": "#/definitions/internal_restaurant.MyReviewResponse"
                 },
                 "name": {
                     "type": "string"
                 },
-                "rating": {
-                    "$ref": "#/definitions/internal_recipe.RatingResponse"
+                "openingHours": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/internal_restaurant.OpeningHourResponse"
+                    }
                 },
-                "updatedAt": {
-                    "type": "string"
+                "owner": {
+                    "$ref": "#/definitions/internal_restaurant.PersonResponse"
+                },
+                "rating": {
+                    "$ref": "#/definitions/internal_restaurant.RatingResponse"
+                },
+                "seatingCapacity": {
+                    "type": "integer"
                 }
             }
         },
-        "internal_recipe.ReplaceRecipeRequest": {
+        "internal_restaurant.RestaurantResponse": {
             "type": "object",
-            "required": [
-                "description",
-                "difficultyId",
-                "durationId",
-                "ingredients",
-                "instructions",
-                "name"
-            ],
             "properties": {
+                "address": {
+                    "type": "string"
+                },
+                "cancellationLeadMinutes": {
+                    "type": "integer"
+                },
                 "description": {
                     "type": "string"
                 },
-                "difficultyId": {
-                    "type": "string"
-                },
-                "durationId": {
-                    "type": "string"
+                "id": {
+                    "type": "integer"
                 },
                 "imageUrl": {
                     "type": "string"
                 },
-                "ingredients": {
+                "name": {
+                    "type": "string"
+                },
+                "owner": {
+                    "$ref": "#/definitions/internal_restaurant.PersonResponse"
+                },
+                "rating": {
+                    "$ref": "#/definitions/internal_restaurant.RatingResponse"
+                },
+                "seatingCapacity": {
+                    "type": "integer"
+                }
+            }
+        },
+        "internal_restaurant.SaveRestaurantRequest": {
+            "type": "object",
+            "required": [
+                "address",
+                "cancellationLeadMinutes",
+                "name",
+                "openingHours",
+                "seatingCapacity"
+            ],
+            "properties": {
+                "address": {
+                    "type": "string"
+                },
+                "cancellationLeadMinutes": {
+                    "type": "integer",
+                    "maximum": 2147483647,
+                    "minimum": 30
+                },
+                "description": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string",
+                    "maxLength": 255
+                },
+                "openingHours": {
                     "type": "array",
+                    "minItems": 1,
                     "items": {
-                        "$ref": "#/definitions/internal_recipe.RecipeIngredientRequest"
+                        "$ref": "#/definitions/internal_restaurant.OpeningHourRequest"
                     }
                 },
-                "instructions": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/internal_recipe.RecipeInstructionRequest"
-                    }
+                "seatingCapacity": {
+                    "type": "integer",
+                    "maximum": 2147483647,
+                    "minimum": 1
+                }
+            }
+        },
+        "internal_review.CreateReviewResponse": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "integer"
+                }
+            }
+        },
+        "internal_review.PersonRef": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "string"
                 },
                 "name": {
                     "type": "string"
+                }
+            }
+        },
+        "internal_review.ReviewResponse": {
+            "type": "object",
+            "properties": {
+                "comment": {
+                    "type": "string"
+                },
+                "createdAt": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "rating": {
+                    "type": "integer"
+                },
+                "updatedAt": {
+                    "type": "string"
+                },
+                "user": {
+                    "$ref": "#/definitions/internal_review.PersonRef"
+                }
+            }
+        },
+        "internal_review.SaveReviewRequest": {
+            "type": "object",
+            "required": [
+                "comment",
+                "rating"
+            ],
+            "properties": {
+                "comment": {
+                    "type": "string"
+                },
+                "rating": {
+                    "type": "integer",
+                    "maximum": 5,
+                    "minimum": 1
                 }
             }
         },
@@ -1171,17 +1749,6 @@
                 "name": {
                     "type": "string",
                     "example": "สมชาย ใจดี"
-                }
-            }
-        },
-        "bookingtable_internal_httputil.ErrorResponse": {
-            "type": "object",
-            "properties": {
-                "code": {
-                    "type": "string"
-                },
-                "message": {
-                    "type": "string"
                 }
             }
         }

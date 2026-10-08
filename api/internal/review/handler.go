@@ -96,7 +96,7 @@ func (hdr *handler) UpdateMine(ctx *gin.Context) {
 //	@Produce		json
 //	@Security		BearerAuth
 //	@Param			id	path		int	true	"Restaurant ID"
-//	@Success		200	{object}	httputil.ListResponse[ReviewResponse]
+//	@Success		200	{object}	httputil.ListResponse[review.ReviewResponse]
 //	@Failure		400	{object}	httputil.ErrorResponse
 //	@Failure		401	{object}	httputil.ErrorResponse
 //	@Failure		404	{object}	httputil.ErrorResponse

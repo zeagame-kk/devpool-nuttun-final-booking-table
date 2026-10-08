@@ -160,7 +160,7 @@ func (hdr *handler) Cancel(ctx *gin.Context) {
 //	@Tags			reservations
 //	@Produce		json
 //	@Security		BearerAuth
-//	@Success		200	{object}	httputil.ListResponse[MyReservationResponse]
+//	@Success		200	{object}	httputil.ListResponse[reservation.MyReservationResponse]
 //	@Failure		401	{object}	httputil.ErrorResponse
 //	@Router			/reservations [get]
 func (hdr *handler) ListMine(ctx *gin.Context) {
@@ -188,7 +188,7 @@ func (hdr *handler) ListMine(ctx *gin.Context) {
 //	@Security		BearerAuth
 //	@Param			id		path		int		true	"Restaurant ID"
 //	@Param			status	query		string	false	"confirmed or cancelled (default: all)"
-//	@Success		200		{object}	httputil.ListResponse[OwnerReservationResponse]
+//	@Success		200		{object}	httputil.ListResponse[reservation.OwnerReservationResponse]
 //	@Failure		400		{object}	httputil.ErrorResponse
 //	@Failure		401		{object}	httputil.ErrorResponse
 //	@Failure		403		{object}	httputil.ErrorResponse
