@@ -11,13 +11,13 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-const frontendURL = "http://localhost:3000"
+const testFrontendURL = "http://localhost:3000"
 
 func newCORSRouter() *gin.Engine {
 	gin.SetMode(gin.TestMode)
 
 	router := gin.New()
-	router.Use(cors.New(CORSConfig(frontendURL)))
+	router.Use(cors.New(CORSConfig(testFrontendURL)))
 	router.GET("/x", func(ctx *gin.Context) { ctx.Status(http.StatusOK) })
 
 	return router
@@ -36,10 +36,10 @@ func preflight(router *gin.Engine, origin string) *httptest.ResponseRecorder {
 }
 
 func TestCORS_PreflightAllowsAuthorizationFromFrontend(t *testing.T) {
-	response := preflight(newCORSRouter(), frontendURL)
+	response := preflight(newCORSRouter(), testFrontendURL)
 
 	assert.Equal(t, http.StatusNoContent, response.Code)
-	assert.Equal(t, frontendURL, response.Header().Get("Access-Control-Allow-Origin"))
+	assert.Equal(t, testFrontendURL, response.Header().Get("Access-Control-Allow-Origin"))
 	assert.Contains(t, strings.ToLower(response.Header().Get("Access-Control-Allow-Headers")), "authorization")
 }
 
@@ -50,7 +50,7 @@ func TestCORS_PreflightRejectsOtherOrigins(t *testing.T) {
 }
 
 func TestCORS_AllowsWriteMethods(t *testing.T) {
-	response := preflight(newCORSRouter(), frontendURL)
+	response := preflight(newCORSRouter(), testFrontendURL)
 	methods := response.Header().Get("Access-Control-Allow-Methods")
 
 	for _, method := range []string{http.MethodGet, http.MethodPost, http.MethodPut, http.MethodDelete} {

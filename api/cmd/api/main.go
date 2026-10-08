@@ -30,7 +30,7 @@ import (
 
 //	@title			BookingTable API
 //	@version		1.0
-//	@description	API สำหรับจัดการกับระบบสูตรอาหาร
+//	@description	API สำหรับระบบจองโต๊ะและรีวิวร้านอาหาร
 //	@host			localhost:8080
 //	@BasePath		/api/v1
 //	@schemas		http https

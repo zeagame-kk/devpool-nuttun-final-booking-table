@@ -19,9 +19,11 @@ keycloak:
 
 On `docker compose up`, `--import-realm` loads every file under `import/`. If the
 `bookingtable-all-in-one-keycloak-data` volume is empty (e.g. a fresh clone, or after removing the
-volume), this recreates the `pea` realm, the `bookingtable` client (with the same client ID/secret
-already hardcoded in `compose.yml`), client scopes, and users from scratch — no manual setup
-through the Admin Console required.
+volume), this recreates the `pea` realm, the `bookingtable` client (its secret comes from the
+`KEYCLOAK_CLIENT_SECRET` value in the root `.env`, substituted into the `${KEYCLOAK_CLIENT_SECRET}`
+placeholder in the realm JSON), client scopes, and users from scratch — no manual setup
+through the Admin Console required. Copy `.env.example` to `.env` first; `docker compose` refuses
+to start while a required secret is unset.
 
 If the volume already has data, Keycloak's import strategy is `IGNORE_EXISTING`: a realm that
 already exists is left untouched and the import is skipped. So restarting an existing dev
