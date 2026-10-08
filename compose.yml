@@ -60,13 +60,18 @@ services:
       # Redis
       REDIS_HOST: redis
       REDIS_PORT: 6379
-      # Keycloak
-      KEYCLOAK_BASE_URL: http://keycloak:8080
+      # Keycloak: ใช้ host:port เดียวกับที่ browser เปิด (keycloak.localhost:8180) ทั้งสองฝั่ง
+      # เพื่อให้ URL ที่ API ส่ง browser ไป login และ issuer ใน token ตรงกัน
+      # (browser resolve *.localhost เป็น loopback เอง; container ใช้ extra_hosts ด้านล่าง)
+      KEYCLOAK_BASE_URL: http://keycloak.localhost:8180
       KEYCLOAK_REALM: pea
       KEYCLOAK_CLIENT_ID: bookingtable
       KEYCLOAK_CLIENT_SECRET: ${KEYCLOAK_CLIENT_SECRET:?ตั้งค่า KEYCLOAK_CLIENT_SECRET ใน .env}
       KEYCLOAK_REDIRECT_URL: http://localhost:8080/api/v1/auth/callback
       FRONTEND_URL: http://localhost:3000
+    extra_hosts:
+      # ชี้ keycloak.localhost ไปที่ host ของ Docker เพื่อเข้าพอร์ต 8180 ที่ publish ไว้
+      - "keycloak.localhost:host-gateway"
     ports:
       - "8080:8080"
 
