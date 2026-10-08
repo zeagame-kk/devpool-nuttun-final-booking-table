@@ -9,6 +9,12 @@ import (
 	"strings"
 )
 
+// PublicPath is where the API serves stored files, relative to its base path (/api/v1).
+const PublicPath = "/uploads"
+
+// folderName is the sub-folder of the upload directory, and the last segment of a file's URL.
+const folderName = "restaurants"
+
 // Local stores files in <dir>/restaurants. Callers choose the file names; they must be plain
 // names, never paths, so a name can never reach outside that folder.
 type Local struct {
@@ -20,7 +26,23 @@ func NewLocal(dir string) *Local {
 }
 
 func (store *Local) folder() string {
-	return filepath.Join(store.dir, "restaurants")
+	return filepath.Join(store.dir, folderName)
+}
+
+// URL is the path a stored file is served from, relative to the API's base URL.
+func (store *Local) URL(name string) string {
+	return PublicPath + "/" + folderName + "/" + name
+}
+
+// NameFromURL is the inverse of URL: it recovers the file name from a URL this storage made,
+// and reports false for anything else (another host, another folder, or a path).
+func (store *Local) NameFromURL(url string) (string, bool) {
+	name, found := strings.CutPrefix(url, PublicPath+"/"+folderName+"/")
+	if !found || !validName(name) {
+		return "", false
+	}
+
+	return name, true
 }
 
 func validName(name string) bool {

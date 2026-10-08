@@ -50,7 +50,7 @@ func RegisterAPI(v1 *gin.RouterGroup, d Deps) {
 	// UUIDs, only the three allowed picture types are ever stored, and nosniff stops a browser
 	// from guessing a different type.
 	if d.UploadDir != "" {
-		uploads := v1.Group("/uploads", func(ctx *gin.Context) {
+		uploads := v1.Group(storage.PublicPath, func(ctx *gin.Context) {
 			ctx.Header("X-Content-Type-Options", "nosniff")
 		})
 		uploads.Static("/", d.UploadDir)

@@ -61,3 +61,30 @@ func TestLocal_RefusesNamesThatEscapeTheFolder(t *testing.T) {
 	require.NoError(t, err)
 	assert.Equal(t, "keep", string(kept), "a hostile name must not touch files outside the folder")
 }
+
+func TestLocal_URLAndNameFromURLAreInverses(t *testing.T) {
+	store := NewLocal(t.TempDir())
+
+	url := store.URL("1-abc.png")
+
+	assert.Equal(t, "/uploads/restaurants/1-abc.png", url)
+	name, ok := store.NameFromURL(url)
+	assert.True(t, ok)
+	assert.Equal(t, "1-abc.png", name)
+}
+
+func TestLocal_NameFromURLOnlyAcceptsOurOwnPlainFileNames(t *testing.T) {
+	store := NewLocal(t.TempDir())
+
+	for _, url := range []string{
+		"",
+		"https://example.com/uploads/restaurants/1-abc.png",
+		"/uploads/other/1-abc.png",
+		"/uploads/restaurants/",
+		"/uploads/restaurants/../secret",
+		"/uploads/restaurants/a/b.png",
+	} {
+		_, ok := store.NameFromURL(url)
+		assert.False(t, ok, "%q is not a file this storage serves", url)
+	}
+}

@@ -15,11 +15,13 @@ import (
 	"github.com/google/uuid"
 )
 
-// ImageStorage keeps the picture files. The service decides the names; the storage only
-// writes and removes them.
+// ImageStorage keeps the picture files. The service decides the names; the storage writes and
+// removes them and knows where they are served from.
 type ImageStorage interface {
 	Save(name string, content io.Reader) error
 	Delete(name string) error
+	URL(name string) string
+	NameFromURL(url string) (name string, ok bool)
 }
 
 type Repository interface {
@@ -117,15 +119,22 @@ func (svc *service) Delete(ctx context.Context, id int, userID uuid.UUID) error 
 // MaxImageBytes is the largest picture accepted.
 const MaxImageBytes = 2 << 20
 
-// imageURLPrefix is where uploaded pictures are served from, relative to the API's base URL.
-const imageURLPrefix = "/uploads/restaurants/"
-
 // imageExtensions maps what the bytes of a picture say it is to the file extension we store
 // it under. Anything else, SVG and GIF included, is refused.
 var imageExtensions = map[string]string{
 	"image/jpeg": ".jpg",
 	"image/png":  ".png",
 	"image/webp": ".webp",
+}
+
+// CheckOwner reports whether userID may change the restaurant: ErrRestaurantNotFound or
+// ErrForbidden if not. The picture handler asks this before it reads the upload at all.
+func (svc *service) CheckOwner(ctx context.Context, id int, userID uuid.UUID) error {
+	if _, err := svc.findOwned(ctx, id, userID); err != nil {
+		return fmt.Errorf("check restaurant owner: %w", err)
+	}
+
+	return nil
 }
 
 // SetImage replaces the restaurant's picture. The type is decided from the content (never the
@@ -160,7 +169,7 @@ func (svc *service) SetImage(ctx context.Context, id int, userID uuid.UUID, file
 		return nil, fmt.Errorf("set restaurant image: %w", err)
 	}
 
-	imageURL := imageURLPrefix + name
+	imageURL := svc.images.URL(name)
 	if err := svc.repository.SetImageURL(ctx, id, &imageURL); err != nil {
 		svc.removeFile(ctx, name)
 		return nil, fmt.Errorf("set restaurant image: %w", err)
@@ -193,8 +202,12 @@ func (svc *service) RemoveImage(ctx context.Context, id int, userID uuid.UUID) e
 
 // removeFileAt deletes the file a stored image URL points to, if it is one of ours.
 func (svc *service) removeFileAt(ctx context.Context, imageURL *string) {
-	if imageURL != nil && strings.HasPrefix(*imageURL, imageURLPrefix) {
-		svc.removeFile(ctx, strings.TrimPrefix(*imageURL, imageURLPrefix))
+	if imageURL == nil {
+		return
+	}
+
+	if name, ok := svc.images.NameFromURL(*imageURL); ok {
+		svc.removeFile(ctx, name)
 	}
 }
 

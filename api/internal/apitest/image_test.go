@@ -110,7 +110,8 @@ func TestImageUpload_ReplacingDeletesTheOldFile(t *testing.T) {
 	assert.Equal(t, http.StatusOK, a.do(uuid.Nil, http.MethodGet, second, nil).Code)
 }
 
-// Review Focus 5: what matters is what the bytes are, not what the client says they are.
+// What matters is what the bytes are, not what the client says they are: a file called .png that
+// is really text, an empty file and an oversized file must all be refused.
 func TestImageUpload_RejectsSpoofedEmptyAndOversized(t *testing.T) {
 	cases := []struct {
 		name     string
@@ -192,6 +193,13 @@ func TestImageUpload_OnlyTheOwner(t *testing.T) {
 
 	assert.Equal(t, http.StatusForbidden, a.upload(stranger, imagePath(restaurantID), "a.png", pngFile(100)).Code)
 	assert.Empty(t, a.storedImages(), "a forbidden upload is not stored")
+
+	// Who may upload is decided before the file is even looked at, so a bad file or no file at
+	// all cannot turn a 403 or 404 into a 400.
+	assert.Equal(t, http.StatusForbidden, a.upload(stranger, imagePath(restaurantID), "a.png", []byte("not a picture")).Code)
+	assert.Equal(t, http.StatusForbidden, a.uploadField(stranger, imagePath(restaurantID), "picture", "a.png", pngFile(100)).Code)
+	assert.Equal(t, http.StatusForbidden, a.upload(stranger, imagePath(restaurantID), "huge.png", pngFile(5<<20)).Code)
+	assert.Equal(t, http.StatusNotFound, a.upload(owner, imagePath(9999), "a.png", []byte("not a picture")).Code)
 	assert.Equal(t, http.StatusNotFound, a.upload(owner, imagePath(9999), "a.png", pngFile(100)).Code)
 	assert.Equal(t, http.StatusBadRequest, a.upload(owner, "/restaurants/abc/image", "a.png", pngFile(100)).Code)
 	assert.Equal(t, http.StatusUnauthorized, a.upload(uuid.Nil, imagePath(restaurantID), "a.png", pngFile(100)).Code)
@@ -238,6 +246,9 @@ func TestUploadsRoute_OnlyServesFilesInsideTheFolder(t *testing.T) {
 	secret := filepath.Join(filepath.Dir(a.uploadDir), "secret.txt")
 	require.NoError(t, os.WriteFile(secret, []byte("do not serve"), 0o600))
 
+	// The router tidies up ".." before the static handler sees a path, so most of the traversal
+	// attempts below never reach it; they are kept as a regression guard in case that changes.
+	// The directory listing and missing-file cases do exercise the static handler itself.
 	for _, target := range []string{
 		"/uploads/restaurants/",            // a directory listing
 		"/uploads/",                        // the folder itself

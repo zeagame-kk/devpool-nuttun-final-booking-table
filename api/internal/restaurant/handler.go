@@ -19,6 +19,7 @@ type Service interface {
 	Get(ctx context.Context, id int, viewerID uuid.UUID) (*Restaurant, error)
 	Replace(ctx context.Context, id int, userID uuid.UUID, restaurant Restaurant) (*Restaurant, error)
 	Delete(ctx context.Context, id int, userID uuid.UUID) error
+	CheckOwner(ctx context.Context, id int, userID uuid.UUID) error
 	SetImage(ctx context.Context, id int, userID uuid.UUID, file io.Reader) (*Restaurant, error)
 	RemoveImage(ctx context.Context, id int, userID uuid.UUID) error
 	List(ctx context.Context, viewerID uuid.UUID, query ListQuery) ([]Restaurant, int64, error)
@@ -286,6 +287,13 @@ func (hdr *handler) SetImage(ctx *gin.Context) {
 	id, err := strconv.Atoi(ctx.Param("id"))
 	if err != nil {
 		ctx.AbortWithStatusJSON(http.StatusBadRequest, httputil.ErrorResponse{Message: "invalid request"})
+		return
+	}
+
+	// Who may upload is settled before the body is read, so a stranger sending a bad or huge file
+	// gets 403 (or 404), and the server does not parse an upload it will refuse anyway.
+	if err := hdr.service.CheckOwner(ctx.Request.Context(), id, userID); err != nil {
+		abortWithImageError(ctx, err)
 		return
 	}
 

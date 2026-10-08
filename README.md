@@ -32,6 +32,7 @@ docker compose exec -T postgres psql -U postgres -d bookingtable -v ON_ERROR_STO
 
 | อะไร | ที่ไหน |
 | --- | --- |
+| Web | http://localhost:3000 ตอนนี้ยังเป็นหน้าเริ่มต้นของ template (ส่วนหน้าบ้านจริงอยู่ใน [Frontend_PLAN.md](Frontend_PLAN.md)) แต่ `docker compose up --build` จะ build image ของมันด้วย |
 | API | http://localhost:8080/api/v1 (Swagger: http://localhost:8080/swagger/index.html) |
 | เข้าสู่ระบบ | เปิด http://localhost:8080/api/v1/auth/login ด้วยเบราว์เซอร์ |
 | Keycloak admin | http://localhost:8180 ผู้ใช้ `admin` รหัสผ่านคือ `KC_ADMIN_PASSWORD` ใน `.env` |
@@ -78,7 +79,7 @@ python3 -I scripts/smoke_api.py
 | --- | --- |
 | migration ใหม่ | `cd api && goose create <ชื่อ> sql` แล้วเติม `-- +goose Up/Down` |
 | ย้อน migration | `cd api && goose down` |
-| สร้าง Swagger ใหม่ | `cd api && swag init -g cmd/api/main.go -o docs --parseInternal --parseDependency` (`go install github.com/swaggo/swag/cmd/swag@v1.16.4`) |
+| สร้าง Swagger ใหม่ | `cd api && swag init -g cmd/api/main.go -o docs --parseInternal --parseDependency` (`go install github.com/swaggo/swag/cmd/swag@v1.16.6` ตรงกับเวอร์ชันใน `go.mod` แม้ `swag --version` จะยังพิมพ์ v1.16.4 เพราะค่าคงที่ในโค้ดของ swag ไม่ได้ถูกอัปเดต) |
 | รีเซ็ต Keycloak เป็นค่าตั้งต้น | ดูคำสั่งใต้ตาราง |
 
 รีเซ็ต Keycloak (ชื่อ volume ขึ้นกับชื่อโฟลเดอร์โปรเจกต์ ตรวจด้วย `docker volume ls`):

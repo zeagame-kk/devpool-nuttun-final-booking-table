@@ -111,6 +111,12 @@ def multipart(field, filename, content):
     return body, f"multipart/form-data; boundary={boundary}"
 
 
+def upload_image(token, restaurant_id, filename, content):
+    body, content_type = multipart("file", filename, content)
+    return call(plain, f"{API}/restaurants/{restaurant_id}/image", body,
+                {"Authorization": f"Bearer {token}", "Content-Type": content_type}, "POST")
+
+
 def main():
     status, _, raw = call(plain, f"{KC}/realms/master/protocol/openid-connect/token", urllib.parse.urlencode({
         "grant_type": "password", "client_id": "admin-cli", "username": "admin",
@@ -137,9 +143,7 @@ def main():
         restaurant_id = body["id"]
 
         # --- picture: the API runs as a non-root user and must be able to write the volume ---
-        content, content_type = multipart("file", "front.png", PNG)
-        status, _, raw = call(plain, f"{API}/restaurants/{restaurant_id}/image", content,
-                              {"Authorization": f"Bearer {owner_token}", "Content-Type": content_type}, "POST")
+        status, _, raw = upload_image(owner_token, restaurant_id, "front.png", PNG)
         check(status == 200, "owner uploads a PNG (the upload folder is writable)", f"{status} {raw[:200]}")
         image_url = json.loads(raw)["imageUrl"]
         check(image_url.startswith("/uploads/restaurants/") and image_url.endswith(".png"), "image URL looks right", image_url)
@@ -147,10 +151,10 @@ def main():
         check(status == 200 and served == PNG, "the picture is served to anyone, byte for byte")
         check(headers.get("Content-Type") == "image/png" and headers.get("X-Content-Type-Options") == "nosniff",
               "served as image/png with nosniff")
-        content, content_type = multipart("file", "evil.png", b"not a picture")
-        status, _, _ = call(plain, f"{API}/restaurants/{restaurant_id}/image", content,
-                            {"Authorization": f"Bearer {owner_token}", "Content-Type": content_type}, "POST")
+        status, _, _ = upload_image(owner_token, restaurant_id, "evil.png", b"not a picture")
         check(status == 400, "a text file called .png is refused")
+        status, _, _ = upload_image(customer_token, restaurant_id, "front.png", PNG)
+        check(status == 403, "a customer cannot upload a picture for someone else's restaurant")
 
         # --- browse -----------------------------------------------------------------------
         status, body = json_call(customer_token, "GET", "/restaurants?name=" + urllib.parse.quote(name))
@@ -184,7 +188,9 @@ def main():
         check(status == 200 and body["rating"] == {"average": 5.0, "total": 1} and body["myReview"]["rating"] == 5 and not body["isOwner"],
               "restaurant shows rating 5.0 (1) and my review")
         status, body = json_call(customer_token, "GET", "/restaurants?sort=rating")
-        check(status == 200 and body["results"][0]["id"] == restaurant_id, "sorted by rating, it comes first")
+        averages = [item["rating"]["average"] for item in body["results"]]
+        check(status == 200 and averages == sorted(averages, reverse=True) and averages[0] == 5.0,
+              "sorted by rating, highest average first")
 
         # --- delete guard, then cancel, then delete ---------------------------------------
         status, body = json_call(owner_token, "DELETE", f"/restaurants/{restaurant_id}")
