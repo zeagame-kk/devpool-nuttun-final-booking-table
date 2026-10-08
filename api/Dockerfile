@@ -25,8 +25,9 @@ COPY docs/*.go ./docs/
 
 # The folder for uploaded pictures. The runtime image has no shell, so it is created here and
 # copied over with the owner of the non-root user below; a fresh named volume mounted on it
-# inherits that owner, which is what lets the API write to it.
-RUN mkdir -p /out/uploads
+# inherits that owner, which is what lets the API write to it. `restaurants` is the sub-folder the
+# API stores pictures in (internal/storage), so seeded pictures can be copied there on a fresh volume too.
+RUN mkdir -p /out/uploads/restaurants
 
 # Build a statically linked Linux binary.
 RUN --mount=type=cache,target=/root/.cache/go-build \

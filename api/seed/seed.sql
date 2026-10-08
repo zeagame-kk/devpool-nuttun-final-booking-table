@@ -7,6 +7,8 @@
 -- always "tomorrow". The sample people (uid 'seed-...') cannot log in; real accounts are
 -- created by logging in through Keycloak.
 --
+-- The pictures are files, not rows: after this, run scripts/seed_images.sh to put them in the upload volume.
+--
 -- Run it after `goose up`. It is not a migration: it must never run in production.
 
 BEGIN;
@@ -37,22 +39,27 @@ INSERT INTO users (id, email, name, uid) VALUES
   ('5eed0000-0000-4000-8000-000000000005', 'seed-user-3@example.com',  'นภัส',                   'seed-user-3');
 
 -- ---------------------------------------------------------------- restaurants (ids 9001-9005)
-INSERT INTO restaurants (id, owner_id, name, address, description, seating_capacity, cancellation_lead_minutes) VALUES
+INSERT INTO restaurants (id, owner_id, name, address, description, image_url, seating_capacity, cancellation_lead_minutes) VALUES
   (9001, '5eed0000-0000-4000-8000-000000000001', 'ชาบูทองคำ',
          '123 ถ.สุขุมวิท แขวงคลองเตย กรุงเทพฯ',
-         'ชาบูหม้อไฟ น้ำซุปกระดูกหมูเคี่ยว 12 ชั่วโมง เนื้อสดส่งทุกเช้า', 40, 60),
+         'ชาบูหม้อไฟ น้ำซุปกระดูกหมูเคี่ยว 12 ชั่วโมง เนื้อสดส่งทุกเช้า',
+         '/uploads/restaurants/9001-seed.jpg', 40, 60),
   (9002, '5eed0000-0000-4000-8000-000000000001', 'หมูกระทะบ้านสวน',
          '45/6 ซ.ลาดพร้าว 71 แขวงลาดพร้าว กรุงเทพฯ',
-         'หมูกระทะบรรยากาศสวน นั่งสบาย มีมุมสำหรับครอบครัว', 60, 120),
+         'หมูกระทะบรรยากาศสวน นั่งสบาย มีมุมสำหรับครอบครัว',
+         '/uploads/restaurants/9002-seed.jpg', 60, 120),
   (9003, '5eed0000-0000-4000-8000-000000000002', 'ยากินิกุโตเกียว',
          '8 ถ.เพชรบุรีตัดใหม่ แขวงมักกะสัน กรุงเทพฯ',
-         'ปิ้งย่างสไตล์ญี่ปุ่น เนื้อวากิวคัดพิเศษ เตาถ่านไร้ควัน', 24, 90),
+         'ปิ้งย่างสไตล์ญี่ปุ่น เนื้อวากิวคัดพิเศษ เตาถ่านไร้ควัน',
+         '/uploads/restaurants/9003-seed.jpg', 24, 90),
   (9004, '5eed0000-0000-4000-8000-000000000002', 'ปิ้งย่างลุงหนวด',
          '77 ถ.นิมมานเหมินท์ ต.สุเทพ เชียงใหม่',
-         'ปิ้งย่างเตาถ่านสไตล์เหนือ เปิดเฉพาะวันพุธถึงอาทิตย์', 30, 30),
+         'ปิ้งย่างเตาถ่านสไตล์เหนือ เปิดเฉพาะวันพุธถึงอาทิตย์',
+         '/uploads/restaurants/9004-seed.jpg', 30, 30),
   (9005, '5eed0000-0000-4000-8000-000000000001', 'ชาบูหม้อไฟเจ้าเก่า',
          '19 ถ.ท่าพระจันทร์ แขวงพระบรมมหาราชวัง กรุงเทพฯ',
-         'ร้านเล็กอบอุ่น ยังไม่มีรีวิว', 16, 45);
+         'ร้านเล็กอบอุ่น ยังไม่มีรีวิว',
+         '/uploads/restaurants/9005-seed.jpg', 16, 45);
 
 -- ---------------------------------------------------------------- opening hours (weekday 0 = Sunday)
 INSERT INTO restaurant_opening_hours (restaurant_id, weekday, open_time, close_time)

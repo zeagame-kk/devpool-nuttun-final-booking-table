@@ -26,9 +26,13 @@ docker compose up -d --build
 # 3) สร้างตาราง (compose ไม่รัน migration ให้)
 cd api && goose up && cd ..
 
-# 4) ข้อมูลตัวอย่าง (ไม่บังคับ รันซ้ำได้)
+# 4) ข้อมูลตัวอย่าง (ไม่บังคับ รันซ้ำได้): ร้าน 5 ร้านพร้อมรีวิวและการจอง แล้วใส่รูปของร้านลง volume
 docker compose exec -T postgres psql -U postgres -d bookingtable -v ON_ERROR_STOP=1 < api/seed/seed.sql
+./scripts/seed_images.sh
 ```
+
+รูปของร้านตัวอย่างเป็นรูปประกอบฟรีจาก Unsplash (ไม่ใช่รูปของร้านจริง) เครดิตช่างภาพอยู่ใน [api/seed/images/CREDITS.md](api/seed/images/CREDITS.md)
+ถ้าข้ามขั้นตอน `seed_images.sh` ร้านตัวอย่างจะแสดงกล่อง "ไม่มีรูป" แทน
 
 | อะไร | ที่ไหน |
 | --- | --- |
