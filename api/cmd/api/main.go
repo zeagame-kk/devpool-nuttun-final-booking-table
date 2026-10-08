@@ -18,6 +18,7 @@ import (
 	"os"
 	"os/signal"
 	"syscall"
+	"time"
 
 	_ "bookingtable/docs"
 
@@ -124,6 +125,13 @@ func run() error {
 	userGroup.Use(middleware.JWT(oidcVerifer, userService))
 	userGroup.GET("/:id", userHandler.GetUser)
 	userGroup.PUT("/:id", userHandler.UpdateUser)
+
+	// Restaurant, reservation and review resources
+	httpapi.RegisterAPI(v1, httpapi.Deps{
+		DB:   db,
+		Auth: middleware.JWT(oidcVerifer, userService),
+		Now:  time.Now,
+	})
 
 	// Register swagger
 	router.GET("swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
