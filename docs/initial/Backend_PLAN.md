@@ -1,5 +1,7 @@
 # Booking Table — Backend Implementation Plan
 
+> **เอกสารต้นทาง** ย้ายมาไว้ที่ `docs/initial/` (ดัชนีอยู่ที่ [README.md](README.md)) เขียน ณ ตอนวางแผน (2026-10-08) จึงอาจต่างจากของจริงบางจุด ถ้าขัดกันให้ยึด [api/docs/API.md](../../api/docs/API.md) และโค้ดในรีโป
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** สร้าง REST API ระบบจองโต๊ะและรีวิวร้านชาบู/ปิ้งย่าง (ร้าน, การจอง, รีวิว, รูปร้าน) บนสถาปัตยกรรมของ `pea-wongnok` พร้อมกฎการจองที่ตรวจใน Go และกัน overbook เมื่อมีคำขอพร้อมกัน
@@ -8,7 +10,7 @@
 
 **Tech Stack:** Go 1.26 · Gin · GORM + PostgreSQL 17 · goose (migration) · Keycloak 26.7 (OIDC, reuse เดิม) · Redis (reuse เดิม) · testify + testcontainers-go · Docker Compose
 
-**Spec:** `SPEC.md` (ภาพรวม/เคสเทสต์) และ `docs/superpowers/specs/2026-10-08-booking-table-mvp-design.md` (รายละเอียดกฎ §5, API §6) — ผู้ implement ต้องอ่านทั้งสองไฟล์. ซอร์สต้นฉบับที่ copy: `/Users/nuttun.k/Desktop/day9/pea-wongnok-2026` (อ่านอย่างเดียว)
+**Spec:** `docs/initial/SPEC.md` (ภาพรวม/เคสเทสต์) และ `docs/initial/design.md` (รายละเอียดกฎ §5, API §6) — ผู้ implement ต้องอ่านทั้งสองไฟล์. ซอร์สต้นฉบับที่ copy: `/Users/nuttun.k/Desktop/day9/pea-wongnok-2026` (อ่านอย่างเดียว)
 
 ## Global Constraints
 

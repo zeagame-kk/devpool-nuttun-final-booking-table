@@ -1,5 +1,7 @@
 # System Architecture
 
+> **เอกสารอ้างอิงจากคอร์ส** อธิบายโปรเจกต์ต้นแบบ `pea-wongnok` ที่โจทย์ให้อ่านก่อนทำ **ไม่ใช่แอป Booking Table นี้** (ชื่อ package, ตาราง, endpoint และรหัสผ่านตัวอย่างในนี้เป็นของต้นแบบ) ใช้เป็นธรรมเนียมการเขียนโค้ดเท่านั้น ของจริงของแอปนี้ดูที่ [api/docs](../../../api/docs/ARCHITECTURE.md) และ [README หลัก](../../../README.md)
+
 > เอกสารนี้ reverse-engineer จาก source code ของโปรเจกต์ `pea-wongnok` (ระบบสูตรอาหาร "Wongnok") โดยถือ source code เป็น source of truth
 > ทุกข้ออ้างอิงมี path ประกอบ ส่วนที่หลักฐานไม่พอจะระบุว่า **UNKNOWN**
 > ไม่มีการเปิดเผยค่า secret — มีเฉพาะ *ชื่อ* environment variable

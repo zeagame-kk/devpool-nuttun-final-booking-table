@@ -1,5 +1,7 @@
 # Booking Table — Frontend Implementation Plan
 
+> **เอกสารต้นทาง** ย้ายมาไว้ที่ `docs/initial/` (ดัชนีอยู่ที่ [README.md](README.md)) เขียน ณ ตอนวางแผน (2026-10-08) จึงอาจต่างจากของจริงบางจุด ถ้าขัดกันให้ยึด [api/docs/API.md](../../api/docs/API.md) และโค้ดในรีโป
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** สร้างเว็บฝั่งผู้ใช้ (Next.js) ของระบบจองโต๊ะและรีวิวร้านชาบู/ปิ้งย่าง: ล็อกอินผ่าน Keycloak, เลือกดู/ค้นหา/เรียงร้าน, จอง/แก้/ยกเลิก, รีวิว, และเจ้าของจัดการร้าน/รูป/เวลาเปิด/ดูการจองของร้านตัวเอง
@@ -8,7 +10,7 @@
 
 **Tech Stack:** Next.js 16.3.4 (App Router) · React 19.2.8 · TypeScript strict · Tailwind CSS v4 · shadcn/ui (style `base-nova`, `@base-ui/react`) · Vitest (เฉพาะ `lib/`) · ไม่ใช้ library ฟอร์ม/state/HTTP เพิ่ม (ใช้ `useState` + `fetch`)
 
-**Spec:** `SPEC.md` (ภาพรวม) และ `docs/superpowers/specs/2026-10-08-booking-table-mvp-design.md` (API §6, ข้อกำหนด frontend §12.2) — ผู้ implement ต้องอ่านทั้งสองไฟล์ และ `Backend_PLAN.md` สำหรับ contract ที่ backend ให้จริง
+**Spec:** `docs/initial/SPEC.md` (ภาพรวม) และ `docs/initial/design.md` (API §6, ข้อกำหนด frontend §12.2) — ผู้ implement ต้องอ่านทั้งสองไฟล์ และ `Backend_PLAN.md` สำหรับ contract ที่ backend ให้จริง
 
 **การตัดสินใจที่ spec ปล่อยไว้ (ตัดสินในแผนนี้ แก้ได้):** (1) เก็บ credential ใน `localStorage` (ง่ายที่สุด; แลกกับความเสี่ยง XSS ซึ่งยอมรับได้สำหรับงานสอบ) · (2) ฟอร์มเขียนเองด้วย `useState` ไม่ใช้ library · (3) เพิ่ม Vitest เฉพาะ `lib/` เพราะ logic refresh token/แปลงเวลาเสี่ยงและทดสอบได้โดยไม่ต้องมี DOM
 

@@ -1,5 +1,7 @@
 # Frontend Architecture
 
+> **เอกสารอ้างอิงจากคอร์ส** อธิบายโปรเจกต์ต้นแบบ `pea-wongnok` ที่โจทย์ให้อ่านก่อนทำ **ไม่ใช่แอป Booking Table นี้** (ชื่อ package, ตาราง, endpoint และรหัสผ่านตัวอย่างในนี้เป็นของต้นแบบ) ใช้เป็นธรรมเนียมการเขียนโค้ดเท่านั้น ของจริงของแอปนี้ดูที่ [api/docs](../../../api/docs/ARCHITECTURE.md) และ [README หลัก](../../../README.md)
+
 > วิเคราะห์จาก `web/` — **สิ่งที่ต้องรู้ก่อนอ่าน:** ตอนนี้ `web/` เป็น **Next.js scaffold + design-system เริ่มต้น** ยังไม่มี routing เกินหน้า `/`,
 > ไม่มี API client, ไม่มี auth, ไม่มี state management, ไม่มี form/validation และไม่มี test
 > ดังนั้นเอกสารนี้แยกเนื้อหาเป็น 2 ประเภทอย่างชัดเจน:

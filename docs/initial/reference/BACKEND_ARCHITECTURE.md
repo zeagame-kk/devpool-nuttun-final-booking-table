@@ -1,5 +1,7 @@
 # Backend Architecture
 
+> **เอกสารอ้างอิงจากคอร์ส** อธิบายโปรเจกต์ต้นแบบ `pea-wongnok` ที่โจทย์ให้อ่านก่อนทำ **ไม่ใช่แอป Booking Table นี้** (ชื่อ package, ตาราง, endpoint และรหัสผ่านตัวอย่างในนี้เป็นของต้นแบบ) ใช้เป็นธรรมเนียมการเขียนโค้ดเท่านั้น ของจริงของแอปนี้ดูที่ [api/docs](../../../api/docs/ARCHITECTURE.md) และ [README หลัก](../../../README.md)
+
 > วิเคราะห์จาก `api/` (Go module `wongnok`) — ทุกข้ออ้างอิงมี path; สิ่งที่ยืนยันไม่ได้ระบุ **UNKNOWN**
 > ไม่มีการเปิดเผยค่า secret · ไม่ได้รัน test/โปรแกรม (อ่านโค้ดอย่างเดียว)
 > ภาพรวมระบบ: [SYSTEM_ARCHITECTURE.md](SYSTEM_ARCHITECTURE.md) · Frontend: [FRONTEND_ARCHITECTURE.md](FRONTEND_ARCHITECTURE.md)

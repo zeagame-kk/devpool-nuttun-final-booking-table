@@ -1,4 +1,4 @@
-// Real-browser walk through Frontend_PLAN Task 3 Step 3 and the Task 5-9 checklists.
+// Real-browser walk through the checklists of docs/initial/Frontend_PLAN.md (Task 3 Step 3, Task 5-9).
 // See README.md in this folder. Needs the compose stack with web on :3000 and KC_ADMIN_PASSWORD in the
 // environment. Creates two throwaway Keycloak users and deletes them at the end. Prints no passwords or tokens.
 import { chromium } from "playwright-core";

@@ -1,8 +1,10 @@
 # Booking Table MVP — Shared Design (Final Exam)
 
+> **เอกสารต้นทาง** ย้ายมาไว้ที่ `docs/initial/` (ดัชนีอยู่ที่ [README.md](README.md)) เขียน ณ ตอนวางแผน (2026-10-08) จึงอาจต่างจากของจริงบางจุด ถ้าขัดกันให้ยึด [api/docs/API.md](../../api/docs/API.md) และโค้ดในรีโป
+
 > วันที่: 2026-10-08 · สถานะ: **ร่างที่ผ่านการตกลงในบทสนทนา รอผู้ใช้ตรวจไฟล์**
 > ใช้เป็น input ให้ Backend `to-spec` และ Frontend `to-spec` (ดู §12)
-> ฐานสถาปัตยกรรม: `pea-wongnok` (เอกสาร `docs/SYSTEM_ARCHITECTURE.md`, `BACKEND_ARCHITECTURE.md`, `FRONTEND_ARCHITECTURE.md`; ซอร์สอ้างอิงที่ `~/Desktop/day9/pea-wongnok-2026`)
+> ฐานสถาปัตยกรรม: `pea-wongnok` (เอกสาร [`reference/SYSTEM_ARCHITECTURE.md`](reference/SYSTEM_ARCHITECTURE.md), `BACKEND_ARCHITECTURE.md`, `FRONTEND_ARCHITECTURE.md` (ทั้งสามอยู่ใต้ `reference/`); ซอร์สอ้างอิงที่ `~/Desktop/day9/pea-wongnok-2026`)
 
 **สัญลักษณ์ที่มา**
 - **[โจทย์]** ข้อกำหนดจากข้อสอบ
