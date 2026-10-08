@@ -16,7 +16,7 @@ export function SiteHeader() {
   return (
     <header className="border-b bg-card">
       <div className="mx-auto flex w-full max-w-5xl flex-wrap items-center gap-x-6 gap-y-2 p-4">
-        <Link href="/" className="text-lg font-semibold text-primary">
+        <Link href="/" className="text-lg font-semibold text-primary-strong">
           Booking Table
         </Link>
         {credential && (

@@ -26,7 +26,7 @@ function EditRestaurant() {
       <div className="flex flex-col gap-4">
         <div className="flex items-center justify-between gap-2">
           <h1 className="text-xl font-semibold">แก้ไขร้าน</h1>
-          <Link href={`/restaurants/${data.id}`} className="text-sm text-primary underline">
+          <Link href={`/restaurants/${data.id}`} className="text-sm text-primary-strong underline">
             ดูหน้าร้าน
           </Link>
         </div>

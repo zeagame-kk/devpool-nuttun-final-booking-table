@@ -28,7 +28,7 @@ function RestaurantReservations() {
 
   return (
     <div className="flex flex-col gap-4">
-      <Link href="/my/restaurants" className="text-sm text-primary underline">
+      <Link href="/my/restaurants" className="text-sm text-primary-strong underline">
         ← ร้านของฉัน
       </Link>
       <div className="flex flex-wrap items-center justify-between gap-2">

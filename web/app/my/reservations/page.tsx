@@ -63,7 +63,7 @@ function ReservationItem({ reservation, canChange, onChanged }: { reservation: M
   return (
     <li className="flex flex-col gap-2 rounded-lg border bg-card p-4">
       <div className="flex flex-wrap items-center gap-2">
-        <Link href={`/restaurants/${reservation.restaurant.id}`} className="font-semibold hover:text-primary">
+        <Link href={`/restaurants/${reservation.restaurant.id}`} className="font-semibold hover:text-primary-strong">
           {reservation.restaurant.name}
         </Link>
         <StatusBadge status={reservation.status} />

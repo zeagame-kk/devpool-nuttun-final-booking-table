@@ -8,7 +8,7 @@ export function RestaurantImage({ imageUrl, name, className }: { imageUrl: strin
   const src = assetUrl(imageUrl);
   if (!src) {
     return (
-      <div className={`flex items-center justify-center bg-muted text-sm text-muted-foreground ${className ?? ""}`}>
+      <div className={`flex items-center justify-center bg-primary-subtle text-sm text-primary-strong ${className ?? ""}`}>
         ไม่มีรูป
       </div>
     );
@@ -33,7 +33,7 @@ export function RestaurantCard({ restaurant, actions }: { restaurant: Restaurant
         <RestaurantImage imageUrl={restaurant.imageUrl} name={restaurant.name} className="h-40 w-full" />
       </Link>
       <CardContent className="flex flex-1 flex-col gap-1">
-        <Link href={`/restaurants/${restaurant.id}`} className="text-lg font-semibold hover:text-primary">
+        <Link href={`/restaurants/${restaurant.id}`} className="text-lg font-semibold hover:text-primary-strong">
           {restaurant.name}
         </Link>
         <p className="text-sm text-muted-foreground">{restaurant.address}</p>

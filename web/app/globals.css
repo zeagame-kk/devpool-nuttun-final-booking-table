@@ -37,6 +37,8 @@
   --color-secondary: var(--secondary);
   --color-primary-foreground: var(--primary-foreground);
   --color-primary: var(--primary);
+  --color-primary-strong: var(--primary-strong);
+  --color-primary-subtle: var(--primary-subtle);
   --color-popover-foreground: var(--popover-foreground);
   --color-popover: var(--popover);
   --color-card-foreground: var(--card-foreground);
@@ -57,11 +59,14 @@
   --card-foreground: hsl(240 6% 10%);
   --popover: oklch(1 0 0);
   --popover-foreground: oklch(0.145 0 0);
-  --primary: hsl(310 93% 34%);
+  /* LINE green (#06C755), a little deeper so white text on it stays readable: 3.2:1 */
+  --primary: #05a647;
   --primary-foreground: hsl(0 0% 100%);
-  --primary-hover: hsl(310 94% 28%);
-  --primary-subtle: hsl(313 55% 94%);
-  --primary-border: hsl(313 48% 89%);
+  --primary-hover: #049a42;
+  --primary-subtle: #e6f7ec;
+  --primary-border: #bfe8ce;
+  /* green for text on a light background (links, brand): 4.8:1 on the page, 4.5:1 on --primary-subtle */
+  --primary-strong: #04803a;
   --secondary: hsl(240 6% 94%);
   --secondary-foreground: hsl(240 5% 26%);
   --muted: hsl(240 5% 96%);
@@ -78,7 +83,7 @@
   --border: hsl(240 6% 90%);
   --border-subtle: hsl(0 0% 94%);
   --input: hsl(240 6% 90%);
-  --ring: hsl(310 93% 34%);
+  --ring: #05a647;
   --chart-1: oklch(0.87 0 0);
   --chart-2: oklch(0.556 0 0);
   --chart-3: oklch(0.439 0 0);
