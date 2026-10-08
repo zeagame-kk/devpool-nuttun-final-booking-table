@@ -75,6 +75,11 @@ npm run build
 เทสต์ครอบเฉพาะตรรกะที่เสี่ยงใน `web/lib` (API client + refresh token, แปลงเวลา Asia/Bangkok, แปลง error code เป็นข้อความไทย, ตัวแก้เวลาเปิด)
 หน้าและคอมโพเนนต์ตรวจด้วย lint, type check, build และเช็กลิสต์ทดสอบมือใน [Frontend_PLAN.md](Frontend_PLAN.md) Task 9
 
+### ทดสอบหน้าเว็บด้วยเบราว์เซอร์จริง
+
+`scripts/browser_e2e` ขับ Chrome จริงไล่ตั้งแต่ล็อกอินผ่าน Keycloak ค้นหา จอง รีวิว จัดการร้านและรูป จนถึง token หมดอายุ
+(ราว 80 ข้อ โดยตั้งเขตเวลาของ browser เป็น New York เพื่อยืนยันว่าเวลายังเป็นเวลาไทย) วิธีรันอยู่ใน [scripts/browser_e2e/README.md](scripts/browser_e2e/README.md)
+
 ### ทดสอบกับระบบที่รันอยู่ (end-to-end)
 
 `scripts/smoke_api.py` สร้างผู้ใช้ชั่วคราวใน Keycloak (เจ้าของและลูกค้า) ล็อกอินจริงตามขั้นตอน (API → Keycloak → callback → ticket → token)
