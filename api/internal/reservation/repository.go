@@ -160,9 +160,7 @@ func timeOfDay(value string) (time.Duration, error) {
 		return 0, fmt.Errorf("parse time of day %q: %w", value, err)
 	}
 
-	return time.Duration(parsed.Hour())*time.Hour +
-		time.Duration(parsed.Minute())*time.Minute +
-		time.Duration(parsed.Second())*time.Second, nil
+	return timeOfDayOf(parsed), nil
 }
 
 // txRepo is the repository as seen inside InTx: it works on the locked restaurant.

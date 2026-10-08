@@ -4,7 +4,6 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"strconv"
-	"sync"
 	"testing"
 	"time"
 
@@ -178,21 +177,7 @@ func TestReservationCancel_ConcurrentCancelsSucceedOnce(t *testing.T) {
 	const requests = 10
 	f.app.warmPool(requests)
 	responses := make([]*httptest.ResponseRecorder, requests)
-	start := make(chan struct{})
-	var ready, done sync.WaitGroup
-	for index := range responses {
-		ready.Add(1)
-		done.Add(1)
-		go func() {
-			defer done.Done()
-			ready.Done()
-			<-start
-			responses[index] = f.cancel(f.customer)
-		}()
-	}
-	ready.Wait()
-	close(start)
-	done.Wait()
+	runTogether(requests, func(index int) { responses[index] = f.cancel(f.customer) })
 
 	noContent, conflict := 0, 0
 	for _, response := range responses {
@@ -208,6 +193,49 @@ func TestReservationCancel_ConcurrentCancelsSucceedOnce(t *testing.T) {
 	}
 	assert.Equal(t, 1, noContent, "exactly one cancellation wins")
 	assert.Equal(t, requests-1, conflict)
+}
+
+// Four customers each hold a small booking at 11:00 and all try to move to the same empty slot
+// at once. The slot seats 10 and each wants 4, so only two moves can succeed. Every move looks
+// fine on its own: without the restaurant lock each would see an empty target slot.
+func TestReservationUpdate_ConcurrentMovesNeverOverbook(t *testing.T) {
+	a := newApp(t)
+	owner := a.newUser("เจ้าของ")
+	restaurantID := a.seedRestaurant(owner, restaurantOpts{Capacity: 10, LeadMinutes: 60})
+
+	const movers = 4
+	customers := make([]uuid.UUID, movers)
+	reservations := make([]int, movers)
+	for index := range customers {
+		customers[index] = a.newUser("ลูกค้า " + strconv.Itoa(index))
+		reservations[index] = a.seedReservation(restaurantID, customers[index], mondayAt(11, 0), mondayAt(12, 0), 1, "confirmed")
+	}
+	a.warmPool(movers)
+
+	responses := make([]*httptest.ResponseRecorder, movers)
+	runTogether(movers, func(index int) {
+		responses[index] = a.do(customers[index], http.MethodPut, "/reservations/"+strconv.Itoa(reservations[index]),
+			reservationBody(rfc(mondayAt(15, 0)), rfc(mondayAt(16, 0)), 4))
+	})
+
+	moved, refused := 0, 0
+	for _, response := range responses {
+		switch response.Code {
+		case http.StatusOK:
+			moved++
+		case http.StatusConflict:
+			assert.Equal(t, "capacity_exceeded", decode[errorJSON](t, response).Code)
+			refused++
+		default:
+			t.Errorf("unexpected status %d: %s", response.Code, response.Body.String())
+		}
+	}
+	assert.Equal(t, 2, moved, "10 seats hold two parties of 4")
+	assert.Equal(t, movers-2, refused)
+
+	var seated int64
+	require.NoError(t, a.db.Raw("SELECT COALESCE(SUM(guests), 0) FROM reservations WHERE start_at = ? AND status = 'confirmed'", mondayAt(15, 0)).Scan(&seated).Error)
+	assert.Equal(t, int64(8), seated)
 }
 
 func TestReservationUpdate_NotActive(t *testing.T) {

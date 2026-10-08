@@ -4,7 +4,6 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"strconv"
-	"sync"
 	"testing"
 	"time"
 
@@ -339,21 +338,9 @@ func TestReservationCreate_ConcurrentRequestsNeverOverbook(t *testing.T) {
 	}
 
 	responses := make([]*httptest.ResponseRecorder, requests)
-	start := make(chan struct{})
-	var ready, done sync.WaitGroup
-	for index := range customers {
-		ready.Add(1)
-		done.Add(1)
-		go func() {
-			defer done.Done()
-			ready.Done()
-			<-start // release everyone at once
-			responses[index] = a.reserve(customers[index], restaurantID, mondayAt(18, 0), mondayAt(20, 0), 4)
-		}()
-	}
-	ready.Wait()
-	close(start)
-	done.Wait()
+	runTogether(requests, func(index int) {
+		responses[index] = a.reserve(customers[index], restaurantID, mondayAt(18, 0), mondayAt(20, 0), 4)
+	})
 
 	created, full := 0, 0
 	for _, response := range responses {

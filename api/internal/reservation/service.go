@@ -151,7 +151,7 @@ func (svc *service) ListMine(ctx context.Context, userID uuid.UUID) ([]Reservati
 // or "cancelled".
 func (svc *service) ListForRestaurant(ctx context.Context, ownerID uuid.UUID, restaurantID int, status string) ([]ReservationView, error) {
 	if status != "" && status != StatusConfirmed && status != StatusCancelled {
-		return nil, ErrInvalidInput
+		return nil, fmt.Errorf("list reservations of restaurant: %w", ErrInvalidInput)
 	}
 
 	actualOwner, err := svc.repository.RestaurantOwner(ctx, restaurantID)
@@ -159,7 +159,7 @@ func (svc *service) ListForRestaurant(ctx context.Context, ownerID uuid.UUID, re
 		return nil, fmt.Errorf("list reservations of restaurant: %w", err)
 	}
 	if actualOwner != ownerID {
-		return nil, ErrForbidden
+		return nil, fmt.Errorf("list reservations of restaurant: %w", ErrForbidden)
 	}
 
 	views, err := svc.repository.ListByRestaurant(ctx, restaurantID, status)

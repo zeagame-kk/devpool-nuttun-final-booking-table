@@ -4,7 +4,6 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"strconv"
-	"sync"
 	"testing"
 	"time"
 
@@ -204,28 +203,14 @@ func TestRestaurantDelete_RacingWithBookingsStaysConsistent(t *testing.T) {
 
 		var deleteResponse *httptest.ResponseRecorder
 		bookResponses := make([]*httptest.ResponseRecorder, bookers)
-		start := make(chan struct{})
-		var ready, done sync.WaitGroup
-		ready.Add(bookers + 1)
-		done.Add(bookers + 1)
-		go func() {
-			defer done.Done()
-			ready.Done()
-			<-start
-			deleteResponse = a.do(owner, http.MethodDelete, "/restaurants/"+strconv.Itoa(restaurantID), nil)
-		}()
-		for index := range customers {
-			go func() {
-				defer done.Done()
-				ready.Done()
-				<-start
-				time.Sleep(offset)
-				bookResponses[index] = a.reserve(customers[index], restaurantID, mondayAt(18, 0), mondayAt(19, 0), 2)
-			}()
-		}
-		ready.Wait()
-		close(start)
-		done.Wait()
+		runTogether(bookers+1, func(index int) {
+			if index == 0 {
+				deleteResponse = a.do(owner, http.MethodDelete, "/restaurants/"+strconv.Itoa(restaurantID), nil)
+				return
+			}
+			time.Sleep(offset)
+			bookResponses[index-1] = a.reserve(customers[index-1], restaurantID, mondayAt(18, 0), mondayAt(19, 0), 2)
+		})
 
 		created := 0
 		for _, response := range bookResponses {

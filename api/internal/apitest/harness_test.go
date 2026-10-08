@@ -227,6 +227,26 @@ func fakeAuth(ctx *gin.Context) {
 
 func (a *app) setNow(now time.Time) { a.now = now }
 
+// runTogether runs fn(0) ... fn(n-1) in n goroutines that are all released at the same instant,
+// and waits for every one of them.
+func runTogether(n int, fn func(index int)) {
+	start := make(chan struct{})
+	var ready, done sync.WaitGroup
+	for index := range n {
+		ready.Add(1)
+		done.Add(1)
+		go func() {
+			defer done.Done()
+			ready.Done()
+			<-start
+			fn(index)
+		}()
+	}
+	ready.Wait()
+	close(start)
+	done.Wait()
+}
+
 // warmPool opens n connections at the same moment and leaves them idle, so that the next n
 // simultaneous requests all start immediately instead of waiting for a connection to be made.
 func (a *app) warmPool(n int) {

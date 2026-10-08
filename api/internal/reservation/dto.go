@@ -72,18 +72,22 @@ type OwnerReservationResponse struct {
 	CreatedAt time.Time `json:"createdAt"`
 }
 
+func NewOwnerReservationResponse(view ReservationView) OwnerReservationResponse {
+	return OwnerReservationResponse{
+		ID:        view.ID,
+		Customer:  PersonRef{ID: view.UserID.String(), Name: view.CustomerName},
+		StartAt:   view.StartAt,
+		EndAt:     view.EndAt,
+		Guests:    view.Guests,
+		Status:    view.Status,
+		CreatedAt: view.CreatedAt,
+	}
+}
+
 func NewListOwnerReservationsResponse(views []ReservationView) httputil.ListResponse[OwnerReservationResponse] {
 	results := make([]OwnerReservationResponse, len(views))
 	for index, view := range views {
-		results[index] = OwnerReservationResponse{
-			ID:        view.ID,
-			Customer:  PersonRef{ID: view.UserID.String(), Name: view.CustomerName},
-			StartAt:   view.StartAt,
-			EndAt:     view.EndAt,
-			Guests:    view.Guests,
-			Status:    view.Status,
-			CreatedAt: view.CreatedAt,
-		}
+		results[index] = NewOwnerReservationResponse(view)
 	}
 
 	return httputil.ListResponse[OwnerReservationResponse]{Total: int64(len(results)), Results: results}
