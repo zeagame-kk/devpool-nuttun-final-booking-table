@@ -1,5 +1,7 @@
 # Domain and data model
 
+> ภาพรวมของทั้งระบบ (service, ล็อกอิน, frontend, คอนฟิก, ความปลอดภัย) อยู่ที่ [ARCHITECTURE.md](../../ARCHITECTURE.md) ที่ราก ไฟล์นี้เจาะเฉพาะข้อมูลและกฎของ API
+
 The API follows the course project's layering: a feature package (`restaurant`, `reservation`, `review`)
 holds its handler (HTTP only), service (rules, ownership), repository (GORM) and DTOs. Routes for the
 three booking features are wired in `internal/httpapi`, which `cmd/api/main.go` and the tests share.

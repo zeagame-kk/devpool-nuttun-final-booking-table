@@ -70,6 +70,7 @@ keycloak/   realm snapshot ที่ import ตอน compose ขึ้น (ด�
 scripts/    smoke_api.py, seed_images.sh, browser_e2e/ (ทดสอบด้วยเบราว์เซอร์จริง)
 docs/initial/   เอกสารต้นทาง: โจทย์, design, SPEC, แผน backend/frontend, เอกสารอ้างอิงจากคอร์ส
 compose.yml     postgres, redis, keycloak, api, web
+ARCHITECTURE.md สถาปัตยกรรมทั้งระบบ (ภาพรวม service, ล็อกอิน, กฎการจอง, frontend)
 ```
 
 ## ทดสอบ
@@ -121,6 +122,7 @@ python3 -I scripts/smoke_api.py
 
 | ไฟล์ | คืออะไร |
 | --- | --- |
+| [ARCHITECTURE.md](ARCHITECTURE.md) | สถาปัตยกรรมทั้งระบบ: service, ล็อกอิน, กฎการจองและการล็อก, frontend, คอนฟิก, ความปลอดภัย, การตัดสินใจและข้อจำกัด |
 | [api/docs/API.md](api/docs/API.md) | สัญญาของ API ที่ใช้จริง (เขียนมือ) Frontend ต้องทำตามนี้ ถ้าเปลี่ยนพฤติกรรมให้แก้ที่นี่พร้อมกัน |
 | [api/docs/ARCHITECTURE.md](api/docs/ARCHITECTURE.md) | โครงสร้างข้อมูล กฎการจอง และวิธีกันจองเกิน |
 | [api/docs/TESTING.md](api/docs/TESTING.md) | แนวทางเขียนเทสต์ฝั่ง Go |
