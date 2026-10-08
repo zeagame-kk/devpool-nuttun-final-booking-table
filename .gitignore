@@ -28,3 +28,8 @@ web/.next/
 
 # OS / editor
 .DS_Store
+
+# AI assistant tooling (skills installed from mattpocock/skills; local to each machine)
+.agents/
+.claude/
+skills-lock.json
