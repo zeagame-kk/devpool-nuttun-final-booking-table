@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { messageForError } from "@/lib/errors";
+import { isNotFound, messageForError } from "@/lib/errors";
 
 describe("messageForError", () => {
   it.each([
@@ -42,5 +42,15 @@ describe("messageForError", () => {
   it("gives the generic message for things that are not API errors", () => {
     expect(messageForError(new Error("x"))).toBe("เกิดข้อผิดพลาด กรุณาลองใหม่ภายหลัง");
     expect(messageForError(undefined)).toBe("เกิดข้อผิดพลาด กรุณาลองใหม่ภายหลัง");
+  });
+});
+
+describe("isNotFound", () => {
+  it("is true only for a 404 from the API", () => {
+    expect(isNotFound({ status: 404 })).toBe(true);
+    expect(isNotFound({ status: 404, code: "anything" })).toBe(true);
+    expect(isNotFound({ status: 403 })).toBe(false);
+    expect(isNotFound(new Error("404"))).toBe(false);
+    expect(isNotFound(undefined)).toBe(false);
   });
 });

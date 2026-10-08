@@ -31,6 +31,7 @@ export function OpeningHoursEditor({ rows, onChange }: OpeningHoursEditorProps) 
             aria-label={`${WEEKDAY_LABELS[row.weekday]} เวลาเปิด`}
             className="w-32"
             disabled={!row.enabled}
+            required
             value={row.open}
             onChange={(e) => update(row.weekday, { open: e.target.value })}
           />
@@ -40,6 +41,7 @@ export function OpeningHoursEditor({ rows, onChange }: OpeningHoursEditorProps) 
             aria-label={`${WEEKDAY_LABELS[row.weekday]} เวลาปิด`}
             className="w-32"
             disabled={!row.enabled}
+            required
             value={row.close}
             onChange={(e) => update(row.weekday, { close: e.target.value })}
           />

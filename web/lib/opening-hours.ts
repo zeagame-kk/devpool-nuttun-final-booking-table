@@ -49,6 +49,8 @@ export function rowsToHours(rows: DayRow[]): OpeningHour[] {
 export function validateRows(rows: DayRow[]): string | null {
   const openRows = rows.filter((r) => r.enabled);
   if (openRows.length === 0) return "ต้องเปิดอย่างน้อย 1 วัน";
+  const blank = openRows.find((r) => r.open === "" || r.close === "");
+  if (blank) return `กรอกเวลาเปิดและเวลาปิด (${WEEKDAY_LABELS[blank.weekday]})`;
   const bad = openRows.find((r) => r.close <= r.open);
   if (bad) return `เวลาปิดต้องหลังเวลาเปิด (${WEEKDAY_LABELS[bad.weekday]})`;
   return null;

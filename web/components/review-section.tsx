@@ -13,7 +13,8 @@ interface ReviewSectionProps {
   restaurantId: number;
   isOwner: boolean;
   myReview: RestaurantDetail["myReview"];
-  reviews: Review[];
+  /** `undefined` while loading or when loading failed: nothing is claimed about the reviews then. */
+  reviews: Review[] | undefined;
   onChanged: () => void;
 }
 
@@ -37,9 +38,11 @@ function ReviewForm({ restaurantId, myReview, onChanged }: Pick<ReviewSectionPro
       }
       setSaved(true);
       onChanged();
+      // A first review turns this form into the edit form (see the key below); until then a second
+      // click would only be refused with already_reviewed, so stay locked.
+      if (myReview) setSubmitting(false);
     } catch (err) {
       setError(err);
-    } finally {
       setSubmitting(false);
     }
   }
@@ -80,7 +83,7 @@ export function ReviewSection({ restaurantId, isOwner, myReview, reviews, onChan
         // key: after the first review is saved the same form turns into the edit form with the saved values.
         <ReviewForm key={myReview?.id ?? "new"} restaurantId={restaurantId} myReview={myReview} onChanged={onChanged} />
       )}
-      {reviews.length === 0 ? (
+      {reviews === undefined ? null : reviews.length === 0 ? (
         <p className="text-muted-foreground">ยังไม่มีรีวิว</p>
       ) : (
         <ul className="flex flex-col gap-3">
@@ -88,7 +91,7 @@ export function ReviewSection({ restaurantId, isOwner, myReview, reviews, onChan
             <li key={review.id} className="rounded-lg border bg-card p-3">
               <div className="flex flex-wrap items-center gap-2 text-sm">
                 <span className="font-medium">{review.user.name}</span>
-                <span className="text-accent" aria-label={`${review.rating} ดาว`}>
+                <span className="text-accent-strong" role="img" aria-label={`${review.rating} ดาว`}>
                   {"★".repeat(review.rating)}
                   <span className="text-muted-foreground/40">{"★".repeat(5 - review.rating)}</span>
                 </span>

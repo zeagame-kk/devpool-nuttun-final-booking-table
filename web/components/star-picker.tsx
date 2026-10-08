@@ -16,7 +16,7 @@ export function StarPicker({ value, onChange }: StarPickerProps) {
           aria-label={`${n} ดาว`}
           aria-pressed={n <= value}
           onClick={() => onChange(n)}
-          className={`text-2xl leading-none ${n <= value ? "text-accent" : "text-muted-foreground/40"}`}
+          className={`text-2xl leading-none ${n <= value ? "text-accent-strong" : "text-muted-foreground/40"}`}
         >
           ★
         </button>

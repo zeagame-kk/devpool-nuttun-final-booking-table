@@ -8,6 +8,7 @@ import { ImageUploader } from "@/components/image-uploader";
 import { RestaurantForm } from "@/components/restaurant-form";
 import { useAsync } from "@/hooks/use-async";
 import { apiFetch } from "@/lib/api";
+import { isNotFound } from "@/lib/errors";
 import type { RestaurantDetail } from "@/lib/types";
 
 function EditRestaurant() {
@@ -15,8 +16,7 @@ function EditRestaurant() {
   const { data, error, reload } = useAsync(() => apiFetch<RestaurantDetail>(`/restaurants/${id}`), [id]);
 
   if (error) {
-    const notFound = (error as { status?: number }).status === 404;
-    return notFound ? <p className="text-muted-foreground">ไม่พบร้านนี้</p> : <ErrorAlert error={error} />;
+    return isNotFound(error) ? <p className="text-muted-foreground">ไม่พบร้านนี้</p> : <ErrorAlert error={error} />;
   }
   if (!data) return <p className="text-muted-foreground">กำลังโหลด…</p>;
   if (!data.isOwner) return <p className="text-muted-foreground">คุณไม่มีสิทธิ์แก้ร้านนี้</p>;

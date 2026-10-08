@@ -57,6 +57,21 @@ describe("validateRows", () => {
     expect(validateRows(rows)).toBeNull();
   });
 
+  it("asks for both times when an open day has an empty one", () => {
+    for (const blank of [{ open: "" }, { close: "" }]) {
+      const rows = emptyDayRows();
+      rows[2] = { weekday: 2, enabled: true, open: "11:00", close: "22:00", ...blank };
+      expect(validateRows(rows)).toBe("กรอกเวลาเปิดและเวลาปิด (อังคาร)");
+    }
+  });
+
+  it("ignores empty times on a closed day", () => {
+    const rows = emptyDayRows();
+    rows[1] = { weekday: 1, enabled: true, open: "11:00", close: "22:00" };
+    rows[3] = { weekday: 3, enabled: false, open: "", close: "" };
+    expect(validateRows(rows)).toBeNull();
+  });
+
   it("accepts a valid week", () => {
     const rows = emptyDayRows().map((r) => ({ ...r, enabled: true }));
     expect(validateRows(rows)).toBeNull();

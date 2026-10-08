@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useParams } from "next/navigation";
 import { AuthGuard } from "@/components/auth-guard";
 import { ErrorAlert } from "@/components/error-alert";
-import { Badge } from "@/components/ui/badge";
+import { STATUS_LABELS, StatusBadge } from "@/components/status-badge";
 import { useAsync } from "@/hooks/use-async";
 import { apiFetch } from "@/lib/api";
 import { formatThaiDateTime } from "@/lib/datetime";
@@ -13,17 +13,18 @@ import type { ListResponse, OwnerReservation } from "@/lib/types";
 
 const STATUS_FILTERS = [
   { value: "", label: "ทั้งหมด" },
-  { value: "confirmed", label: "ยืนยันแล้ว" },
-  { value: "cancelled", label: "ยกเลิกแล้ว" },
+  { value: "confirmed", label: STATUS_LABELS.confirmed },
+  { value: "cancelled", label: STATUS_LABELS.cancelled },
 ];
 
 function RestaurantReservations() {
   const { id } = useParams<{ id: string }>();
   const [status, setStatus] = useState("");
-  const { data, error, loading } = useAsync(
-    () => apiFetch<ListResponse<OwnerReservation>>(`/restaurants/${id}/reservations${status ? `?status=${status}` : ""}`),
-    [id, status],
-  );
+  const { data, error, loading } = useAsync(() => {
+    const q = new URLSearchParams();
+    if (status) q.set("status", status);
+    return apiFetch<ListResponse<OwnerReservation>>(`/restaurants/${id}/reservations${q.size ? `?${q}` : ""}`);
+  }, [id, status]);
 
   return (
     <div className="flex flex-col gap-4">
@@ -68,9 +69,7 @@ function RestaurantReservations() {
                   </td>
                   <td className="py-2 pr-4">{reservation.guests}</td>
                   <td className="py-2">
-                    <Badge variant={reservation.status === "confirmed" ? "default" : "secondary"}>
-                      {reservation.status === "confirmed" ? "ยืนยันแล้ว" : "ยกเลิกแล้ว"}
-                    </Badge>
+                    <StatusBadge status={reservation.status} />
                   </td>
                 </tr>
               ))}

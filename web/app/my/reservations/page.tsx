@@ -5,12 +5,12 @@ import Link from "next/link";
 import { AuthGuard } from "@/components/auth-guard";
 import { Button } from "@/components/bases/button";
 import { ErrorAlert } from "@/components/error-alert";
-import { Badge } from "@/components/ui/badge";
+import { StatusBadge } from "@/components/status-badge";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useAsync } from "@/hooks/use-async";
 import { apiFetch } from "@/lib/api";
-import { formatThaiDateTime, fromApiDateTime, toApiDateTime } from "@/lib/datetime";
+import { formatThaiDateTime, fromApiDateTime, toApiDateTime, validateTimeRange } from "@/lib/datetime";
 import type { ListResponse, MyReservation, SaveReservationInput } from "@/lib/types";
 
 function ReservationItem({ reservation, canChange, onChanged }: { reservation: MyReservation; canChange: boolean; onChanged: () => void }) {
@@ -20,6 +20,7 @@ function ReservationItem({ reservation, canChange, onChanged }: { reservation: M
   const [guests, setGuests] = useState(String(reservation.guests));
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<unknown>(null);
+  const [problem, setProblem] = useState<string | null>(null);
 
   async function run(action: () => Promise<unknown>, after?: () => void) {
     setBusy(true);
@@ -37,8 +38,21 @@ function ReservationItem({ reservation, canChange, onChanged }: { reservation: M
 
   function save(e: FormEvent) {
     e.preventDefault();
+    const rangeProblem = validateTimeRange(start, end);
+    setProblem(rangeProblem);
+    if (rangeProblem) return;
     const body: SaveReservationInput = { startAt: toApiDateTime(start), endAt: toApiDateTime(end), guests: Number(guests) };
     void run(() => apiFetch(`/reservations/${reservation.id}`, { method: "PUT", body }), () => setEditing(false));
+  }
+
+  // "ปิด" throws away what was typed: reopening starts again from the saved booking.
+  function closeEditor() {
+    setStart(fromApiDateTime(reservation.startAt));
+    setEnd(fromApiDateTime(reservation.endAt));
+    setGuests(String(reservation.guests));
+    setProblem(null);
+    setError(null);
+    setEditing(false);
   }
 
   function cancel() {
@@ -46,14 +60,13 @@ function ReservationItem({ reservation, canChange, onChanged }: { reservation: M
     void run(() => apiFetch(`/reservations/${reservation.id}/cancel`, { method: "POST" }));
   }
 
-  const confirmed = reservation.status === "confirmed";
   return (
     <li className="flex flex-col gap-2 rounded-lg border bg-card p-4">
       <div className="flex flex-wrap items-center gap-2">
         <Link href={`/restaurants/${reservation.restaurant.id}`} className="font-semibold hover:text-primary">
           {reservation.restaurant.name}
         </Link>
-        <Badge variant={confirmed ? "default" : "secondary"}>{confirmed ? "ยืนยันแล้ว" : "ยกเลิกแล้ว"}</Badge>
+        <StatusBadge status={reservation.status} />
       </div>
       <p className="text-sm">
         {formatThaiDateTime(reservation.startAt)} – {formatThaiDateTime(reservation.endAt)} · {reservation.guests} คน
@@ -75,11 +88,16 @@ function ReservationItem({ reservation, canChange, onChanged }: { reservation: M
               <Input id={`guests-${reservation.id}`} type="number" min={1} step={1} required value={guests} onChange={(e) => setGuests(e.target.value)} />
             </div>
           </div>
+          {problem && (
+            <p role="alert" className="text-sm text-destructive">
+              {problem}
+            </p>
+          )}
           <div className="flex gap-2">
             <Button type="submit" size="small" disabled={busy}>
               บันทึก
             </Button>
-            <Button type="button" variant="outline" size="small" disabled={busy} onClick={() => setEditing(false)}>
+            <Button type="button" variant="outline" size="small" disabled={busy} onClick={closeEditor}>
               ปิด
             </Button>
           </div>

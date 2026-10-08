@@ -13,6 +13,7 @@ import { apiFetch } from "@/lib/api";
 import type { ListResponse, RestaurantSummary } from "@/lib/types";
 
 const PAGE_SIZE = 12;
+const MAX_PAGE = 1_000_000; // the API refuses anything higher
 const SORTS = [
   { value: "", label: "ใหม่ล่าสุด" },
   { value: "rating", label: "คะแนนเฉลี่ย" },
@@ -27,7 +28,7 @@ function RestaurantList() {
   const name = params.get("name") ?? "";
   const sortParam = params.get("sort") ?? "";
   const sort = SORTS.some((s) => s.value === sortParam) ? sortParam : "";
-  const page = Math.max(1, parseInt(params.get("page") ?? "1", 10) || 1);
+  const page = Math.min(MAX_PAGE, Math.max(1, parseInt(params.get("page") ?? "1", 10) || 1));
 
   function go(next: { name?: string; sort?: string; page?: number }) {
     const q = new URLSearchParams();
@@ -80,7 +81,15 @@ function RestaurantList() {
 
       <ErrorAlert error={error} />
       {loading && !data && <p className="text-muted-foreground">กำลังโหลด…</p>}
-      {data && data.results.length === 0 && <p className="text-muted-foreground">ไม่พบร้านที่ค้นหา</p>}
+      {data && data.results.length === 0 && page === 1 && <p className="text-muted-foreground">ไม่พบร้านที่ค้นหา</p>}
+      {data && data.results.length === 0 && page > 1 && (
+        <div className="flex flex-col items-start gap-2">
+          <p className="text-muted-foreground">ไม่มีรายการในหน้านี้</p>
+          <Button variant="outline" size="small" onClick={() => go({ page: 1 })}>
+            กลับไปหน้าแรก
+          </Button>
+        </div>
+      )}
       {data && data.results.length > 0 && (
         <div className={`grid gap-4 sm:grid-cols-2 lg:grid-cols-3 ${loading ? "opacity-60" : ""}`}>
           {data.results.map((restaurant) => (

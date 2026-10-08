@@ -21,7 +21,7 @@ export function SiteHeader() {
         </Link>
         {credential && (
           <>
-            <nav className="flex flex-wrap gap-4 text-sm">
+            <nav aria-label="เมนูหลัก" className="flex flex-wrap gap-4 text-sm">
               {LINKS.map((link) => (
                 <Link key={link.href} href={link.href} className="text-muted-foreground hover:text-foreground">
                   {link.label}

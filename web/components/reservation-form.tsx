@@ -7,7 +7,7 @@ import { ErrorAlert } from "@/components/error-alert";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { apiFetch } from "@/lib/api";
-import { toApiDateTime } from "@/lib/datetime";
+import { toApiDateTime, validateTimeRange } from "@/lib/datetime";
 import type { SaveReservationInput } from "@/lib/types";
 
 export function ReservationForm({ restaurantId, onCreated }: { restaurantId: number; onCreated: () => void }) {
@@ -17,9 +17,13 @@ export function ReservationForm({ restaurantId, onCreated }: { restaurantId: num
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<unknown>(null);
   const [done, setDone] = useState(false);
+  const [problem, setProblem] = useState<string | null>(null);
 
   async function submit(e: FormEvent) {
     e.preventDefault();
+    const rangeProblem = validateTimeRange(start, end);
+    setProblem(rangeProblem);
+    if (rangeProblem) return;
     setSubmitting(true);
     setError(null);
     setDone(false);
@@ -57,6 +61,11 @@ export function ReservationForm({ restaurantId, onCreated }: { restaurantId: num
           <Input id="guests" type="number" min={1} step={1} required value={guests} onChange={(e) => setGuests(e.target.value)} />
         </div>
       </div>
+      {problem && (
+        <p role="alert" className="text-sm text-destructive">
+          {problem}
+        </p>
+      )}
       <ErrorAlert error={error} />
       {done && (
         <p role="status" className="text-sm text-success">

@@ -11,6 +11,7 @@ import { ReviewSection } from "@/components/review-section";
 import { useAsync } from "@/hooks/use-async";
 import { apiFetch } from "@/lib/api";
 import { WEEKDAY_LABELS } from "@/lib/datetime";
+import { isNotFound } from "@/lib/errors";
 import type { ListResponse, RestaurantDetail, Review } from "@/lib/types";
 
 function RestaurantPage() {
@@ -20,8 +21,7 @@ function RestaurantPage() {
 
   const restaurant = detail.data;
   if (detail.error) {
-    const notFound = (detail.error as { status?: number }).status === 404;
-    return notFound ? <p className="text-muted-foreground">ไม่พบร้านนี้</p> : <ErrorAlert error={detail.error} />;
+    return isNotFound(detail.error) ? <p className="text-muted-foreground">ไม่พบร้านนี้</p> : <ErrorAlert error={detail.error} />;
   }
   if (!restaurant) return <p className="text-muted-foreground">กำลังโหลด…</p>;
 
@@ -77,7 +77,7 @@ function RestaurantPage() {
         restaurantId={restaurant.id}
         isOwner={restaurant.isOwner}
         myReview={restaurant.myReview}
-        reviews={reviews.data?.results ?? []}
+        reviews={reviews.data?.results}
         onChanged={() => {
           detail.reload();
           reviews.reload();

@@ -39,3 +39,8 @@ export function messageForError(err: unknown): string {
   if (err.code && Object.hasOwn(CODE_MESSAGES, err.code)) return CODE_MESSAGES[err.code];
   return STATUS_MESSAGES[err.status] ?? GENERIC_MESSAGE;
 }
+
+/** True when the API answered 404 (the thing asked for does not exist). */
+export function isNotFound(err: unknown): boolean {
+  return isErrorLike(err) && err.status === 404;
+}

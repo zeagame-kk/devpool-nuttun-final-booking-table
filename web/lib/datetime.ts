@@ -13,6 +13,11 @@ export function fromApiDateTime(iso: string): string {
   return new Date(new Date(iso).getTime() + BANGKOK_OFFSET_MS).toISOString().slice(0, 16);
 }
 
+/** Thai message when `end` is not after `start`; null when fine. Both are datetime-local values, which sort as text. */
+export function validateTimeRange(start: string, end: string): string | null {
+  return end > start ? null : "เวลาสิ้นสุดต้องหลังเวลาเริ่ม";
+}
+
 const thaiDateTime = new Intl.DateTimeFormat("th-TH", {
   timeZone: "Asia/Bangkok",
   dateStyle: "medium",

@@ -31,7 +31,7 @@ export function RestaurantForm({ initial, onSubmit }: RestaurantFormProps) {
     e.preventDefault();
     setSaved(false);
     setError(null);
-    const rowsProblem = validateRows(rows);
+    const rowsProblem = name.trim() === "" || address.trim() === "" ? "กรุณากรอกชื่อร้านและที่อยู่" : validateRows(rows);
     setProblem(rowsProblem);
     if (rowsProblem) return;
 
@@ -47,9 +47,10 @@ export function RestaurantForm({ initial, onSubmit }: RestaurantFormProps) {
         openingHours: rowsToHours(rows),
       });
       setSaved(true);
+      // Creating navigates away; stay locked meanwhile so a second click cannot create a duplicate.
+      if (initial) setSubmitting(false);
     } catch (err) {
       setError(err);
-    } finally {
       setSubmitting(false);
     }
   }
@@ -82,12 +83,12 @@ export function RestaurantForm({ initial, onSubmit }: RestaurantFormProps) {
       <fieldset className="flex flex-col gap-2">
         <legend className="mb-1 text-sm font-medium">เวลาเปิด (เวลาประเทศไทย)</legend>
         <OpeningHoursEditor rows={rows} onChange={setRows} />
-        {problem && (
-          <p role="alert" className="text-sm text-destructive">
-            {problem}
-          </p>
-        )}
       </fieldset>
+      {problem && (
+        <p role="alert" className="text-sm text-destructive">
+          {problem}
+        </p>
+      )}
       <ErrorAlert error={error} />
       {saved && (
         <p role="status" className="text-sm text-success">
