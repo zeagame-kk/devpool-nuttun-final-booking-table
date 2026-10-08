@@ -3,7 +3,7 @@
 ระบบจองโต๊ะและรีวิวร้านชาบู/ปิ้งย่าง: เจ้าของร้านจัดการร้าน เวลาเปิด รูป และดูการจองของร้านตัวเอง
 ลูกค้าค้นหา จอง แก้ไข ยกเลิก และรีวิว บัญชีเดียวเป็นได้ทั้งสองบทบาท
 
-Go + Gin + GORM + PostgreSQL · Keycloak (OIDC) · Redis · Next.js (ส่วนหน้าบ้านอยู่ระหว่างทำ)
+Go + Gin + GORM + PostgreSQL · Keycloak (OIDC) · Redis · Next.js 16 (App Router) + Tailwind + shadcn/ui
 เอกสาร: [SPEC.md](SPEC.md) · [Backend_PLAN.md](Backend_PLAN.md) · [Frontend_PLAN.md](Frontend_PLAN.md) ·
 [API contract](api/docs/API.md) · [โครงสร้างข้อมูลและกฎ](api/docs/ARCHITECTURE.md)
 
@@ -32,7 +32,7 @@ docker compose exec -T postgres psql -U postgres -d bookingtable -v ON_ERROR_STO
 
 | อะไร | ที่ไหน |
 | --- | --- |
-| Web | http://localhost:3000 ตอนนี้ยังเป็นหน้าเริ่มต้นของ template (ส่วนหน้าบ้านจริงอยู่ใน [Frontend_PLAN.md](Frontend_PLAN.md)) แต่ `docker compose up --build` จะ build image ของมันด้วย |
+| Web | http://localhost:3000 (compose รัน `next dev` พร้อม hot reload; แผนของส่วนนี้อยู่ใน [Frontend_PLAN.md](Frontend_PLAN.md)) |
 | API | http://localhost:8080/api/v1 (Swagger: http://localhost:8080/swagger/index.html) |
 | เข้าสู่ระบบ | เปิด http://localhost:8080/api/v1/auth/login ด้วยเบราว์เซอร์ |
 | Keycloak admin | http://localhost:8180 ผู้ใช้ `admin` รหัสผ่านคือ `KC_ADMIN_PASSWORD` ใน `.env` |
@@ -61,6 +61,19 @@ go test ./... -count=1
 จะใช้ `~/.colima/default/docker.sock` และตั้ง `TESTCONTAINERS_DOCKER_SOCKET_OVERRIDE=/var/run/docker.sock` ให้
 (Ryuk ต้อง mount socket ด้วยพาธภายใน VM) ถ้า socket อยู่ที่อื่นให้ตั้งสองตัวแปรนี้เอง
 อาการถ้ายังไม่ได้ตั้ง: `panic: rootless Docker not found`
+
+### Frontend
+
+```bash
+cd web
+npm run lint
+npm run typecheck     # สร้าง type ของ route ด้วย `next typegen` ก่อน แล้วรัน tsc
+npm test              # Vitest เฉพาะโฟลเดอร์ lib/ รันด้วย TZ=America/New_York เพื่อจับโค้ดที่พึ่งเขตเวลาของเครื่อง
+npm run build
+```
+
+เทสต์ครอบเฉพาะตรรกะที่เสี่ยงใน `web/lib` (API client + refresh token, แปลงเวลา Asia/Bangkok, แปลง error code เป็นข้อความไทย, ตัวแก้เวลาเปิด)
+หน้าและคอมโพเนนต์ตรวจด้วย lint, type check, build และเช็กลิสต์ทดสอบมือใน [Frontend_PLAN.md](Frontend_PLAN.md) Task 9
 
 ### ทดสอบกับระบบที่รันอยู่ (end-to-end)
 
