@@ -5,6 +5,7 @@ import (
 
 	"bookingtable/internal/reservation"
 	"bookingtable/internal/restaurant"
+	"bookingtable/internal/review"
 
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
@@ -20,12 +21,13 @@ type Deps struct {
 	UploadDir string
 }
 
-// RegisterAPI registers the booking routes under v1 (so far: restaurants and reservations).
+// RegisterAPI registers the booking routes under v1 (restaurants, reservations and reviews).
 //
 // Unlike the auth and user routes, which main.go wires itself, these are wired here so the
 // production server and the HTTP-seam tests build exactly the same handlers.
 func RegisterAPI(v1 *gin.RouterGroup, d Deps) {
 	restaurantHandler := restaurant.NewHandler(restaurant.NewService(restaurant.NewRepository(d.DB), d.Now))
+	reviewHandler := review.NewHandler(review.NewService(review.NewRepository(d.DB)))
 	reservationHandler := reservation.NewHandler(reservation.NewService(reservation.NewRepository(d.DB), d.Now))
 
 	restaurants := v1.Group("/restaurants")
@@ -37,6 +39,9 @@ func RegisterAPI(v1 *gin.RouterGroup, d Deps) {
 	restaurants.DELETE("/:id", restaurantHandler.Delete)
 	restaurants.POST("/:id/reservations", reservationHandler.Create)
 	restaurants.GET("/:id/reservations", reservationHandler.ListForRestaurant)
+	restaurants.POST("/:id/reviews", reviewHandler.Create)
+	restaurants.GET("/:id/reviews", reviewHandler.List)
+	restaurants.PUT("/:id/reviews/me", reviewHandler.UpdateMine)
 
 	reservations := v1.Group("/reservations")
 	reservations.Use(d.Auth)
