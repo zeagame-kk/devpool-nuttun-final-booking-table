@@ -37,6 +37,7 @@ func JWT(verifier *oidc.IDTokenVerifier, userResolver UserResolver) gin.HandlerF
 		userID, err := userResolver.ResolveID(ctx.Request.Context(), idToken.Subject)
 		if err != nil {
 			ctx.AbortWithStatusJSON(http.StatusUnauthorized, httputil.ErrorResponse{Message: "user not found"})
+			return
 		}
 
 		rctx := reqctx.WithSubject(ctx.Request.Context(), idToken.Subject)

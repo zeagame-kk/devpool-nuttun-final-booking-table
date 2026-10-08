@@ -3,6 +3,7 @@ package main
 import (
 	"bookingtable/internal/auth"
 	"bookingtable/internal/config"
+	"bookingtable/internal/httpapi"
 	"bookingtable/internal/middleware"
 	"bookingtable/internal/platform/cache"
 	"bookingtable/internal/platform/database"
@@ -105,7 +106,7 @@ func run() error {
 	}
 
 	// Register cors
-	router.Use(cors.Default())
+	router.Use(cors.New(httpapi.CORSConfig(cfg.Keycloak.FrontendURL)))
 
 	// Group version
 	v1 := router.Group("/api/v1")
