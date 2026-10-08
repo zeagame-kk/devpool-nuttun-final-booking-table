@@ -12,6 +12,7 @@ import (
 	"net/textproto"
 	"os"
 	"path/filepath"
+	"strconv"
 	"strings"
 	"testing"
 	"time"
@@ -363,3 +364,7 @@ func (a *app) seedReservation(restaurantID int, userID uuid.UUID, start, end tim
 
 	return id
 }
+
+func itoa(n int) string { return strconv.Itoa(n) }
+
+var uuidNil = uuid.Nil
