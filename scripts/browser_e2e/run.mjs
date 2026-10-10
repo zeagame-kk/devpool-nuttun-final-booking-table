@@ -72,8 +72,7 @@ function listTitles(page) {
 }
 // The number on a StatCard (components/stat-card.tsx), found by its label.
 async function statValue(page, label) {
-  const card = page.locator('[data-slot="card"]', { has: page.getByText(label, { exact: true }) }).first();
-  return (await card.locator("p").nth(1).textContent())?.trim();
+  return (await page.getByRole("group", { name: label, exact: true }).locator("strong").first().textContent())?.trim();
 }
 // The signed-in person's menu in the header (the avatar chip); sign-out and the profile link live inside it.
 const userMenu = (page) => page.getByRole("button", { name: "เมนูผู้ใช้" });
@@ -397,22 +396,23 @@ try {
   check((await items.count()) === 2, "two reservations", `count=${await items.count()}`);
   const firstText = await items.nth(0).textContent();
   check(/18:00|20:00|21:00/.test(firstText) && /ยืนยันแล้ว/.test(firstText), "times are shown in Bangkok time, status ยืนยันแล้ว", firstText);
-  // list is newest start first: item 0 = 20:00-21:00, item 1 = 18:00-20:00
-  const evening = items.filter({ hasText: "12 คน" }).filter({ hasText: "20:00" }).first();
-  const early = items.filter({ hasText: "18:00" }).first();
+  // the list is earliest first: item 0 = 18:00-20:00, item 1 = 20:00-21:00
+  const early = items.filter({ hasText: "18:00–20:00" }).first();
+  const evening = items.filter({ hasText: "20:00–21:00" }).first();
+  check(/ยกเลิกได้ถึง/.test((await early.textContent()) ?? ""), "each upcoming booking says until when it can be cancelled");
   await early.getByRole("button", { name: "แก้ไข" }).click();
-  await pb.fill(`input[type="number"]`, "10");
-  await pb.getByRole("button", { name: "บันทึก", exact: true }).click();
+  const earlyParty = early.getByRole("group", { name: "จำนวนคน" });
+  await earlyParty.getByRole("button", { name: "ลดจำนวนคน" }).click();
+  await earlyParty.getByRole("button", { name: "ลดจำนวนคน" }).click();
+  await early.getByRole("button", { name: "บันทึก", exact: true }).click();
   check(await see(pb, "10 คน"), "editing guests 12 → 10 shows the new value");
-  // make the evening booking clash with the early one (10 + 12 > 20)
+  // make the evening booking clash with the early one (10 + 12 > 20): move it to 18:00-20:00
   await evening.getByRole("button", { name: "แก้ไข" }).click();
-  const eveningItem = pb.locator("main ul > li", { has: pb.locator('input[type="number"]') });
-  const dt = eveningItem.locator('input[type="datetime-local"]');
-  await dt.nth(0).fill(`${tomorrow}T18:00`);
-  await dt.nth(1).fill(`${tomorrow}T20:00`);
-  await eveningItem.getByRole("button", { name: "บันทึก", exact: true }).click();
+  await evening.getByRole("button", { name: /^18:00–/ }).click();
+  await evening.getByRole("button", { name: "2 ชม." }).click();
+  await evening.getByRole("button", { name: "บันทึก", exact: true }).click();
   check(await see(pb, "ที่นั่งไม่พอสำหรับช่วงเวลานี้"), "an edit that overfills the restaurant shows ที่นั่งไม่พอ under that item");
-  await eveningItem.getByRole("button", { name: "ปิด" }).click();
+  await evening.getByRole("button", { name: "ปิด" }).click();
   pb.once("dialog", (d) => d.accept());
   await pb.locator("main ul > li").filter({ hasText: "20:00" }).filter({ hasText: "21:00" }).getByRole("button", { name: "ยกเลิก" }).click();
   check(await see(pb, "ยกเลิกแล้ว"), "cancelling marks the booking ยกเลิกแล้ว");
@@ -422,17 +422,16 @@ try {
   console.log("\n== Task 8: owner reservations ==");
   await pa.goto(`${WEB}/my/restaurants/${shopId}/reservations`);
   check(await see(pa, "การจองของร้าน") && (await see(pa, "Customer")), "owner sees bookings with the customer's name");
-  const table = await pa.locator("table").textContent();
-  check(!table.includes("@"), "no email address on the page");
+  check(!(await pa.locator("main").innerText()).includes("@"), "no email address on the page");
   check((await statValue(pa, "กำลังจะถึง")) === "1" && (await statValue(pa, "ยกเลิกแล้ว")) === "1" && (await statValue(pa, "แขกที่กำลังจะมา")) === "10",
     "owner stats: 1 upcoming, 1 cancelled, 10 guests expected");
-  await pa.selectOption('select[aria-label="กรองตามสถานะ"]', "cancelled");
-  await pa.waitForTimeout(800);
-  check((await pa.locator("tbody tr").count()) === 1, "filter ยกเลิกแล้ว shows one row");
+  await pa.getByRole("radio", { name: /^ยกเลิกแล้ว/ }).click();
+  await pa.waitForTimeout(500);
+  check((await pa.locator("main section ul > li").count()) === 1, "filter ยกเลิกแล้ว shows one row");
   check((await statValue(pa, "กำลังจะถึง")) === "1", "…and the stats do not move with the filter");
-  await pa.selectOption('select[aria-label="กรองตามสถานะ"]', "confirmed");
-  await pa.waitForTimeout(800);
-  check((await pa.locator("tbody tr").count()) === 1, "filter ยืนยันแล้ว shows one row");
+  await pa.getByRole("radio", { name: /^ยืนยันแล้ว/ }).click();
+  await pa.waitForTimeout(500);
+  check((await pa.locator("main section ul > li").count()) === 1, "filter ยืนยันแล้ว shows one row");
   await pb.goto(`${WEB}/my/restaurants/${shopId}/reservations`);
   check(await see(pb, "คุณไม่มีสิทธิ์ทำรายการนี้"), "another user opening that URL sees คุณไม่มีสิทธิ์ทำรายการนี้");
   await pb.goto(`${WEB}/my/restaurants/${shopId}/edit`);
