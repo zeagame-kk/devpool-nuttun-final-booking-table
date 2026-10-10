@@ -54,3 +54,19 @@ type DayHours struct {
 	Open  time.Duration
 	Close time.Duration
 }
+
+// DayAvailability is how full a restaurant is, hour by hour, on one Bangkok calendar day. It is a
+// display aid: only the booking rules decide whether a reservation is accepted.
+type DayAvailability struct {
+	Date     string // YYYY-MM-DD
+	Closed   bool
+	Capacity int
+	Slots    []Slot
+}
+
+// Slot is one hour (the last one of the day may be shorter) with the most guests present at once.
+type Slot struct {
+	Start, End     time.Time
+	BookedGuests   int
+	RemainingSeats int
+}

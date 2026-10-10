@@ -15,6 +15,7 @@ type Repository interface {
 	ListByUser(ctx context.Context, userID uuid.UUID) ([]ReservationView, error)
 	RestaurantOwner(ctx context.Context, restaurantID int) (uuid.UUID, error)
 	ListByRestaurant(ctx context.Context, restaurantID int, status string) ([]ReservationView, error)
+	Availability(ctx context.Context, restaurantID int, from, to time.Time) (RestaurantInfo, []Booking, error)
 }
 
 // TxRepo is the repository inside a transaction that holds the restaurant's row lock.
@@ -168,6 +169,54 @@ func (svc *service) ListForRestaurant(ctx context.Context, ownerID uuid.UUID, re
 	}
 
 	return views, nil
+}
+
+// Availability shows, for each hour the restaurant is open on date (YYYY-MM-DD, Bangkok), the most
+// guests that will be present at once and how many seats that leaves. It reads without the
+// restaurant lock, so it can be a moment out of date; booking still re-checks under the lock.
+func (svc *service) Availability(ctx context.Context, restaurantID int, date string) (*DayAvailability, error) {
+	day, err := time.ParseInLocation("2006-01-02", date, bangkok)
+	if err != nil {
+		return nil, fmt.Errorf("availability: %w", ErrInvalidInput)
+	}
+
+	info, bookings, err := svc.repository.Availability(ctx, restaurantID, day, day.AddDate(0, 0, 1))
+	if err != nil {
+		return nil, fmt.Errorf("availability: %w", err)
+	}
+
+	result := &DayAvailability{Date: date, Capacity: info.Capacity, Slots: []Slot{}}
+
+	hours, open := info.Hours[int(day.Weekday())]
+	if !open {
+		result.Closed = true
+		return result, nil
+	}
+
+	for _, hour := range hourlySlots(day, hours) {
+		booked := PeakGuests(bookings, hour)
+		result.Slots = append(result.Slots, Slot{
+			Start:          hour.Start,
+			End:            hour.End,
+			BookedGuests:   booked,
+			RemainingSeats: max(info.Capacity-booked, 0),
+		})
+	}
+
+	return result, nil
+}
+
+// hourlySlots cuts the opening hours of the local day starting at midnight into one-hour
+// intervals counted from opening time; the last one ends at closing time, so it may be shorter.
+// Each comes back as a Booking of no guests, ready to be measured with PeakGuests.
+func hourlySlots(midnight time.Time, hours DayHours) []Booking {
+	slots := []Booking{}
+	for start := hours.Open; start < hours.Close; start += time.Hour {
+		end := min(start+time.Hour, hours.Close)
+		slots = append(slots, Booking{Start: midnight.Add(start), End: midnight.Add(end)})
+	}
+
+	return slots
 }
 
 // findOwned loads a reservation and checks it belongs to userID. Whether it may still be

@@ -78,6 +78,30 @@ definitions:
     required:
     - refreshToken
     type: object
+  internal_reservation.AvailabilityResponse:
+    properties:
+      capacity:
+        type: integer
+      closed:
+        type: boolean
+      date:
+        type: string
+      slots:
+        items:
+          $ref: '#/definitions/internal_reservation.AvailabilitySlotResponse'
+        type: array
+    type: object
+  internal_reservation.AvailabilitySlotResponse:
+    properties:
+      bookedGuests:
+        type: integer
+      endAt:
+        type: string
+      remainingSeats:
+        type: integer
+      startAt:
+        type: string
+    type: object
   internal_reservation.CreateReservationResponse:
     properties:
       id:
@@ -782,6 +806,45 @@ paths:
       summary: แทนที่ข้อมูลร้านอาหารทั้งก้อน
       tags:
       - restaurants
+  /restaurants/{id}/availability:
+    get:
+      description: ตามเวลาเปิดของวันนั้น (เวลาไทย) ช่องละ 1 ชั่วโมง บอกจำนวนคนสูงสุดที่อยู่พร้อมกันและที่นั่งที่เหลือ
+        ใช้เป็นข้อมูลประกอบเท่านั้น การจองจริงตรวจซ้ำที่ฝั่ง server
+      parameters:
+      - description: Restaurant ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: YYYY-MM-DD (Bangkok)
+        in: query
+        name: date
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/internal_reservation.AvailabilityResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/bookingtable_internal_httputil.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/bookingtable_internal_httputil.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/bookingtable_internal_httputil.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: ช่วงว่างรายชั่วโมงของร้าน
+      tags:
+      - reservations
   /restaurants/{id}/image:
     delete:
       parameters:

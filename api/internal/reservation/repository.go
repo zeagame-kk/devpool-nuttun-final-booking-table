@@ -87,6 +87,23 @@ func (repo *repository) ListByUser(ctx context.Context, userID uuid.UUID) ([]Res
 	return views, nil
 }
 
+// Availability reads, without any lock, a restaurant's capacity and hours and the confirmed
+// bookings touching [from, to). It is a snapshot for display only: booking itself re-checks
+// everything inside InTx.
+func (repo *repository) Availability(ctx context.Context, restaurantID int, from, to time.Time) (RestaurantInfo, []Booking, error) {
+	info, err := loadRestaurant(repo.db.WithContext(ctx), restaurantID)
+	if err != nil {
+		return RestaurantInfo{}, nil, err
+	}
+
+	bookings, err := confirmedOverlapping(repo.db.WithContext(ctx), restaurantID, from, to, 0)
+	if err != nil {
+		return RestaurantInfo{}, nil, err
+	}
+
+	return info, bookings, nil
+}
+
 // InTx runs fn in one transaction that holds a row lock on the restaurant. Every change to a
 // restaurant's reservations goes through here, so they are applied one at a time per
 // restaurant: whatever fn reads, no other booking can slip in before it commits. The
@@ -102,12 +119,19 @@ func (repo *repository) InTx(ctx context.Context, restaurantID int, fn func(tx T
 	})
 }
 
+// lockRestaurant reads the restaurant and its opening hours while holding its row lock.
 func lockRestaurant(tx *gorm.DB, restaurantID int) (RestaurantInfo, error) {
+	return loadRestaurant(tx.Clauses(clause.Locking{Strength: "UPDATE"}), restaurantID)
+}
+
+// loadRestaurant reads an active restaurant's capacity, lead time and opening hours through db.
+// Pass a db that carries the FOR UPDATE clause to take the lock (see lockRestaurant).
+func loadRestaurant(db *gorm.DB, restaurantID int) (RestaurantInfo, error) {
 	var row struct {
 		SeatingCapacity         int
 		CancellationLeadMinutes int
 	}
-	result := tx.Clauses(clause.Locking{Strength: "UPDATE"}).
+	result := db.
 		Table("restaurants").
 		Select("seating_capacity, cancellation_lead_minutes").
 		Where("id = ? AND deleted_at IS NULL", restaurantID).
@@ -125,7 +149,7 @@ func lockRestaurant(tx *gorm.DB, restaurantID int) (RestaurantInfo, error) {
 		OpenTime  string
 		CloseTime string
 	}
-	if err := tx.Table("restaurant_opening_hours").
+	if err := db.Session(&gorm.Session{NewDB: true}).Table("restaurant_opening_hours").
 		Select("weekday, open_time, close_time").
 		Where("restaurant_id = ?", restaurantID).
 		Scan(&hourRows).Error; err != nil {
@@ -174,10 +198,16 @@ func (repo *txRepo) Restaurant() RestaurantInfo { return repo.info }
 // Overlapping returns the confirmed bookings that intersect [start, end), leaving out
 // excludeID (0 excludes nothing) so that changing a reservation does not count its old seats.
 func (repo *txRepo) Overlapping(ctx context.Context, start, end time.Time, excludeID int) ([]Booking, error) {
+	return confirmedOverlapping(repo.tx.WithContext(ctx), repo.info.ID, start, end, excludeID)
+}
+
+// confirmedOverlapping is the one definition of "which bookings count against [start, end)",
+// shared by the booking rules (inside the lock) and the read-only availability view.
+func confirmedOverlapping(db *gorm.DB, restaurantID int, start, end time.Time, excludeID int) ([]Booking, error) {
 	var rows []Reservation
-	if err := repo.tx.WithContext(ctx).
+	if err := db.
 		Where("restaurant_id = ? AND status = ? AND start_at < ? AND end_at > ? AND id <> ?",
-			repo.info.ID, StatusConfirmed, end, start, excludeID).
+			restaurantID, StatusConfirmed, end, start, excludeID).
 		Find(&rows).Error; err != nil {
 		return nil, fmt.Errorf("find overlapping reservations: %w", err)
 	}

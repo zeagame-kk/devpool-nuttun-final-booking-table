@@ -19,6 +19,7 @@ type Service interface {
 	Cancel(ctx context.Context, userID uuid.UUID, id int) error
 	ListMine(ctx context.Context, userID uuid.UUID) ([]ReservationView, error)
 	ListForRestaurant(ctx context.Context, ownerID uuid.UUID, restaurantID int, status string) ([]ReservationView, error)
+	Availability(ctx context.Context, restaurantID int, date string) (*DayAvailability, error)
 }
 
 type handler struct {
@@ -214,6 +215,41 @@ func (hdr *handler) ListForRestaurant(ctx *gin.Context) {
 	}
 
 	ctx.JSON(http.StatusOK, NewListOwnerReservationsResponse(views))
+}
+
+// Availability godoc
+//
+//	@Summary		ช่วงว่างรายชั่วโมงของร้าน
+//	@Description	ตามเวลาเปิดของวันนั้น (เวลาไทย) ช่องละ 1 ชั่วโมง บอกจำนวนคนสูงสุดที่อยู่พร้อมกันและที่นั่งที่เหลือ ใช้เป็นข้อมูลประกอบเท่านั้น การจองจริงตรวจซ้ำที่ฝั่ง server
+//	@Tags			reservations
+//	@Produce		json
+//	@Security		BearerAuth
+//	@Param			id		path		int		true	"Restaurant ID"
+//	@Param			date	query		string	true	"YYYY-MM-DD (Bangkok)"
+//	@Success		200		{object}	AvailabilityResponse
+//	@Failure		400		{object}	httputil.ErrorResponse
+//	@Failure		401		{object}	httputil.ErrorResponse
+//	@Failure		404		{object}	httputil.ErrorResponse
+//	@Router			/restaurants/{id}/availability [get]
+func (hdr *handler) Availability(ctx *gin.Context) {
+	if _, ok := reqctx.UserID(ctx.Request.Context()); !ok {
+		ctx.AbortWithStatusJSON(http.StatusUnauthorized, httputil.ErrorResponse{Message: "unauthorized"})
+		return
+	}
+
+	restaurantID, err := strconv.Atoi(ctx.Param("id"))
+	if err != nil {
+		ctx.AbortWithStatusJSON(http.StatusBadRequest, httputil.ErrorResponse{Message: "invalid request"})
+		return
+	}
+
+	day, err := hdr.service.Availability(ctx.Request.Context(), restaurantID, ctx.Query("date"))
+	if err != nil {
+		abortWithError(ctx, err)
+		return
+	}
+
+	ctx.JSON(http.StatusOK, NewAvailabilityResponse(*day))
 }
 
 // abortWithError maps a service error to the HTTP status and code the contract promises.

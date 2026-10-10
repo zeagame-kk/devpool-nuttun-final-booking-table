@@ -684,6 +684,65 @@ const docTemplate = `{
                 }
             }
         },
+        "/restaurants/{id}/availability": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "ตามเวลาเปิดของวันนั้น (เวลาไทย) ช่องละ 1 ชั่วโมง บอกจำนวนคนสูงสุดที่อยู่พร้อมกันและที่นั่งที่เหลือ ใช้เป็นข้อมูลประกอบเท่านั้น การจองจริงตรวจซ้ำที่ฝั่ง server",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "reservations"
+                ],
+                "summary": "ช่วงว่างรายชั่วโมงของร้าน",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Restaurant ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "YYYY-MM-DD (Bangkok)",
+                        "name": "date",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/internal_reservation.AvailabilityResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/bookingtable_internal_httputil.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/bookingtable_internal_httputil.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/bookingtable_internal_httputil.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/restaurants/{id}/image": {
             "post": {
                 "security": [
@@ -1361,6 +1420,43 @@ const docTemplate = `{
                 "refreshToken": {
                     "type": "string",
                     "example": "eyJhbGci..."
+                }
+            }
+        },
+        "internal_reservation.AvailabilityResponse": {
+            "type": "object",
+            "properties": {
+                "capacity": {
+                    "type": "integer"
+                },
+                "closed": {
+                    "type": "boolean"
+                },
+                "date": {
+                    "type": "string"
+                },
+                "slots": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/internal_reservation.AvailabilitySlotResponse"
+                    }
+                }
+            }
+        },
+        "internal_reservation.AvailabilitySlotResponse": {
+            "type": "object",
+            "properties": {
+                "bookedGuests": {
+                    "type": "integer"
+                },
+                "endAt": {
+                    "type": "string"
+                },
+                "remainingSeats": {
+                    "type": "integer"
+                },
+                "startAt": {
+                    "type": "string"
                 }
             }
         },

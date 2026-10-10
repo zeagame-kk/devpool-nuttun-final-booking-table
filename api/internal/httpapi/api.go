@@ -42,6 +42,7 @@ func RegisterAPI(v1 *gin.RouterGroup, d Deps) {
 	restaurants.DELETE("/:id/image", restaurantHandler.RemoveImage)
 	restaurants.POST("/:id/reservations", reservationHandler.Create)
 	restaurants.GET("/:id/reservations", reservationHandler.ListForRestaurant)
+	restaurants.GET("/:id/availability", reservationHandler.Availability)
 	restaurants.POST("/:id/reviews", reviewHandler.Create)
 	restaurants.GET("/:id/reviews", reviewHandler.List)
 	restaurants.PUT("/:id/reviews/me", reviewHandler.UpdateMine)

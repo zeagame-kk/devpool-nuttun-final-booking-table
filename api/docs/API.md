@@ -178,6 +178,27 @@ disappears from lists and returns `404`, but customers' old reservations still s
 | PUT | `/reservations/{id}` | the booker | 200 reservation |
 | POST | `/reservations/{id}/cancel` | the booker | 204 |
 | GET | `/restaurants/{id}/reservations?status=` | the restaurant's owner | 200 list |
+| GET | `/restaurants/{id}/availability?date=` | anyone signed in | 200 day |
+
+**Availability** (`date` is `YYYY-MM-DD`, a Bangkok calendar day, zero-padded; anything else is `400`; an
+unknown or deleted restaurant is `404`):
+
+```json
+{
+  "date": "2026-10-12", "closed": false, "capacity": 10,
+  "slots": [
+    { "startAt": "2026-10-12T11:00:00+07:00", "endAt": "2026-10-12T12:00:00+07:00", "bookedGuests": 4, "remainingSeats": 6 }
+  ]
+}
+```
+
+- The day is cut into one-hour slots counted from the opening time; the last one ends at closing time and
+  may be shorter. On a day the restaurant is closed, `closed` is `true` and `slots` is `[]`.
+- `bookedGuests` is the most guests present **at one moment** inside the slot (the same `PeakGuests` rule
+  as booking, over half-open intervals), not a sum; only `confirmed` reservations count.
+  `remainingSeats` is `capacity - bookedGuests`, never below 0.
+- It is a **snapshot for display**, read without the restaurant lock. A slot that shows seats can still
+  answer `409 capacity_exceeded` when booked a moment later; the booking rules below are the only authority.
 
 **Book / change body:** `{"startAt": "...", "endAt": "...", "guests": 4}`. A change cannot move the
 reservation to another restaurant.

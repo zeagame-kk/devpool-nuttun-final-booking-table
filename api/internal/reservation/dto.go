@@ -100,3 +100,33 @@ type CreateReservationResponse struct {
 func NewCreateReservationResponse(reservation Reservation) CreateReservationResponse {
 	return CreateReservationResponse{ID: reservation.ID}
 }
+
+// AvailabilitySlotResponse is one hour of a day: bookedGuests is the most guests present at one
+// moment within it, not a sum.
+type AvailabilitySlotResponse struct {
+	StartAt        time.Time `json:"startAt"`
+	EndAt          time.Time `json:"endAt"`
+	BookedGuests   int       `json:"bookedGuests"`
+	RemainingSeats int       `json:"remainingSeats"`
+}
+
+type AvailabilityResponse struct {
+	Date     string                     `json:"date"`
+	Closed   bool                       `json:"closed"`
+	Capacity int                        `json:"capacity"`
+	Slots    []AvailabilitySlotResponse `json:"slots"`
+}
+
+func NewAvailabilityResponse(day DayAvailability) AvailabilityResponse {
+	slots := make([]AvailabilitySlotResponse, len(day.Slots))
+	for index, slot := range day.Slots {
+		slots[index] = AvailabilitySlotResponse{
+			StartAt:        slot.Start.In(bangkok),
+			EndAt:          slot.End.In(bangkok),
+			BookedGuests:   slot.BookedGuests,
+			RemainingSeats: slot.RemainingSeats,
+		}
+	}
+
+	return AvailabilityResponse{Date: day.Date, Closed: day.Closed, Capacity: day.Capacity, Slots: slots}
+}

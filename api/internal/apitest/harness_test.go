@@ -372,6 +372,7 @@ type restaurantOpts struct {
 	LeadMinutes    int
 	ClosedWeekdays []int
 	ImageURL       string
+	Open, Close    string // "HH:MM"; default 11:00 and 22:00
 }
 
 func (a *app) seedRestaurant(owner uuid.UUID, o restaurantOpts) int {
@@ -385,6 +386,12 @@ func (a *app) seedRestaurant(owner uuid.UUID, o restaurantOpts) int {
 	}
 	if o.LeadMinutes == 0 {
 		o.LeadMinutes = 60
+	}
+	if o.Open == "" {
+		o.Open = "11:00"
+	}
+	if o.Close == "" {
+		o.Close = "22:00"
 	}
 
 	var id int
@@ -403,8 +410,8 @@ func (a *app) seedRestaurant(owner uuid.UUID, o restaurantOpts) int {
 			continue
 		}
 		require.NoError(a.t, a.db.Exec(
-			"INSERT INTO restaurant_opening_hours (restaurant_id, weekday, open_time, close_time) VALUES (?, ?, '11:00', '22:00')",
-			id, weekday,
+			"INSERT INTO restaurant_opening_hours (restaurant_id, weekday, open_time, close_time) VALUES (?, ?, ?, ?)",
+			id, weekday, o.Open, o.Close,
 		).Error)
 	}
 
