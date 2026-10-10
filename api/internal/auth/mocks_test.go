@@ -18,10 +18,19 @@ func NewMockService(t interface {
 	mock.TestingT
 	Cleanup(func())
 }) *MockService {
+	if helper, ok := t.(interface{ Helper() }); ok {
+		helper.Helper()
+	}
+
 	mock := &MockService{}
 	mock.Mock.Test(t)
 
-	t.Cleanup(func() { mock.AssertExpectations(t) })
+	t.Cleanup(func() {
+		if helper, ok := t.(interface{ Helper() }); ok {
+			helper.Helper()
+		}
+		mock.AssertExpectations(t)
+	})
 
 	return mock
 }
@@ -40,8 +49,8 @@ func (_m *MockService) EXPECT() *MockService_Expecter {
 }
 
 // BuildLoginURL provides a mock function for the type MockService
-func (_mock *MockService) BuildLoginURL(ctx context.Context) (string, error) {
-	ret := _mock.Called(ctx)
+func (_mock *MockService) BuildLoginURL(ctx context.Context, register bool) (string, error) {
+	ret := _mock.Called(ctx, register)
 
 	if len(ret) == 0 {
 		panic("no return value specified for BuildLoginURL")
@@ -49,16 +58,16 @@ func (_mock *MockService) BuildLoginURL(ctx context.Context) (string, error) {
 
 	var r0 string
 	var r1 error
-	if returnFunc, ok := ret.Get(0).(func(context.Context) (string, error)); ok {
-		return returnFunc(ctx)
+	if returnFunc, ok := ret.Get(0).(func(context.Context, bool) (string, error)); ok {
+		return returnFunc(ctx, register)
 	}
-	if returnFunc, ok := ret.Get(0).(func(context.Context) string); ok {
-		r0 = returnFunc(ctx)
+	if returnFunc, ok := ret.Get(0).(func(context.Context, bool) string); ok {
+		r0 = returnFunc(ctx, register)
 	} else {
 		r0 = ret.Get(0).(string)
 	}
-	if returnFunc, ok := ret.Get(1).(func(context.Context) error); ok {
-		r1 = returnFunc(ctx)
+	if returnFunc, ok := ret.Get(1).(func(context.Context, bool) error); ok {
+		r1 = returnFunc(ctx, register)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -72,18 +81,24 @@ type MockService_BuildLoginURL_Call struct {
 
 // BuildLoginURL is a helper method to define mock.On call
 //   - ctx context.Context
-func (_e *MockService_Expecter) BuildLoginURL(ctx any) *MockService_BuildLoginURL_Call {
-	return &MockService_BuildLoginURL_Call{Call: _e.mock.On("BuildLoginURL", ctx)}
+//   - register bool
+func (_e *MockService_Expecter) BuildLoginURL(ctx any, register any) *MockService_BuildLoginURL_Call {
+	return &MockService_BuildLoginURL_Call{Call: _e.mock.On("BuildLoginURL", ctx, register)}
 }
 
-func (_c *MockService_BuildLoginURL_Call) Run(run func(ctx context.Context)) *MockService_BuildLoginURL_Call {
+func (_c *MockService_BuildLoginURL_Call) Run(run func(ctx context.Context, register bool)) *MockService_BuildLoginURL_Call {
 	_c.Call.Run(func(args mock.Arguments) {
 		var arg0 context.Context
 		if args[0] != nil {
 			arg0 = args[0].(context.Context)
 		}
+		var arg1 bool
+		if args[1] != nil {
+			arg1 = args[1].(bool)
+		}
 		run(
 			arg0,
+			arg1,
 		)
 	})
 	return _c
@@ -94,7 +109,7 @@ func (_c *MockService_BuildLoginURL_Call) Return(s string, err error) *MockServi
 	return _c
 }
 
-func (_c *MockService_BuildLoginURL_Call) RunAndReturn(run func(ctx context.Context) (string, error)) *MockService_BuildLoginURL_Call {
+func (_c *MockService_BuildLoginURL_Call) RunAndReturn(run func(ctx context.Context, register bool) (string, error)) *MockService_BuildLoginURL_Call {
 	_c.Call.Return(run)
 	return _c
 }
@@ -366,10 +381,19 @@ func NewMockRepository(t interface {
 	mock.TestingT
 	Cleanup(func())
 }) *MockRepository {
+	if helper, ok := t.(interface{ Helper() }); ok {
+		helper.Helper()
+	}
+
 	mock := &MockRepository{}
 	mock.Mock.Test(t)
 
-	t.Cleanup(func() { mock.AssertExpectations(t) })
+	t.Cleanup(func() {
+		if helper, ok := t.(interface{ Helper() }); ok {
+			helper.Helper()
+		}
+		mock.AssertExpectations(t)
+	})
 
 	return mock
 }
@@ -648,10 +672,19 @@ func NewMockUserService(t interface {
 	mock.TestingT
 	Cleanup(func())
 }) *MockUserService {
+	if helper, ok := t.(interface{ Helper() }); ok {
+		helper.Helper()
+	}
+
 	mock := &MockUserService{}
 	mock.Mock.Test(t)
 
-	t.Cleanup(func() { mock.AssertExpectations(t) })
+	t.Cleanup(func() {
+		if helper, ok := t.(interface{ Helper() }); ok {
+			helper.Helper()
+		}
+		mock.AssertExpectations(t)
+	})
 
 	return mock
 }

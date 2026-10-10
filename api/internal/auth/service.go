@@ -63,7 +63,9 @@ func NewService(repo Repository, userService UserService, keycloak KeycloakDeps)
 	}
 }
 
-func (svc *service) BuildLoginURL(ctx context.Context) (string, error) {
+// BuildLoginURL returns the Keycloak URL to send the browser to. With register set, Keycloak opens its
+// sign-up form instead of the sign-in form (OIDC prompt=create); everything after that is the same login.
+func (svc *service) BuildLoginURL(ctx context.Context, register bool) (string, error) {
 	state, err := generateRandomToken()
 	if err != nil {
 		return "", fmt.Errorf("generate state: %w", err)
@@ -73,6 +75,9 @@ func (svc *service) BuildLoginURL(ctx context.Context) (string, error) {
 		return "", fmt.Errorf("save state: %w", err)
 	}
 
+	if register {
+		return svc.oauth2.AuthCodeURL(state, oauth2.SetAuthURLParam("prompt", "create")), nil
+	}
 	return svc.oauth2.AuthCodeURL(state), nil
 }
 

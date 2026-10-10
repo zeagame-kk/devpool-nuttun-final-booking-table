@@ -548,6 +548,22 @@ paths:
       summary: ขอ access token ใหม่ด้วย refresh token
       tags:
       - auth
+  /auth/register:
+    get:
+      description: Redirect ไปหน้าสมัครสมาชิกของ Keycloak เมื่อสมัครเสร็จจะล็อกอินให้เลย
+        (กลับมาที่ /auth/callback เหมือน /auth/login)
+      responses:
+        "302":
+          description: Redirect ไป Keycloak
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/bookingtable_internal_httputil.ErrorResponse'
+      summary: เริ่มสมัครสมาชิกผ่าน Keycloak
+      tags:
+      - auth
   /reservations:
     get:
       description: ทุกสถานะ เรียงเวลาเริ่มใหม่ไปเก่า แสดงชื่อร้านแม้ร้านถูกลบแล้ว

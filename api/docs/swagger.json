@@ -220,6 +220,29 @@
                 }
             }
         },
+        "/auth/register": {
+            "get": {
+                "description": "Redirect ไปหน้าสมัครสมาชิกของ Keycloak เมื่อสมัครเสร็จจะล็อกอินให้เลย (กลับมาที่ /auth/callback เหมือน /auth/login)",
+                "tags": [
+                    "auth"
+                ],
+                "summary": "เริ่มสมัครสมาชิกผ่าน Keycloak",
+                "responses": {
+                    "302": {
+                        "description": "Redirect ไป Keycloak",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/bookingtable_internal_httputil.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/reservations": {
             "get": {
                 "security": [

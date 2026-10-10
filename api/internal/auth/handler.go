@@ -10,7 +10,7 @@ import (
 )
 
 type Service interface {
-	BuildLoginURL(ctx context.Context) (string, error)
+	BuildLoginURL(ctx context.Context, register bool) (string, error)
 	HandleCallback(ctx context.Context, code, state string) (string, error)
 	ExchangeTicket(ctx context.Context, ticket string) (Credential, error)
 	Logout(ctx context.Context, refreshToken string) error
@@ -36,7 +36,23 @@ func NewHandler(service Service) *handler {
 //	@Failure		500	{object}	httputil.ErrorResponse
 //	@Router			/auth/login [get]
 func (hdr *handler) Login(ctx *gin.Context) {
-	authURL, err := hdr.service.BuildLoginURL(ctx.Request.Context())
+	hdr.redirectToKeycloak(ctx, false)
+}
+
+// Register godoc
+//
+//	@Summary		เริ่มสมัครสมาชิกผ่าน Keycloak
+//	@Description	Redirect ไปหน้าสมัครสมาชิกของ Keycloak เมื่อสมัครเสร็จจะล็อกอินให้เลย (กลับมาที่ /auth/callback เหมือน /auth/login)
+//	@Tags			auth
+//	@Success		302	{string}	string	"Redirect ไป Keycloak"
+//	@Failure		500	{object}	httputil.ErrorResponse
+//	@Router			/auth/register [get]
+func (hdr *handler) Register(ctx *gin.Context) {
+	hdr.redirectToKeycloak(ctx, true)
+}
+
+func (hdr *handler) redirectToKeycloak(ctx *gin.Context, register bool) {
+	authURL, err := hdr.service.BuildLoginURL(ctx.Request.Context(), register)
 	if err != nil {
 		ctx.AbortWithStatusJSON(http.StatusInternalServerError, httputil.ErrorResponse{Message: "cannot start login"})
 		return

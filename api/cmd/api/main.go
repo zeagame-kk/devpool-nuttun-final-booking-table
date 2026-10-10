@@ -115,6 +115,7 @@ func run() error {
 	// Auth resource
 	authGroup := v1.Group("/auth")
 	authGroup.GET("/login", authHandler.Login)
+	authGroup.GET("/register", authHandler.Register)
 	authGroup.GET("/callback", authHandler.Callback)
 	authGroup.POST("/exchange", authHandler.Exchange)
 	authGroup.POST("/logout", authHandler.Logout)

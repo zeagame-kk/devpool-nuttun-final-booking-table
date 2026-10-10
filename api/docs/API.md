@@ -38,7 +38,8 @@ holds a short-lived one-time ticket.
 
 | Method | Path | Notes |
 | --- | --- | --- |
-| GET | `/auth/login` | Navigate the whole page here (do not `fetch`). 302 to Keycloak. |
+| GET | `/auth/login` | Navigate the whole page here (do not `fetch`). 302 to Keycloak's sign-in form. |
+| GET | `/auth/register` | Same as `/auth/login`, but Keycloak opens its sign-up form (OIDC `prompt=create`). After the form the person is signed in through the same `/auth/callback`. |
 | GET | `/auth/callback` | Keycloak redirects here; the API then redirects to `{FRONTEND_URL}/auth/callback?ticket=...`. |
 | POST | `/auth/exchange` | Body `{"ticket": "..."}`. The ticket works once and for 30 seconds. Answers `{accessToken, refreshToken, bearerType, expiresAt}`. |
 | POST | `/auth/refresh-token` | Body `{"refreshToken": "..."}`. Answers a new credential. |
@@ -46,7 +47,7 @@ holds a short-lived one-time ticket.
 | GET | `/users/me` | `{id, name, email, imageUrl, bio}`. |
 | PUT | `/users/me` | Body `{imageUrl?, bio?}`. |
 
-Accounts sign in with their **email address**. A person is created in the `users` table the first time they
+Accounts sign in with their **email address**, and anyone can sign up with one (the landing page's "สมัครสมาชิก" button goes to `/auth/register`). A person is created in the `users` table the first time they
 sign in. Everyone is both a possible owner and a possible customer; there are no roles.
 
 ## Representations
