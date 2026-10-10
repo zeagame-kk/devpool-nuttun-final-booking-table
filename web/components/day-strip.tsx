@@ -31,11 +31,11 @@ export function DayStrip({
               isSelected ? "border-primary bg-primary text-primary-foreground" : closed ? "border-border bg-muted text-muted-foreground" : "border-border bg-card"
             }`}
           >
-            <span className={`text-xs md:text-[13px] ${isSelected ? "text-primary-foreground/80" : "text-muted-foreground"}`}>
+            <span className={`text-xs md:text-[13px] ${isSelected ? "text-primary-foreground/95" : "text-muted-foreground"}`}>
               {key === today ? "วันนี้" : parts.weekdayShort}
             </span>
             <span className="text-xl leading-tight font-bold md:text-[22px]">{parts.day}</span>
-            <span className={`text-[11px] md:text-xs ${isSelected ? "text-primary-foreground/80" : "text-muted-foreground"}`}>
+            <span className={`text-[11px] md:text-xs ${isSelected ? "text-primary-foreground/95" : "text-muted-foreground"}`}>
               {closed ? "ปิด" : parts.monthShort}
             </span>
           </button>

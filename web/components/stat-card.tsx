@@ -32,7 +32,7 @@ export function StatCard({
         <strong className="font-bold">{value}</strong>
         {unit && <span className="ml-1 text-xl">{unit}</span>}
       </span>
-      {hint && <span className={`text-[13px] ${primary ? "text-primary-foreground/80" : "text-muted-foreground"}`}>{hint}</span>}
+      {hint && <span className={`text-[13px] ${primary ? "text-primary-foreground/95" : "text-muted-foreground"}`}>{hint}</span>}
     </div>
   );
 }

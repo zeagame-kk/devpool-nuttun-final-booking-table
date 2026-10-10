@@ -42,7 +42,6 @@
   --color-primary-subtle: var(--primary-subtle);
   --color-primary-ink: var(--primary-ink);
   --color-primary-hover: var(--primary-hover);
-  --color-primary-border: var(--primary-border);
   --color-accent-border: var(--accent-border);
   --color-destructive-strong: var(--destructive-strong);
   --color-destructive-subtle: var(--destructive-subtle);
@@ -80,7 +79,6 @@
   --primary-foreground: hsl(0 0% 100%);
   --primary-hover: #0e52cc;
   --primary-subtle: #eaf1fe;
-  --primary-border: #cfdcf8;
   /* blue for text on a light background (links, brand name): 5.3:1 on white */
   --primary-strong: #1568d8;
   /* darker blue for text on --primary-subtle (chips, avatars, the current menu item) */

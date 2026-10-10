@@ -4,24 +4,15 @@ import {
   bangkokClock,
   cancelDeadlineText,
   bangkokDateKey,
-  formatThaiDate,
   formatThaiDateShort,
   formatThaiDateWithWeekday,
   formatThaiMonthYear,
   fromApiDateTime,
   thaiDateParts,
-  toApiDateTime,
-  validateTimeRange,
   WEEKDAY_LABELS,
 } from "@/lib/datetime";
 
 // npm test runs with TZ=America/New_York, so any code that leans on the machine's zone fails here.
-
-describe("toApiDateTime", () => {
-  it("marks a datetime-local value as Bangkok time", () => {
-    expect(toApiDateTime("2026-10-12T18:00")).toBe("2026-10-12T18:00:00+07:00");
-  });
-});
 
 describe("fromApiDateTime", () => {
   it("shows a UTC instant as Bangkok time", () => {
@@ -36,29 +27,12 @@ describe("fromApiDateTime", () => {
     expect(fromApiDateTime("2026-10-12T17:30:00Z")).toBe("2026-10-13T00:30");
   });
 
-  it.each(["2026-10-12T00:00", "2026-12-31T23:59"])("round-trips %s", (local) => {
-    expect(fromApiDateTime(toApiDateTime(local))).toBe(local);
-  });
 });
 
 describe("WEEKDAY_LABELS", () => {
   it("starts on Sunday and covers seven days", () => {
     expect(WEEKDAY_LABELS).toHaveLength(7);
     expect(WEEKDAY_LABELS[0]).toBe("อาทิตย์");
-  });
-});
-
-describe("validateTimeRange", () => {
-  it("accepts an end after the start, even across midnight", () => {
-    expect(validateTimeRange("2026-10-12T18:00", "2026-10-12T20:00")).toBeNull();
-    expect(validateTimeRange("2026-10-12T23:00", "2026-10-13T01:00")).toBeNull();
-  });
-
-  it.each([
-    ["2026-10-12T20:00", "2026-10-12T18:00"],
-    ["2026-10-12T18:00", "2026-10-12T18:00"],
-  ])("rejects an end that is not after the start (%s -> %s)", (start, end) => {
-    expect(validateTimeRange(start, end)).toBe("เวลาสิ้นสุดต้องหลังเวลาเริ่ม");
   });
 });
 
@@ -93,20 +67,6 @@ describe("addDaysToKey", () => {
     expect(addDaysToKey("2026-12-31", 1)).toBe("2027-01-01");
     expect(addDaysToKey("2028-02-28", 1)).toBe("2028-02-29");
     expect(addDaysToKey("2027-03-01", -1)).toBe("2027-02-28");
-  });
-});
-
-describe("formatThaiDate", () => {
-  it("writes a date key as a Thai calendar date with its weekday, whatever the machine's zone", () => {
-    const text = formatThaiDate("2026-10-12");
-
-    expect(text).toContain("จันทร์"); // 12 October 2026 is a Monday
-    expect(text).toContain("12");
-    expect(text).toContain("ตุลาคม");
-  });
-
-  it("does not slip to the previous day west of Greenwich", () => {
-    expect(formatThaiDate("2026-10-13")).toContain("อังคาร");
   });
 });
 
