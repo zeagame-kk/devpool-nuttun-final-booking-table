@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { ChevronDown } from "lucide-react";
 import { Button } from "@/components/bases/button";
 import {
@@ -30,6 +30,14 @@ function isCurrent(pathname: string, href: string): boolean {
 
 /** The signed-in person's avatar (with their name on wide screens); opens a menu with the profile and sign-out. */
 function UserMenu({ name, email, imageUrl }: { name: string; email?: string; imageUrl?: string | null }) {
+  const router = useRouter();
+
+  // Whatever page the person is on, signing out ends at the home page (replace: Back must not return to a page that needs sign-in).
+  async function signOut() {
+    await logout();
+    router.replace("/");
+  }
+
   return (
     <DropdownMenu>
       <DropdownMenuTrigger
@@ -47,7 +55,7 @@ function UserMenu({ name, email, imageUrl }: { name: string; email?: string; ima
         </div>
         <DropdownMenuSeparator />
         <DropdownMenuLinkItem render={<Link href="/my/profile" />}>โปรไฟล์ของฉัน</DropdownMenuLinkItem>
-        <DropdownMenuItem onClick={() => void logout()}>ออกจากระบบ</DropdownMenuItem>
+        <DropdownMenuItem onClick={() => void signOut()}>ออกจากระบบ</DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
   );

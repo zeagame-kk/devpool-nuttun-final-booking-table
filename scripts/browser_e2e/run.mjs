@@ -544,8 +544,10 @@ try {
 
   // ======================= sign out =====================================================================
   console.log("\n== sign out ==");
-  await pa.goto(WEB + "/");
+  await pa.goto(WEB + "/my/reservations");
   await chooseFromUserMenu(pa, "ออกจากระบบ");
+  await pa.waitForURL(WEB + "/", { timeout: 10000 }).catch(() => {});
+  check(pa.url() === WEB + "/", "sign out from a deep page goes to the home page", pa.url());
   check(await see(pa, "ดูช่วงว่างแล้วจองได้ทันที"), "sign out returns to the landing page");
   check((await userMenu(pa).count()) === 0, "…and the header no longer shows a person");
 } catch (err) {
