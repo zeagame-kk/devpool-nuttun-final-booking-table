@@ -113,6 +113,9 @@ Review (`GET /restaurants/{id}/reviews`, answer of `PUT .../reviews/me`):
 }
 ```
 
+One of the caller's own reviews (`GET /reviews`): a review as above, with
+`"restaurant": {"id", "name"}` instead of `user`.
+
 ## Restaurants
 
 | Method | Path | Who | Success |
@@ -237,6 +240,7 @@ Cancelling sets the status to `cancelled`; the row is kept.
 | POST | `/restaurants/{id}/reviews` | anyone except the owner | 201 `{id}` |
 | PUT | `/restaurants/{id}/reviews/me` | the reviewer | 200 review |
 | GET | `/restaurants/{id}/reviews` | anyone signed in | 200 list, newest first |
+| GET | `/reviews` | the caller | 200 list, most recently edited first |
 
 **Body:** `{"rating": 1-5, "comment": "..."}`. `rating` is a whole number from 1 to 5 and `comment` must
 not be blank (and must not contain a NUL character), else `400`.
@@ -245,6 +249,8 @@ not be blank (and must not contain a NUL character), else `400`.
 - One review per person per restaurant: a second `POST` is `409 already_reviewed`. Change it with
   `PUT .../reviews/me` (`404` if you have not reviewed yet). There is no way to delete a review.
 - A reservation is not required to write a review.
+- `GET /reviews` lists every review the caller wrote, across restaurants, with each restaurant's name. Reviews of
+  restaurants that were deleted are left out. It is not paged; nobody else's reviews are ever included.
 
 ## Error codes
 

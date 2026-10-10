@@ -34,6 +34,15 @@ definitions:
       total:
         type: integer
     type: object
+  bookingtable_internal_httputil.ListResponse-internal_review_MyReviewItemResponse:
+    properties:
+      results:
+        items:
+          $ref: '#/definitions/internal_review.MyReviewItemResponse'
+        type: array
+      total:
+        type: integer
+    type: object
   bookingtable_internal_httputil.ListResponse-internal_review_ReviewResponse:
     properties:
       results:
@@ -306,10 +315,32 @@ definitions:
       id:
         type: integer
     type: object
+  internal_review.MyReviewItemResponse:
+    properties:
+      comment:
+        type: string
+      createdAt:
+        type: string
+      id:
+        type: integer
+      rating:
+        type: integer
+      restaurant:
+        $ref: '#/definitions/internal_review.RestaurantRef'
+      updatedAt:
+        type: string
+    type: object
   internal_review.PersonRef:
     properties:
       id:
         type: string
+      name:
+        type: string
+    type: object
+  internal_review.RestaurantRef:
+    properties:
+      id:
+        type: integer
       name:
         type: string
     type: object
@@ -1127,6 +1158,26 @@ paths:
       security:
       - BearerAuth: []
       summary: แก้รีวิวของตัวเอง
+      tags:
+      - reviews
+  /reviews:
+    get:
+      description: เรียงตามที่แก้ไขล่าสุดก่อน พร้อมชื่อร้าน ไม่รวมร้านที่ถูกลบแล้ว
+        ไม่แบ่งหน้า
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/bookingtable_internal_httputil.ListResponse-internal_review_MyReviewItemResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/bookingtable_internal_httputil.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: รีวิวของฉันทุกร้าน
       tags:
       - reviews
   /users/{id}:

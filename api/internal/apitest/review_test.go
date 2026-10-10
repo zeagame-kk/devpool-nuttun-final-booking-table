@@ -298,3 +298,64 @@ func TestReview_RequiresAuth(t *testing.T) {
 	assert.Equal(t, http.StatusUnauthorized, a.do(uuid.Nil, http.MethodPut, reviewsPath(1)+"/me", reviewBody(5, "ดี")).Code)
 	assert.Equal(t, http.StatusUnauthorized, a.do(uuid.Nil, http.MethodGet, reviewsPath(1), nil).Code)
 }
+
+type reviewOfMineJSON struct {
+	ID         int       `json:"id"`
+	Rating     int       `json:"rating"`
+	Comment    string    `json:"comment"`
+	Restaurant restRef   `json:"restaurant"`
+	CreatedAt  time.Time `json:"createdAt"`
+	UpdatedAt  time.Time `json:"updatedAt"`
+}
+
+type restRef struct {
+	ID   int    `json:"id"`
+	Name string `json:"name"`
+}
+
+func TestReviewListMine(t *testing.T) {
+	a := newApp(t)
+	owner := a.newUser("เจ้าของ")
+	me := a.newUser("ฉัน")
+	someoneElse := a.newUser("คนอื่น")
+	first := a.seedRestaurant(owner, restaurantOpts{Name: "ร้านแรก"})
+	second := a.seedRestaurant(owner, restaurantOpts{Name: "ร้านสอง"})
+	gone := a.seedRestaurant(owner, restaurantOpts{Name: "ร้านที่ปิดไปแล้ว"})
+	a.seedReview(first, me, 4)
+	a.seedReview(second, me, 2)
+	a.seedReview(gone, me, 5)
+	a.seedReview(first, someoneElse, 1)
+	require.NoError(t, a.db.Exec("UPDATE restaurants SET deleted_at = now() WHERE id = ?", gone).Error)
+	// Make the order depend on the last edit, not on the order of insertion.
+	require.NoError(t, a.db.Exec("UPDATE reviews SET updated_at = ? WHERE restaurant_id = ? AND user_id = ?", mondayAt(10, 0), first, me).Error)
+	require.NoError(t, a.db.Exec("UPDATE reviews SET updated_at = ? WHERE restaurant_id = ? AND user_id = ?", mondayAt(8, 0), second, me).Error)
+
+	t.Run("only my reviews, newest edit first, with the restaurant's name", func(t *testing.T) {
+		response := a.do(me, http.MethodGet, "/reviews", nil)
+
+		require.Equal(t, http.StatusOK, response.Code, response.Body.String())
+		list := decode[struct {
+			Total   int                `json:"total"`
+			Results []reviewOfMineJSON `json:"results"`
+		}](t, response)
+		require.Equal(t, 2, list.Total, "someone else's review and a deleted restaurant's review are left out")
+		require.Len(t, list.Results, 2)
+		assert.Equal(t, restRef{ID: first, Name: "ร้านแรก"}, list.Results[0].Restaurant)
+		assert.Equal(t, 4, list.Results[0].Rating)
+		assert.Equal(t, "รีวิวทดสอบ", list.Results[0].Comment)
+		assert.Equal(t, restRef{ID: second, Name: "ร้านสอง"}, list.Results[1].Restaurant)
+	})
+
+	t.Run("a user with no reviews gets an empty array, not null", func(t *testing.T) {
+		response := a.do(owner, http.MethodGet, "/reviews", nil)
+
+		require.Equal(t, http.StatusOK, response.Code)
+		assert.JSONEq(t, `{"total":0,"results":[]}`, response.Body.String())
+	})
+
+	t.Run("needs credentials", func(t *testing.T) {
+		response := a.do(uuid.Nil, http.MethodGet, "/reviews", nil)
+
+		assert.Equal(t, http.StatusUnauthorized, response.Code)
+	})
+}

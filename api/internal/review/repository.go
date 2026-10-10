@@ -102,3 +102,20 @@ func (repo *repository) ListByRestaurant(ctx context.Context, restaurantID int) 
 
 	return views, nil
 }
+
+// ListByUser returns every review the user wrote, the most recently edited first. Reviews of
+// restaurants that have since been deleted are left out: there is nowhere left to open them.
+func (repo *repository) ListByUser(ctx context.Context, userID uuid.UUID) ([]MyReviewView, error) {
+	views := []MyReviewView{}
+	if err := repo.db.WithContext(ctx).
+		Table("reviews").
+		Select("reviews.*, restaurants.name AS restaurant_name").
+		Joins("JOIN restaurants ON restaurants.id = reviews.restaurant_id AND restaurants.deleted_at IS NULL").
+		Where("reviews.user_id = ?", userID).
+		Order("reviews.updated_at DESC, reviews.id DESC").
+		Scan(&views).Error; err != nil {
+		return nil, fmt.Errorf("list reviews of user: %w", err)
+	}
+
+	return views, nil
+}

@@ -22,3 +22,9 @@ type ReviewView struct {
 	Review
 	UserName string
 }
+
+// MyReviewView is one of the caller's own reviews with the name of the restaurant it is about.
+type MyReviewView struct {
+	Review
+	RestaurantName string
+}

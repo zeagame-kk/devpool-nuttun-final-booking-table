@@ -57,6 +57,10 @@ func RegisterAPI(v1 *gin.RouterGroup, d Deps) {
 		uploads.Static("/", d.UploadDir)
 	}
 
+	reviews := v1.Group("/reviews")
+	reviews.Use(d.Auth)
+	reviews.GET("", reviewHandler.ListMine)
+
 	reservations := v1.Group("/reservations")
 	reservations.Use(d.Auth)
 	reservations.GET("", reservationHandler.ListMine)

@@ -14,6 +14,7 @@ type Repository interface {
 	UpdateMine(ctx context.Context, restaurantID int, userID uuid.UUID, rating int, comment string) error
 	FindMine(ctx context.Context, restaurantID int, userID uuid.UUID) (*ReviewView, error)
 	ListByRestaurant(ctx context.Context, restaurantID int) ([]ReviewView, error)
+	ListByUser(ctx context.Context, userID uuid.UUID) ([]MyReviewView, error)
 }
 
 type service struct {
@@ -82,6 +83,16 @@ func (svc *service) List(ctx context.Context, restaurantID int) ([]ReviewView, e
 	views, err := svc.repository.ListByRestaurant(ctx, restaurantID)
 	if err != nil {
 		return nil, fmt.Errorf("list reviews: %w", err)
+	}
+
+	return views, nil
+}
+
+// ListMine returns every review the caller wrote, across restaurants.
+func (svc *service) ListMine(ctx context.Context, userID uuid.UUID) ([]MyReviewView, error) {
+	views, err := svc.repository.ListByUser(ctx, userID)
+	if err != nil {
+		return nil, fmt.Errorf("list my reviews: %w", err)
 	}
 
 	return views, nil

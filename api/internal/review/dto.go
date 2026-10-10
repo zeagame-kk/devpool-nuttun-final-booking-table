@@ -54,3 +54,34 @@ func NewListReviewsResponse(views []ReviewView) httputil.ListResponse[ReviewResp
 
 	return httputil.ListResponse[ReviewResponse]{Total: int64(len(results)), Results: results}
 }
+
+type RestaurantRef struct {
+	ID   int    `json:"id"`
+	Name string `json:"name"`
+}
+
+// MyReviewItemResponse is one of the caller's reviews, naming the restaurant it is about.
+type MyReviewItemResponse struct {
+	ID         int           `json:"id"`
+	Rating     int           `json:"rating"`
+	Comment    string        `json:"comment"`
+	Restaurant RestaurantRef `json:"restaurant"`
+	CreatedAt  time.Time     `json:"createdAt"`
+	UpdatedAt  time.Time     `json:"updatedAt"`
+}
+
+func NewListMyReviewsResponse(views []MyReviewView) httputil.ListResponse[MyReviewItemResponse] {
+	results := make([]MyReviewItemResponse, len(views))
+	for index, view := range views {
+		results[index] = MyReviewItemResponse{
+			ID:         view.ID,
+			Rating:     view.Rating,
+			Comment:    view.Comment,
+			Restaurant: RestaurantRef{ID: view.RestaurantID, Name: view.RestaurantName},
+			CreatedAt:  view.CreatedAt,
+			UpdatedAt:  view.UpdatedAt,
+		}
+	}
+
+	return httputil.ListResponse[MyReviewItemResponse]{Total: int64(len(results)), Results: results}
+}

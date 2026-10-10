@@ -17,6 +17,7 @@ type Service interface {
 	Create(ctx context.Context, userID uuid.UUID, restaurantID int, rating int, comment string) (*Review, error)
 	UpdateMine(ctx context.Context, userID uuid.UUID, restaurantID int, rating int, comment string) (*ReviewView, error)
 	List(ctx context.Context, restaurantID int) ([]ReviewView, error)
+	ListMine(ctx context.Context, userID uuid.UUID) ([]MyReviewView, error)
 }
 
 type handler struct {
@@ -143,6 +144,32 @@ func readSaveRequest(ctx *gin.Context) (userID uuid.UUID, restaurantID int, req 
 	}
 
 	return userID, restaurantID, req, true
+}
+
+// ListMine godoc
+//
+//	@Summary		รีวิวของฉันทุกร้าน
+//	@Description	เรียงตามที่แก้ไขล่าสุดก่อน พร้อมชื่อร้าน ไม่รวมร้านที่ถูกลบแล้ว ไม่แบ่งหน้า
+//	@Tags			reviews
+//	@Produce		json
+//	@Security		BearerAuth
+//	@Success		200	{object}	httputil.ListResponse[review.MyReviewItemResponse]
+//	@Failure		401	{object}	httputil.ErrorResponse
+//	@Router			/reviews [get]
+func (hdr *handler) ListMine(ctx *gin.Context) {
+	userID, ok := reqctx.UserID(ctx.Request.Context())
+	if !ok {
+		ctx.AbortWithStatusJSON(http.StatusUnauthorized, httputil.ErrorResponse{Message: "unauthorized"})
+		return
+	}
+
+	views, err := hdr.service.ListMine(ctx.Request.Context(), userID)
+	if err != nil {
+		abortWithError(ctx, err)
+		return
+	}
+
+	ctx.JSON(http.StatusOK, NewListMyReviewsResponse(views))
 }
 
 // abortWithError maps a service error to the status and code the contract promises.

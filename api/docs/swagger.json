@@ -1175,6 +1175,37 @@
                 }
             }
         },
+        "/reviews": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "เรียงตามที่แก้ไขล่าสุดก่อน พร้อมชื่อร้าน ไม่รวมร้านที่ถูกลบแล้ว ไม่แบ่งหน้า",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "reviews"
+                ],
+                "summary": "รีวิวของฉันทุกร้าน",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/bookingtable_internal_httputil.ListResponse-internal_review_MyReviewItemResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/bookingtable_internal_httputil.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/users/{id}": {
             "get": {
                 "security": [
@@ -1343,6 +1374,20 @@
                     "type": "array",
                     "items": {
                         "$ref": "#/definitions/internal_restaurant.RestaurantResponse"
+                    }
+                },
+                "total": {
+                    "type": "integer"
+                }
+            }
+        },
+        "bookingtable_internal_httputil.ListResponse-internal_review_MyReviewItemResponse": {
+            "type": "object",
+            "properties": {
+                "results": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/internal_review.MyReviewItemResponse"
                     }
                 },
                 "total": {
@@ -1759,11 +1804,45 @@
                 }
             }
         },
+        "internal_review.MyReviewItemResponse": {
+            "type": "object",
+            "properties": {
+                "comment": {
+                    "type": "string"
+                },
+                "createdAt": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "rating": {
+                    "type": "integer"
+                },
+                "restaurant": {
+                    "$ref": "#/definitions/internal_review.RestaurantRef"
+                },
+                "updatedAt": {
+                    "type": "string"
+                }
+            }
+        },
         "internal_review.PersonRef": {
             "type": "object",
             "properties": {
                 "id": {
                     "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                }
+            }
+        },
+        "internal_review.RestaurantRef": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "integer"
                 },
                 "name": {
                     "type": "string"
