@@ -21,8 +21,12 @@ npm run build
 ```text
 app/          หน้าและ layout (รายการร้าน, รายละเอียดร้าน, /my/reservations, /my/restaurants/..., /auth/callback)
 components/   คอมโพเนนต์ของหน้า; bases/ = Button; ui/ = primitive จาก shadcn
+public/       ไฟล์ที่เสิร์ฟตรง ๆ (รูป hero ของหน้าแรก)
 hooks/        use-credential (สถานะล็อกอิน), use-async (โหลดข้อมูล)
 lib/          ตรรกะที่ไม่ผูกกับหน้า: api client + refresh token, auth store, เวลา Asia/Bangkok, ข้อความ error, ตัวแก้เวลาเปิด (มี *.test.ts ข้างไฟล์)
 ```
+
+ไอคอนของเว็บคือไฟล์ในโฟลเดอร์ `app/` ที่ Next ใส่ `<link>` ให้เอง: `icon.png` (512px, แท็บ/Android), `apple-icon.png` (180px พื้นเต็มสี่เหลี่ยมสำหรับ iOS) และ `favicon.ico` (16/32/48px)
+ถ้าจะเปลี่ยนภาพ ให้ทำสามไฟล์นี้ใหม่จากภาพต้นฉบับขนาดใหญ่ (ต้นฉบับ 940×940 ไม่ได้เก็บใน repo)
 
 ค่าที่ browser ต้องรู้มีตัวเดียวคือ `NEXT_PUBLIC_API_BASE_URL` (ค่าเริ่มต้น `http://localhost:8080/api/v1`) ห้ามใส่ความลับในตัวแปร `NEXT_PUBLIC_*`
