@@ -29,6 +29,13 @@ Needs Chrome, Chromium or Edge. Set `CHROME_PATH` if it is not the default macOS
 (`/Applications/Google Chrome.app/Contents/MacOS/Google Chrome`). `WEB_URL`, `API_URL` and `KC_URL` override the
 default addresses.
 
+## Screenshots for the design hand-off
+
+`design_screens.mjs` (same setup, same `KC_ADMIN_PASSWORD`) takes the 29 screenshots in `docs/design/screens`: every
+page and state, desktop and phone. It creates three throwaway users and demo restaurants with bookings and reviews, and
+removes what the API allows. The rest (reviews, cancelled bookings, `users` rows, all named `e2e-design-*`) needs the SQL
+in `docs/design/README.md` afterwards.
+
 ## Notes
 
 - The web container runs `next dev` on a bind mount, and on Colima it can miss file edits. If the pages do not
