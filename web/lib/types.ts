@@ -48,7 +48,7 @@ export type ReservationStatus = "confirmed" | "cancelled";
 
 export interface MyReservation {
   id: number;
-  restaurant: { id: number; name: string };
+  restaurant: { id: number; name: string; imageUrl: string | null; cancellationLeadMinutes: number };
   startAt: string;
   endAt: string;
   guests: number;
@@ -104,7 +104,7 @@ export interface MyReview {
   id: number;
   rating: number;
   comment: string;
-  restaurant: { id: number; name: string };
+  restaurant: { id: number; name: string; imageUrl: string | null };
   createdAt: string;
   updatedAt: string;
 }

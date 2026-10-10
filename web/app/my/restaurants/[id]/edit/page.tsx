@@ -6,6 +6,7 @@ import { AuthGuard } from "@/components/auth-guard";
 import { ErrorAlert } from "@/components/error-alert";
 import { ImageUploader } from "@/components/image-uploader";
 import { RestaurantForm } from "@/components/restaurant-form";
+import { Skeleton } from "@/components/ui/skeleton";
 import { useAsync } from "@/hooks/use-async";
 import { apiFetch } from "@/lib/api";
 import { isNotFound } from "@/lib/errors";
@@ -16,32 +17,35 @@ function EditRestaurant() {
   const { data, error, reload } = useAsync(() => apiFetch<RestaurantDetail>(`/restaurants/${id}`), [id]);
 
   if (error) {
-    return isNotFound(error) ? <p className="text-muted-foreground">ไม่พบร้านนี้</p> : <ErrorAlert error={error} />;
+    return isNotFound(error) ? <p className="text-muted-foreground">ไม่พบร้านนี้</p> : <ErrorAlert error={error} onRetry={reload} />;
   }
-  if (!data) return <p className="text-muted-foreground">กำลังโหลด…</p>;
+  if (!data) return <Skeleton aria-label="กำลังโหลด" className="h-96" />;
   if (!data.isOwner) return <p className="text-muted-foreground">คุณไม่มีสิทธิ์แก้ร้านนี้</p>;
 
   return (
-    <div className="flex max-w-2xl flex-col gap-8">
-      <div className="flex flex-col gap-4">
-        <div className="flex items-center justify-between gap-2">
-          <h1 className="text-xl font-semibold">แก้ไขร้าน</h1>
-          <Link href={`/restaurants/${data.id}`} className="text-sm text-primary-strong underline">
-            ดูหน้าร้าน
-          </Link>
+    <div className="flex flex-col gap-5">
+      <div className="flex flex-wrap items-end justify-between gap-2">
+        <div className="flex flex-col gap-1">
+          <p className="text-[15px] text-muted-foreground">
+            <Link href="/my/restaurants" className="hover:text-foreground">
+              ร้านของฉัน
+            </Link>{" "}
+            <span className="text-border">/</span> {data.name}
+          </p>
+          <h1 className="text-[26px] font-bold md:text-[30px]">แก้ไขร้าน</h1>
         </div>
-        <RestaurantForm
-          initial={data}
-          onSubmit={async (input) => {
-            await apiFetch(`/restaurants/${data.id}`, { method: "PUT", body: input });
-            reload();
-          }}
-        />
+        <Link href={`/restaurants/${data.id}`} className="text-[15px] font-semibold text-primary-strong hover:underline">
+          ดูหน้าร้าน →
+        </Link>
       </div>
-      <div className="flex flex-col gap-3">
-        <h2 className="text-lg font-semibold">รูปร้าน</h2>
-        <ImageUploader restaurantId={data.id} imageUrl={data.imageUrl} onChanged={reload} />
-      </div>
+      <RestaurantForm
+        initial={data}
+        imageSection={<ImageUploader restaurantId={data.id} imageUrl={data.imageUrl} onChanged={reload} />}
+        onSubmit={async (input) => {
+          await apiFetch(`/restaurants/${data.id}`, { method: "PUT", body: input });
+          reload();
+        }}
+      />
     </div>
   );
 }

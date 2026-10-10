@@ -1,21 +1,28 @@
 "use client";
 
-import { useState, type FormEvent } from "react";
-import { Button } from "@/components/bases/button";
+import { useState, type FormEvent, type ReactNode } from "react";
+import Link from "next/link";
+import { Button, buttonVariants } from "@/components/bases/button";
 import { ErrorAlert } from "@/components/error-alert";
+import { NumberStepper } from "@/components/number-stepper";
 import { OpeningHoursEditor } from "@/components/opening-hours-editor";
+import { RestaurantImage } from "@/components/restaurant-card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { emptyDayRows, rowsFromHours, rowsToHours, validateRows } from "@/lib/opening-hours";
+import { emptyDayRows, openingSummary, rowsFromHours, rowsToHours, validateRows } from "@/lib/opening-hours";
 import type { RestaurantDetail, SaveRestaurantInput } from "@/lib/types";
 
 interface RestaurantFormProps {
   initial?: RestaurantDetail;
   onSubmit: (input: SaveRestaurantInput) => Promise<void>;
+  /** The picture card, shown above the fields when the restaurant already exists (a picture needs its id). */
+  imageSection?: ReactNode;
 }
 
-export function RestaurantForm({ initial, onSubmit }: RestaurantFormProps) {
+const SECTION = "flex flex-col gap-4 rounded-[18px] border border-border-subtle bg-card p-[22px]";
+
+export function RestaurantForm({ initial, onSubmit, imageSection }: RestaurantFormProps) {
   const [name, setName] = useState(initial?.name ?? "");
   const [address, setAddress] = useState(initial?.address ?? "");
   const [description, setDescription] = useState(initial?.description ?? "");
@@ -55,37 +62,81 @@ export function RestaurantForm({ initial, onSubmit }: RestaurantFormProps) {
     }
   }
 
+  const openDays = rowsToHours(rows.filter((row) => row.open !== "" && row.close !== ""));
+
   return (
-    <form onSubmit={submit} className="flex flex-col gap-4">
-      <div className="flex flex-col gap-1">
-        <Label htmlFor="name">ชื่อร้าน *</Label>
-        <Input id="name" required maxLength={255} value={name} onChange={(e) => setName(e.target.value)} />
-      </div>
-      <div className="flex flex-col gap-1">
-        <Label htmlFor="address">ที่อยู่ *</Label>
-        <Input id="address" required value={address} onChange={(e) => setAddress(e.target.value)} />
-      </div>
-      <div className="flex flex-col gap-1">
-        <Label htmlFor="description">คำอธิบาย</Label>
-        <Textarea id="description" value={description} onChange={(e) => setDescription(e.target.value)} />
-      </div>
-      <div className="grid gap-4 sm:grid-cols-2">
-        <div className="flex flex-col gap-1">
-          <Label htmlFor="capacity">จำนวนที่นั่ง *</Label>
-          <Input id="capacity" type="number" min={1} step={1} required value={capacity} onChange={(e) => setCapacity(e.target.value)} />
+    <form onSubmit={submit} className="flex flex-col gap-5">
+      <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_320px] lg:items-start">
+        <div className="flex min-w-0 flex-col gap-4">
+          {imageSection}
+          <div className={SECTION}>
+            <h2 className="text-lg font-semibold">ข้อมูลร้าน</h2>
+            <div className="flex flex-col gap-1.5">
+              <Label htmlFor="name" className="text-sm font-semibold">
+                ชื่อร้าน <span className="text-destructive-strong">*</span>
+              </Label>
+              <Input id="name" required maxLength={255} value={name} onChange={(e) => setName(e.target.value)} />
+            </div>
+            <div className="flex flex-col gap-1.5">
+              <Label htmlFor="address" className="text-sm font-semibold">
+                ที่อยู่ <span className="text-destructive-strong">*</span>
+              </Label>
+              <Input id="address" required value={address} onChange={(e) => setAddress(e.target.value)} />
+            </div>
+            <div className="flex flex-col gap-1.5">
+              <Label htmlFor="description" className="text-sm font-semibold">
+                คำอธิบาย <span className="font-normal text-muted-foreground">(ไม่บังคับ)</span>
+              </Label>
+              <Textarea id="description" value={description} onChange={(e) => setDescription(e.target.value)} />
+            </div>
+          </div>
+          <div className={`${SECTION} sm:grid sm:grid-cols-2 sm:gap-5`}>
+            <div className="flex flex-col gap-1.5">
+              <Label htmlFor="capacity" className="text-sm font-semibold">
+                จำนวนที่นั่ง <span className="text-destructive-strong">*</span>
+              </Label>
+              <NumberStepper id="capacity" label="จำนวนที่นั่ง" min={1} value={capacity} onChange={setCapacity} />
+            </div>
+            <div className="flex flex-col gap-1.5">
+              <Label htmlFor="lead" className="text-sm font-semibold">
+                ยกเลิกได้ล่วงหน้า <span className="text-destructive-strong">*</span>
+              </Label>
+              <div className="flex items-center gap-2">
+                <Input id="lead" type="number" min={30} step={1} required className="w-28" value={leadMinutes} onChange={(e) => setLeadMinutes(e.target.value)} />
+                <span className="text-[15px] text-muted-foreground">นาที</span>
+              </div>
+              <span className="text-[13px] text-muted-foreground">อย่างน้อย 30 นาที</span>
+            </div>
+          </div>
+          <OpeningHoursEditor rows={rows} onChange={setRows} />
         </div>
-        <div className="flex flex-col gap-1">
-          <Label htmlFor="lead">ยกเลิกได้ล่วงหน้า (นาที) *</Label>
-          <Input id="lead" type="number" min={30} step={1} required value={leadMinutes} onChange={(e) => setLeadMinutes(e.target.value)} />
-          <p className="text-xs text-muted-foreground">อย่างน้อย 30 นาที</p>
-        </div>
+
+        <aside aria-label="ตัวอย่างการ์ดร้าน" className="hidden flex-col gap-2.5 lg:sticky lg:top-24 lg:flex">
+          <span className="text-sm font-semibold text-muted-foreground">ตัวอย่างการ์ดร้าน</span>
+          <div className="overflow-hidden rounded-[18px] border border-border-subtle bg-card">
+            <div className="relative h-[180px]">
+              <RestaurantImage imageUrl={initial?.imageUrl ?? null} name={name || "ร้าน"} className="size-full" />
+              {initial && initial.rating.total > 0 && (
+                <span className="absolute bottom-3 left-3 rounded-full bg-card px-2.5 py-1 text-[13px] font-semibold">
+                  ★ {initial.rating.average.toFixed(1)} ({initial.rating.total} รีวิว)
+                </span>
+              )}
+            </div>
+            <div className="flex flex-col gap-1 px-4 pt-3.5 pb-4">
+              <span className="truncate text-lg font-semibold">{name.trim() || "ชื่อร้าน"}</span>
+              <span className="truncate text-sm text-muted-foreground">{address.trim() || "ที่อยู่ร้าน"}</span>
+              <span className="text-sm text-muted-foreground">ที่นั่ง {Number(capacity) || 0}</span>
+            </div>
+          </div>
+          <div className="flex flex-col gap-0.5 rounded-[14px] border border-border-subtle bg-card px-3.5 py-3 text-sm">
+            <span className="text-muted-foreground">เวลาเปิดที่ลูกค้าเห็น</span>
+            <span className="font-semibold">{openingSummary(openDays)}</span>
+          </div>
+        </aside>
       </div>
-      <fieldset className="flex flex-col gap-2">
-        <legend className="mb-1 text-sm font-medium">เวลาเปิด (เวลาประเทศไทย)</legend>
-        <OpeningHoursEditor rows={rows} onChange={setRows} />
-      </fieldset>
+
       {problem && (
-        <p role="alert" className="text-sm text-destructive">
+        <p role="alert" className="text-sm text-destructive-strong">
           {problem}
         </p>
       )}
@@ -95,8 +146,12 @@ export function RestaurantForm({ initial, onSubmit }: RestaurantFormProps) {
           บันทึกแล้ว
         </p>
       )}
-      <div>
-        <Button type="submit" disabled={submitting}>
+
+      <div className="sticky bottom-[72px] z-20 flex justify-end gap-2.5 rounded-xl border border-border-subtle bg-card px-4 py-3 shadow-[0_-4px_16px_rgba(26,28,32,0.06)] md:bottom-3">
+        <Link href="/my/restaurants" className={buttonVariants({ variant: "outline", size: "large" })}>
+          ยกเลิก
+        </Link>
+        <Button type="submit" size="large" className="px-7" disabled={submitting}>
           {submitting ? "กำลังบันทึก…" : initial ? "บันทึก" : "สร้างร้าน"}
         </Button>
       </div>

@@ -1,4 +1,3 @@
-import type { ReactNode } from "react";
 import Link from "next/link";
 import { assetUrl } from "@/lib/api";
 import type { RestaurantSummary } from "@/lib/types";
@@ -29,7 +28,7 @@ export function RatingText({ average, total }: { average: number; total: number 
  * A restaurant in a list. On a wide screen it is a card with the photo on top and the rating on the photo;
  * on a phone it is a row with a small photo, so several fit on one screen. The whole card is the link.
  */
-export function RestaurantCard({ restaurant, actions }: { restaurant: RestaurantSummary; actions?: ReactNode }) {
+export function RestaurantCard({ restaurant }: { restaurant: RestaurantSummary }) {
   const { rating } = restaurant;
 
   return (
@@ -53,7 +52,6 @@ export function RestaurantCard({ restaurant, actions }: { restaurant: Restaurant
           <span className="text-muted-foreground"> · ที่นั่ง {restaurant.seatingCapacity}</span>
         </p>
         <p className="hidden text-sm text-muted-foreground sm:block">ที่นั่ง {restaurant.seatingCapacity}</p>
-        {actions && <div className="relative z-10 mt-2 flex flex-wrap gap-2">{actions}</div>}
       </div>
     </article>
   );

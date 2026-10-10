@@ -89,7 +89,7 @@
   --secondary-foreground: #1a1c20;
   --muted: #eeede8;
   --muted-foreground: #5f6168;
-  --accent: hsl(35 100% 55%);
+  --accent: #d99a3a; /* amber for the "almost full" bars */
   --accent-foreground: hsl(33 100% 12%);
   --accent-subtle: #fff1dc;
   --accent-border: #f1d2a0;

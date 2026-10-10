@@ -47,25 +47,34 @@ export function ImageUploader({ restaurantId, imageUrl, onChanged }: ImageUpload
   }
 
   return (
-    <div className="flex flex-col gap-3">
-      <RestaurantImage imageUrl={imageUrl} name="รูปร้าน" className="h-48 w-full max-w-md rounded-lg" />
-      <div className="flex flex-wrap gap-2">
-        <input ref={input} type="file" accept="image/jpeg,image/png,image/webp" className="hidden" onChange={pick} />
-        <Button variant="outline" size="small" disabled={busy} onClick={() => input.current?.click()}>
-          {imageUrl ? "เปลี่ยนรูป" : "อัปโหลดรูป"}
-        </Button>
-        {imageUrl && (
-          <Button
-            variant="destructive"
-            size="small"
-            disabled={busy}
-            onClick={() => void run(() => apiFetch(`/restaurants/${restaurantId}/image`, { method: "DELETE" }))}
-          >
-            ลบรูป
-          </Button>
-        )}
+    <div className="flex flex-col gap-4 rounded-[18px] border border-border-subtle bg-card p-[22px]">
+      <h2 className="text-lg font-semibold">รูปร้าน</h2>
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
+        <RestaurantImage imageUrl={imageUrl} name="รูปร้าน" className="h-[150px] w-full rounded-[14px] sm:w-60" />
+        <div className="flex flex-col gap-2.5">
+          <p className="text-sm leading-relaxed text-muted-foreground">
+            รูปนี้ขึ้นเป็นภาพหลักในการ์ดร้านและหน้าร้าน
+            <br />
+            รองรับ JPG, PNG, WebP ขนาดไม่เกิน 2 MB
+          </p>
+          <div className="flex gap-2">
+            <input ref={input} type="file" accept="image/jpeg,image/png,image/webp" className="hidden" onChange={pick} />
+            <Button type="button" variant="outline" disabled={busy} onClick={() => input.current?.click()}>
+              {imageUrl ? "เปลี่ยนรูป" : "อัปโหลดรูป"}
+            </Button>
+            {imageUrl && (
+              <Button
+                type="button"
+                variant="destructive"
+                disabled={busy}
+                onClick={() => void run(() => apiFetch(`/restaurants/${restaurantId}/image`, { method: "DELETE" }))}
+              >
+                ลบรูป
+              </Button>
+            )}
+          </div>
+        </div>
       </div>
-      <p className="text-xs text-muted-foreground">รองรับ JPG, PNG, WebP ขนาดไม่เกิน 2 MB</p>
       <ErrorAlert error={error} />
     </div>
   );
