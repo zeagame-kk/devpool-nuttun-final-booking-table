@@ -1,0 +1,3 @@
+# The hand-off package we sent comes back inside the download; it already lives in docs/design.
+uploads/
+.thumbnail

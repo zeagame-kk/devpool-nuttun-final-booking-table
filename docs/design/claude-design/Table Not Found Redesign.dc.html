@@ -1,0 +1,1036 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="design_doc_mode" content="canvas">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#d9d7d0;font-family:'Noto Sans Thai',sans-serif;color:#1a1c20;-webkit-font-smoothing:antialiased}
+a{color:#1568d8;text-decoration:none}a:hover{color:#0e52cc;text-decoration:underline}
+input,textarea,button{font-family:inherit}
+</style>
+</helmet>
+<section style="padding:72px 80px 40px;display:flex;flex-direction:column;gap:40px">
+<div style="display:flex;flex-direction:column;gap:8px;max-width:900px">
+<div style="font-size:14px;font-weight:600;color:#5f6168;letter-spacing:.04em">รอบที่ 2</div>
+<div style="font-size:40px;font-weight:700;line-height:1.25">หน้าเจ้าของร้าน การจองของฉัน และโปรไฟล์</div>
+<div style="font-size:18px;color:#5f6168;line-height:1.6;text-wrap:pretty">ใช้ระบบเดียวกับรอบที่ 1 หน้าเจ้าของร้านเปลี่ยนจากการ์ดแบบลูกค้าเป็นแถวจัดการ หน้าการจองของร้านจัดเป็นกลุ่มรายวัน พร้อมแถบที่นั่งรายชั่วโมง ส่วนการจองของฉันแยก "กำลังจะถึง" ออกจาก "ยกเลิกแล้ว" และแก้ไขในการ์ดได้เลย (กดลองได้ที่ <a href="#2b">2b</a> <a href="#2c">2c</a> <a href="#2d">2d</a> <a href="#2e">2e</a>)</div>
+</div>
+
+<div style="display:flex;flex-wrap:wrap;gap:72px;align-items:flex-start">
+
+<div id="2a" style="display:flex;flex-direction:column;gap:14px">
+<div style="display:flex;align-items:center;gap:10px"><span style="background:#1a1c20;color:#fff;font-size:14px;font-weight:700;padding:3px 10px;border-radius:6px">2a</span><span style="font-size:18px;font-weight:600">ร้านของฉัน · 1200</span></div>
+<div style="width:1200px;background:#f6f5f2;border-radius:12px;overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,.08)">
+<div style="height:64px;background:#fff;border-bottom:1px solid #e3e1da;display:flex;align-items:center;justify-content:center">
+<div style="width:1024px;display:flex;align-items:center;justify-content:space-between">
+<div style="display:flex;align-items:center;gap:28px">
+<div style="display:flex;align-items:center;gap:10px"><img src="assets/logo.png" style="width:32px;height:32px;border-radius:8px"><span style="font-size:19px;font-weight:700;color:#1568d8">Table Not Found</span></div>
+<div style="display:flex;gap:4px;font-size:15px"><span style="padding:8px 14px;border-radius:999px;color:#5f6168">ร้านทั้งหมด</span><span style="padding:8px 14px;border-radius:999px;color:#5f6168">การจองของฉัน</span><span style="padding:8px 14px;border-radius:999px;background:#eaf1fe;color:#0f4fc0;font-weight:600">ร้านของฉัน</span></div>
+</div>
+<div style="display:flex;align-items:center;gap:8px;padding:4px 10px 4px 4px;border-radius:999px;border:1px solid #e3e1da"><span style="width:34px;height:34px;border-radius:50%;background:#eaf1fe;color:#0f4fc0;font-size:13px;font-weight:600;display:flex;align-items:center;justify-content:center">สจ</span><span style="font-size:15px">สมชาย เจ้าของร้าน</span><span style="font-size:11px;color:#5f6168">▼</span></div>
+</div></div>
+<div style="display:flex;justify-content:center;padding:36px 0 64px">
+<div style="width:1024px;display:flex;flex-direction:column;gap:24px">
+<div style="display:flex;justify-content:space-between;align-items:flex-end">
+<div style="display:flex;flex-direction:column;gap:4px"><div style="font-size:30px;font-weight:700">ร้านของฉัน</div><div style="font-size:16px;color:#5f6168">จัดการข้อมูลร้านและดูการจองที่เข้ามา</div></div>
+<div style="height:48px;padding:0 20px;border-radius:12px;background:#1262ee;color:#fff;font-size:16px;font-weight:600;display:flex;align-items:center;gap:8px"><span style="font-size:20px;line-height:1">+</span>สร้างร้านใหม่</div>
+</div>
+<div style="display:grid;grid-template-columns:1.4fr 1fr 1fr;gap:12px">
+<div style="background:#1262ee;color:#fff;border-radius:16px;padding:20px;display:flex;flex-direction:column;gap:4px"><span style="font-size:14px">คะแนนเฉลี่ย</span><span style="font-size:38px;font-weight:700;line-height:1.1">4.5 <span style="font-size:20px">★</span></span><span style="font-size:13px;color:#dbe6fd">ถ่วงตามจำนวนรีวิว</span></div>
+<div style="background:#fff;border:1px solid #ebe9e3;border-radius:16px;padding:20px;display:flex;flex-direction:column;gap:4px"><span style="font-size:14px;color:#5f6168">ร้านของฉัน</span><span style="font-size:30px;font-weight:700">2</span></div>
+<div style="background:#fff;border:1px solid #ebe9e3;border-radius:16px;padding:20px;display:flex;flex-direction:column;gap:4px"><span style="font-size:14px;color:#5f6168">รีวิวทั้งหมด</span><span style="font-size:30px;font-weight:700">2</span></div>
+</div>
+<div style="display:flex;flex-direction:column;gap:12px">
+<div style="background:#fff;border:1px solid #ebe9e3;border-radius:18px;padding:14px;display:grid;grid-template-columns:200px minmax(0,1fr) auto;gap:20px;align-items:center">
+<img src="assets/9004.jpg" style="width:200px;height:130px;border-radius:12px;object-fit:cover">
+<div style="display:flex;flex-direction:column;gap:6px;min-width:0">
+<div style="font-size:20px;font-weight:600">ปิ้งย่างเตาถ่านลุงแดง</div>
+<div style="font-size:14px;color:#5f6168">12 ซ.อารีย์ 4 แขวงสามเสนใน กรุงเทพฯ</div>
+<div style="display:flex;flex-wrap:wrap;gap:6px;padding-top:4px">
+<span style="font-size:13px;padding:4px 10px;border-radius:999px;background:#f6f5f2"><b>★ 5.0</b> (1 รีวิว)</span>
+<span style="font-size:13px;padding:4px 10px;border-radius:999px;background:#f6f5f2">ที่นั่ง 24</span>
+<span style="font-size:13px;padding:4px 10px;border-radius:999px;background:#f6f5f2">ยกเลิกล่วงหน้า 60 นาที</span>
+</div></div>
+<div style="display:flex;gap:8px;align-items:center;padding-right:6px">
+<a href="#2b" style="height:44px;padding:0 18px;border-radius:12px;background:#1262ee;color:#fff;font-size:15px;font-weight:600;display:flex;align-items:center;text-decoration:none">ดูการจอง</a>
+<a href="#2c" style="height:44px;padding:0 18px;border-radius:12px;border:1.5px solid #d6d3cb;color:#1a1c20;font-size:15px;font-weight:600;display:flex;align-items:center;text-decoration:none">แก้ไข</a>
+<span style="height:44px;padding:0 14px;border-radius:12px;color:#b3261e;font-size:15px;font-weight:600;display:flex;align-items:center">ลบ</span>
+</div></div>
+<div style="background:#fff;border:1px solid #ebe9e3;border-radius:18px;padding:14px;display:grid;grid-template-columns:200px minmax(0,1fr) auto;gap:20px;align-items:center">
+<img src="assets/9001.jpg" style="width:200px;height:130px;border-radius:12px;object-fit:cover">
+<div style="display:flex;flex-direction:column;gap:6px;min-width:0">
+<div style="font-size:20px;font-weight:600">ชาบูริมคลอง</div>
+<div style="font-size:14px;color:#5f6168">88 ถ.เจริญกรุง แขวงบางรัก กรุงเทพฯ</div>
+<div style="display:flex;flex-wrap:wrap;gap:6px;padding-top:4px">
+<span style="font-size:13px;padding:4px 10px;border-radius:999px;background:#f6f5f2"><b>★ 4.0</b> (1 รีวิว)</span>
+<span style="font-size:13px;padding:4px 10px;border-radius:999px;background:#f6f5f2">ที่นั่ง 10</span>
+<span style="font-size:13px;padding:4px 10px;border-radius:999px;background:#f6f5f2">ยกเลิกล่วงหน้า 60 นาที</span>
+</div></div>
+<div style="display:flex;gap:8px;align-items:center;padding-right:6px">
+<a href="#2b" style="height:44px;padding:0 18px;border-radius:12px;background:#1262ee;color:#fff;font-size:15px;font-weight:600;display:flex;align-items:center;text-decoration:none">ดูการจอง</a>
+<a href="#2c" style="height:44px;padding:0 18px;border-radius:12px;border:1.5px solid #d6d3cb;color:#1a1c20;font-size:15px;font-weight:600;display:flex;align-items:center;text-decoration:none">แก้ไข</a>
+<span style="height:44px;padding:0 14px;border-radius:12px;color:#b3261e;font-size:15px;font-weight:600;display:flex;align-items:center">ลบ</span>
+</div></div>
+</div>
+<div style="font-size:14px;color:#5f6168">ร้านยังไม่มี? หน้าว่างใช้ EmptyState: "ยังไม่มีร้าน" + ปุ่ม "สร้างร้านใหม่"</div>
+</div></div>
+</div>
+</div>
+
+<div id="2b" style="display:flex;flex-direction:column;gap:14px">
+<div style="display:flex;align-items:center;gap:10px"><span style="background:#1a1c20;color:#fff;font-size:14px;font-weight:700;padding:3px 10px;border-radius:6px">2b</span><span style="font-size:18px;font-weight:600">การจองของร้าน · 1200 (กดกรองสถานะได้)</span></div>
+<div style="width:1200px;background:#f6f5f2;border-radius:12px;overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,.08)">
+<div style="height:64px;background:#fff;border-bottom:1px solid #e3e1da;display:flex;align-items:center;justify-content:center">
+<div style="width:1024px;display:flex;align-items:center;justify-content:space-between">
+<div style="display:flex;align-items:center;gap:28px">
+<div style="display:flex;align-items:center;gap:10px"><img src="assets/logo.png" style="width:32px;height:32px;border-radius:8px"><span style="font-size:19px;font-weight:700;color:#1568d8">Table Not Found</span></div>
+<div style="display:flex;gap:4px;font-size:15px"><span style="padding:8px 14px;border-radius:999px;color:#5f6168">ร้านทั้งหมด</span><span style="padding:8px 14px;border-radius:999px;color:#5f6168">การจองของฉัน</span><span style="padding:8px 14px;border-radius:999px;background:#eaf1fe;color:#0f4fc0;font-weight:600">ร้านของฉัน</span></div>
+</div>
+<div style="display:flex;align-items:center;gap:8px;padding:4px 10px 4px 4px;border-radius:999px;border:1px solid #e3e1da"><span style="width:34px;height:34px;border-radius:50%;background:#eaf1fe;color:#0f4fc0;font-size:13px;font-weight:600;display:flex;align-items:center;justify-content:center">สจ</span><span style="font-size:15px">สมชาย เจ้าของร้าน</span><span style="font-size:11px;color:#5f6168">▼</span></div>
+</div></div>
+<div style="display:flex;justify-content:center;padding:28px 0 64px">
+<div style="width:1024px;display:flex;flex-direction:column;gap:24px">
+<div style="display:flex;flex-direction:column;gap:14px">
+<div style="font-size:15px;color:#5f6168">ร้านของฉัน <span style="color:#a5a7ad">/</span> ชาบูริมคลอง</div>
+<div style="display:flex;align-items:center;gap:16px">
+<img src="assets/9001.jpg" style="width:56px;height:56px;border-radius:14px;object-fit:cover">
+<div style="display:flex;flex-direction:column"><div style="font-size:28px;font-weight:700;line-height:1.2">การจองของร้าน ชาบูริมคลอง</div><div style="font-size:14px;color:#5f6168">ที่นั่ง 10 · ดูได้อย่างเดียว</div></div>
+</div></div>
+<div style="display:grid;grid-template-columns:1.4fr 1fr 1fr 1fr;gap:12px">
+<div style="background:#1262ee;color:#fff;border-radius:16px;padding:18px;display:flex;flex-direction:column;gap:4px"><span style="font-size:14px">วันนี้</span><span style="font-size:36px;font-weight:700;line-height:1.1">0</span><span style="font-size:13px;color:#dbe6fd">การจองที่ยืนยันแล้วของวันนี้</span></div>
+<div style="background:#fff;border:1px solid #ebe9e3;border-radius:16px;padding:18px;display:flex;flex-direction:column;gap:4px"><span style="font-size:14px;color:#5f6168">กำลังจะถึง</span><span style="font-size:28px;font-weight:700">3</span></div>
+<div style="background:#fff;border:1px solid #ebe9e3;border-radius:16px;padding:18px;display:flex;flex-direction:column;gap:4px"><span style="font-size:14px;color:#5f6168">แขกที่กำลังจะมา</span><span style="font-size:28px;font-weight:700">17</span><span style="font-size:13px;color:#5f6168">รวมทุกการจองที่กำลังจะถึง</span></div>
+<div style="background:#fff;border:1px solid #ebe9e3;border-radius:16px;padding:18px;display:flex;flex-direction:column;gap:4px"><span style="font-size:14px;color:#5f6168">ยกเลิกแล้ว</span><span style="font-size:28px;font-weight:700;color:#5f6168">1</span></div>
+</div>
+<div style="display:flex;justify-content:space-between;align-items:center">
+<div style="font-size:20px;font-weight:600">รายการจอง</div>
+<div style="display:flex;gap:6px;background:#ecebe6;padding:4px;border-radius:12px">
+<sc-for list="{{ oFilters }}" as="f" hint-placeholder-count="3">
+<div onClick="{{ f.pick }}" style="height:36px;padding:0 14px;border-radius:9px;font-size:14px;font-weight:{{ f.fw }};display:flex;align-items:center;cursor:pointer;background:{{ f.bg }};color:{{ f.fg }};box-shadow:{{ f.sh }}">{{ f.label }}</div>
+</sc-for>
+</div></div>
+<sc-for list="{{ groups }}" as="g" hint-placeholder-count="2">
+<div style="background:#fff;border:1px solid #ebe9e3;border-radius:18px;overflow:hidden">
+<div style="display:grid;grid-template-columns:minmax(0,1fr) 420px;gap:24px;align-items:center;padding:18px 20px;border-bottom:1px solid #f0efea">
+<div style="display:flex;flex-direction:column;gap:2px"><div style="font-size:18px;font-weight:600">{{ g.title }}</div><div style="font-size:14px;color:#5f6168">{{ g.meta }}</div></div>
+<div style="display:flex;flex-direction:column;gap:4px">
+<div style="display:grid;grid-template-columns:repeat(11,1fr);gap:4px;height:36px;align-items:end">
+<sc-for list="{{ g.bars }}" as="b" hint-placeholder-count="11"><div style="height:{{ b.h }};background:{{ b.c }};border-radius:4px"></div></sc-for>
+</div>
+<div style="display:grid;grid-template-columns:repeat(11,1fr);gap:4px;font-size:11px;color:#8a8c92;text-align:center">
+<sc-for list="{{ g.bars }}" as="b" hint-placeholder-count="11"><span>{{ b.t }}</span></sc-for>
+</div></div>
+</div>
+<sc-for list="{{ g.rows }}" as="r" hint-placeholder-count="3">
+<div style="display:grid;grid-template-columns:130px minmax(0,1fr) 100px 110px;gap:16px;align-items:center;padding:14px 20px;border-bottom:1px solid #f6f5f2;opacity:{{ r.op }}">
+<span style="font-size:17px;font-weight:700">{{ r.timeText }}</span>
+<div style="display:flex;align-items:center;gap:10px"><span style="width:32px;height:32px;border-radius:50%;background:#eaf1fe;color:#0f4fc0;font-size:12px;font-weight:600;display:flex;align-items:center;justify-content:center">{{ r.ini }}</span><span style="font-size:15px">{{ r.who }}</span></div>
+<span style="font-size:15px">{{ r.partyText }}</span>
+<span style="justify-self:start;font-size:13px;padding:4px 10px;border-radius:999px;font-weight:600;background:{{ r.bbg }};color:{{ r.bfg }}">{{ r.label }}</span>
+</div>
+</sc-for>
+</div>
+</sc-for>
+<div style="display:flex;gap:16px;font-size:13px;color:#5f6168"><span style="display:flex;align-items:center;gap:6px"><span style="width:10px;height:10px;border-radius:3px;background:#1262ee"></span>ที่นั่งที่จองแล้ว</span><span style="display:flex;align-items:center;gap:6px"><span style="width:10px;height:10px;border-radius:3px;background:#d99a3a"></span>ใกล้เต็ม</span><span style="display:flex;align-items:center;gap:6px"><span style="width:10px;height:10px;border-radius:3px;background:#b3261e"></span>เต็ม</span><span style="flex:1;text-align:right">แถบคำนวณจากการจองที่ยืนยันแล้ว ไม่ต้องเพิ่มข้อมูลฝั่ง backend</span></div>
+</div></div>
+</div>
+</div>
+
+<div id="2c" style="display:flex;flex-direction:column;gap:14px">
+<div style="display:flex;align-items:center;gap:10px"><span style="background:#1a1c20;color:#fff;font-size:14px;font-weight:700;padding:3px 10px;border-radius:6px">2c</span><span style="font-size:18px;font-weight:600">แก้ไขร้าน / สร้างร้านใหม่ · 1200 (พิมพ์ชื่อ ปรับที่นั่ง เปิด/ปิดวันได้)</span></div>
+<div style="width:1200px;background:#f6f5f2;border-radius:12px;overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,.08)">
+<div style="height:64px;background:#fff;border-bottom:1px solid #e3e1da;display:flex;align-items:center;justify-content:center">
+<div style="width:1024px;display:flex;align-items:center;justify-content:space-between">
+<div style="display:flex;align-items:center;gap:28px">
+<div style="display:flex;align-items:center;gap:10px"><img src="assets/logo.png" style="width:32px;height:32px;border-radius:8px"><span style="font-size:19px;font-weight:700;color:#1568d8">Table Not Found</span></div>
+<div style="display:flex;gap:4px;font-size:15px"><span style="padding:8px 14px;border-radius:999px;color:#5f6168">ร้านทั้งหมด</span><span style="padding:8px 14px;border-radius:999px;color:#5f6168">การจองของฉัน</span><span style="padding:8px 14px;border-radius:999px;background:#eaf1fe;color:#0f4fc0;font-weight:600">ร้านของฉัน</span></div>
+</div>
+<div style="display:flex;align-items:center;gap:8px;padding:4px 10px 4px 4px;border-radius:999px;border:1px solid #e3e1da"><span style="width:34px;height:34px;border-radius:50%;background:#eaf1fe;color:#0f4fc0;font-size:13px;font-weight:600;display:flex;align-items:center;justify-content:center">สจ</span><span style="font-size:15px">สมชาย เจ้าของร้าน</span><span style="font-size:11px;color:#5f6168">▼</span></div>
+</div></div>
+<div style="display:flex;justify-content:center;padding:28px 0 0">
+<div style="width:1024px;display:flex;flex-direction:column;gap:20px">
+<div style="display:flex;justify-content:space-between;align-items:flex-end">
+<div style="display:flex;flex-direction:column;gap:4px"><div style="font-size:15px;color:#5f6168">ร้านของฉัน <span style="color:#a5a7ad">/</span> ชาบูริมคลอง</div><div style="font-size:30px;font-weight:700">แก้ไขร้าน</div></div>
+<a href="#1c" style="font-size:15px;font-weight:600">ดูหน้าร้าน →</a>
+</div>
+<div style="display:grid;grid-template-columns:minmax(0,1fr) 320px;gap:24px;align-items:start">
+<div style="display:flex;flex-direction:column;gap:16px">
+<div style="background:#fff;border:1px solid #ebe9e3;border-radius:18px;padding:22px;display:flex;flex-direction:column;gap:16px">
+<div style="font-size:18px;font-weight:600">รูปร้าน</div>
+<div style="display:flex;gap:18px;align-items:center">
+<img src="assets/9001.jpg" style="width:240px;height:150px;border-radius:14px;object-fit:cover">
+<div style="display:flex;flex-direction:column;gap:10px">
+<div style="font-size:14px;color:#5f6168;line-height:1.6">รูปนี้ขึ้นเป็นภาพหลักในการ์ดร้านและหน้าร้าน<br>รองรับ JPG, PNG, WebP ขนาดไม่เกิน 2 MB</div>
+<div style="display:flex;gap:8px"><span style="height:44px;padding:0 16px;border-radius:12px;border:1.5px solid #d6d3cb;font-size:15px;font-weight:600;display:flex;align-items:center">เปลี่ยนรูป</span><span style="height:44px;padding:0 14px;border-radius:12px;color:#b3261e;font-size:15px;font-weight:600;display:flex;align-items:center">ลบรูป</span></div>
+</div></div></div>
+<div style="background:#fff;border:1px solid #ebe9e3;border-radius:18px;padding:22px;display:flex;flex-direction:column;gap:16px">
+<div style="font-size:18px;font-weight:600">ข้อมูลร้าน</div>
+<label style="display:flex;flex-direction:column;gap:6px"><span style="font-size:14px;font-weight:600">ชื่อร้าน <span style="color:#b3261e">*</span></span>
+<input value="{{ fName }}" onChange="{{ onFName }}" style="height:44px;border:1.5px solid #d6d3cb;border-radius:12px;padding:0 14px;font-size:16px;outline:none;color:#1a1c20;box-sizing:border-box" style-focus="border-color:#1262ee;box-shadow:0 0 0 3px #eaf1fe"></label>
+<label style="display:flex;flex-direction:column;gap:6px"><span style="font-size:14px;font-weight:600">ที่อยู่ <span style="color:#b3261e">*</span></span>
+<div style="height:44px;border:1.5px solid #d6d3cb;border-radius:12px;padding:0 14px;font-size:16px;display:flex;align-items:center;box-sizing:border-box">88 ถ.เจริญกรุง แขวงบางรัก กรุงเทพฯ</div></label>
+<label style="display:flex;flex-direction:column;gap:6px"><span style="font-size:14px;font-weight:600">คำอธิบาย <span style="font-weight:400;color:#5f6168">(ไม่บังคับ)</span></span>
+<div style="min-height:80px;border:1.5px solid #d6d3cb;border-radius:12px;padding:10px 14px;font-size:16px;box-sizing:border-box;line-height:1.6">ชาบูหม้อไฟ น้ำซุปเข้มข้น เนื้อสดส่งทุกเช้า นั่งริมคลองบรรยากาศดี</div></label>
+</div>
+<div style="background:#fff;border:1px solid #ebe9e3;border-radius:18px;padding:22px;display:grid;grid-template-columns:1fr 1fr;gap:20px">
+<div style="display:flex;flex-direction:column;gap:6px"><span style="font-size:14px;font-weight:600">จำนวนที่นั่ง <span style="color:#b3261e">*</span></span>
+<div style="display:flex;align-items:center;gap:4px;border:1.5px solid #d6d3cb;border-radius:12px;padding:2px;width:max-content">
+<div onClick="{{ seatDec }}" style="width:40px;height:38px;display:flex;align-items:center;justify-content:center;font-size:20px;cursor:pointer;border-radius:9px" style-hover="background:#f0efea">−</div>
+<span style="min-width:64px;text-align:center;font-size:17px;font-weight:600">{{ fSeats }}</span>
+<div onClick="{{ seatInc }}" style="width:40px;height:38px;display:flex;align-items:center;justify-content:center;font-size:20px;cursor:pointer;border-radius:9px" style-hover="background:#f0efea">+</div>
+</div></div>
+<div style="display:flex;flex-direction:column;gap:6px"><span style="font-size:14px;font-weight:600">ยกเลิกได้ล่วงหน้า <span style="color:#b3261e">*</span></span>
+<div style="display:flex;align-items:center;gap:8px"><div style="height:44px;width:100px;border:1.5px solid #d6d3cb;border-radius:12px;padding:0 14px;font-size:16px;display:flex;align-items:center;box-sizing:border-box">60</div><span style="font-size:15px;color:#5f6168">นาที</span></div>
+<span style="font-size:13px;color:#5f6168">อย่างน้อย 30 นาที</span></div>
+</div>
+<div style="background:#fff;border:1px solid #ebe9e3;border-radius:18px;padding:22px;display:flex;flex-direction:column;gap:6px">
+<div style="display:flex;justify-content:space-between;align-items:center;padding-bottom:8px"><div style="display:flex;flex-direction:column"><span style="font-size:18px;font-weight:600">เวลาเปิด</span><span style="font-size:13px;color:#5f6168">เวลาประเทศไทย</span></div><span onClick="{{ allOpen }}" style="font-size:14px;font-weight:600;color:#1568d8;cursor:pointer">เปิดทุกวัน</span></div>
+<sc-for list="{{ hoursRows }}" as="h" hint-placeholder-count="7">
+<div style="display:grid;grid-template-columns:52px 110px 1fr;gap:12px;align-items:center;min-height:52px;border-top:1px solid #f6f5f2">
+<div onClick="{{ h.toggle }}" style="width:40px;height:24px;border-radius:12px;background:{{ h.swBg }};position:relative;cursor:pointer"><span style="position:absolute;top:2px;left:{{ h.knob }};width:20px;height:20px;border-radius:50%;background:#fff;box-shadow:0 1px 2px rgba(0,0,0,.2)"></span></div>
+<span style="font-size:15px;font-weight:600">{{ h.name }}</span>
+<sc-if value="{{ h.on }}" hint-placeholder-val="{{ true }}"><div style="display:flex;align-items:center;gap:10px"><span style="height:40px;width:96px;border:1.5px solid #d6d3cb;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:15px">11:00</span><span style="color:#5f6168;font-size:14px">ถึง</span><span style="height:40px;width:96px;border:1.5px solid #d6d3cb;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:15px">22:00</span></div></sc-if>
+<sc-if value="{{ h.off }}" hint-placeholder-val="{{ false }}"><span style="font-size:15px;color:#8a8c92">ปิดทั้งวัน</span></sc-if>
+</div>
+</sc-for>
+</div>
+</div>
+<div style="position:sticky;top:24px;display:flex;flex-direction:column;gap:10px">
+<div style="font-size:14px;font-weight:600;color:#5f6168">ตัวอย่างการ์ดร้าน</div>
+<div style="background:#fff;border-radius:18px;overflow:hidden;border:1px solid #ebe9e3">
+<div style="position:relative;height:180px"><img src="assets/9001.jpg" style="width:100%;height:100%;object-fit:cover;display:block"><div style="position:absolute;left:12px;bottom:12px;background:#fff;border-radius:999px;padding:4px 10px;font-size:13px;font-weight:600">★ 4.0 (1 รีวิว)</div></div>
+<div style="padding:14px 16px 16px;display:flex;flex-direction:column;gap:4px"><div style="font-size:18px;font-weight:600">{{ previewName }}</div><div style="font-size:14px;color:#5f6168">88 ถ.เจริญกรุง แขวงบางรัก กรุงเทพฯ</div><div style="font-size:14px;color:#5f6168">ที่นั่ง {{ fSeats }}</div></div>
+</div>
+<div style="background:#fff;border:1px solid #ebe9e3;border-radius:14px;padding:12px 14px;font-size:14px;display:flex;flex-direction:column;gap:2px"><span style="color:#5f6168">เวลาเปิดที่ลูกค้าเห็น</span><span style="font-weight:600">{{ openSummary }}</span></div>
+</div>
+</div>
+</div></div>
+<div style="margin-top:28px;background:#fff;border-top:1px solid #e3e1da;display:flex;justify-content:center;padding:14px 0">
+<div style="width:1024px;display:flex;justify-content:flex-end;gap:10px"><span style="height:48px;padding:0 20px;border-radius:12px;border:1.5px solid #d6d3cb;font-size:16px;font-weight:600;display:flex;align-items:center">ยกเลิก</span><span style="height:48px;padding:0 28px;border-radius:12px;background:#1262ee;color:#fff;font-size:16px;font-weight:600;display:flex;align-items:center">บันทึก</span></div>
+</div>
+</div>
+</div>
+</div>
+
+<div style="display:flex;flex-wrap:wrap;gap:72px;align-items:flex-start">
+
+<div id="2d" style="display:flex;flex-direction:column;gap:14px">
+<div style="display:flex;align-items:center;gap:10px"><span style="background:#1a1c20;color:#fff;font-size:14px;font-weight:700;padding:3px 10px;border-radius:6px">2d</span><span style="font-size:18px;font-weight:600">การจองของฉัน · 1200 (กดแก้ไข / ยกเลิกได้)</span></div>
+<div style="width:1200px;background:#f6f5f2;border-radius:12px;overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,.08)">
+<div style="height:64px;background:#fff;border-bottom:1px solid #e3e1da;display:flex;align-items:center;justify-content:center">
+<div style="width:1024px;display:flex;align-items:center;justify-content:space-between">
+<div style="display:flex;align-items:center;gap:28px">
+<div style="display:flex;align-items:center;gap:10px"><img src="assets/logo.png" style="width:32px;height:32px;border-radius:8px"><span style="font-size:19px;font-weight:700;color:#1568d8">Table Not Found</span></div>
+<div style="display:flex;gap:4px;font-size:15px"><span style="padding:8px 14px;border-radius:999px;color:#5f6168">ร้านทั้งหมด</span><span style="padding:8px 14px;border-radius:999px;background:#eaf1fe;color:#0f4fc0;font-weight:600">การจองของฉัน</span><span style="padding:8px 14px;border-radius:999px;color:#5f6168">ร้านของฉัน</span></div>
+</div>
+<div style="display:flex;align-items:center;gap:8px;padding:4px 10px 4px 4px;border-radius:999px;border:1px solid #e3e1da"><span style="width:34px;height:34px;border-radius:50%;background:#eaf1fe;color:#0f4fc0;font-size:13px;font-weight:600;display:flex;align-items:center;justify-content:center">สจ</span><span style="font-size:15px">สมศรี ใจดี</span><span style="font-size:11px;color:#5f6168">▼</span></div>
+</div></div>
+<div style="display:flex;justify-content:center;padding:36px 0 64px">
+<div style="width:820px;display:flex;flex-direction:column;gap:16px">
+<div style="font-size:30px;font-weight:700">การจองของฉัน</div>
+<div style="font-size:15px;font-weight:600;color:#5f6168;padding-top:4px">กำลังจะถึง</div>
+<sc-if value="{{ noUpcoming }}" hint-placeholder-val="{{ false }}">
+<div style="background:#fff;border:1px solid #ebe9e3;border-radius:18px;padding:36px;display:flex;flex-direction:column;align-items:center;gap:8px;text-align:center"><div style="font-size:18px;font-weight:600">ยังไม่มีการจอง</div><div style="font-size:15px;color:#5f6168">โต๊ะยังว่างรอคุณอยู่ เลือกร้านแล้วจองได้เลย</div></div>
+</sc-if>
+<sc-for list="{{ upcoming }}" as="r" hint-placeholder-count="3">
+<div style="background:#fff;border:1px solid #ebe9e3;border-radius:18px;padding:16px;display:flex;flex-direction:column;gap:16px">
+<div style="display:grid;grid-template-columns:72px 72px minmax(0,1fr) auto;gap:16px;align-items:center">
+<div style="width:72px;height:72px;border-radius:14px;background:#f6f5f2;display:flex;flex-direction:column;align-items:center;justify-content:center;line-height:1.15"><span style="font-size:13px;color:#5f6168">{{ r.dow }}</span><span style="font-size:26px;font-weight:700">{{ r.d }}</span><span style="font-size:12px;color:#5f6168">ต.ค.</span></div>
+<img src="{{ r.img }}" style="width:72px;height:72px;border-radius:14px;object-fit:cover">
+<div style="display:flex;flex-direction:column;gap:3px;min-width:0">
+<div style="display:flex;align-items:center;gap:10px"><span style="font-size:18px;font-weight:600">{{ r.name }}</span><span style="font-size:13px;padding:3px 10px;border-radius:999px;background:#eaf1fe;color:#0f4fc0;font-weight:600">ยืนยันแล้ว</span></div>
+<div style="font-size:16px"><b>{{ r.timeText }}</b> · {{ r.partyText }}</div>
+<div style="font-size:13px;color:#5f6168">{{ r.deadline }}</div>
+</div>
+<sc-if value="{{ r.notEditing }}" hint-placeholder-val="{{ true }}">
+<div style="display:flex;gap:8px"><span onClick="{{ r.onEdit }}" style="height:44px;padding:0 18px;border-radius:12px;border:1.5px solid #d6d3cb;font-size:15px;font-weight:600;display:flex;align-items:center;cursor:pointer" style-hover="background:#f6f5f2">แก้ไข</span><span onClick="{{ r.onCancel }}" style="height:44px;padding:0 14px;border-radius:12px;color:#b3261e;font-size:15px;font-weight:600;display:flex;align-items:center;cursor:pointer" style-hover="background:#fdecea">ยกเลิก</span></div>
+</sc-if>
+</div>
+<sc-if value="{{ r.isEditing }}" hint-placeholder-val="{{ false }}">
+<div style="border-top:1px solid #f0efea;padding-top:16px;display:flex;flex-direction:column;gap:14px">
+<div style="display:flex;flex-direction:column;gap:8px"><span style="font-size:14px;font-weight:600">วัน</span>
+<div style="display:flex;gap:6px"><sc-for list="{{ edDays }}" as="x" hint-placeholder-count="6"><div onClick="{{ x.pick }}" style="width:60px;height:52px;border-radius:12px;border:1.5px solid {{ x.bd }};background:{{ x.bg }};color:{{ x.fg }};display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;line-height:1.15"><span style="font-size:12px">{{ x.dow }}</span><span style="font-size:18px;font-weight:700">{{ x.d }}</span></div></sc-for></div></div>
+<div style="display:flex;flex-direction:column;gap:8px"><span style="font-size:14px;font-weight:600">เวลาเริ่ม</span>
+<div style="display:grid;grid-template-columns:repeat(11,1fr);gap:6px"><sc-for list="{{ edTimes }}" as="x" hint-placeholder-count="11"><div onClick="{{ x.pick }}" style="height:40px;border-radius:10px;border:1.5px solid {{ x.bd }};background:{{ x.bg }};color:{{ x.fg }};opacity:{{ x.op }};font-size:14px;font-weight:600;display:flex;align-items:center;justify-content:center;cursor:pointer">{{ x.label }}</div></sc-for></div></div>
+<div style="display:flex;gap:28px;align-items:flex-end;flex-wrap:wrap">
+<div style="display:flex;flex-direction:column;gap:8px"><span style="font-size:14px;font-weight:600">ระยะเวลา</span><div style="display:flex;gap:6px"><sc-for list="{{ edDurs }}" as="x" hint-placeholder-count="3"><div onClick="{{ x.pick }}" style="height:44px;padding:0 16px;border-radius:10px;border:1.5px solid {{ x.bd }};background:{{ x.bg }};color:{{ x.fg }};opacity:{{ x.op }};font-size:15px;font-weight:600;display:flex;align-items:center;cursor:pointer">{{ x.label }}</div></sc-for></div></div>
+<div style="display:flex;flex-direction:column;gap:8px"><span style="font-size:14px;font-weight:600">จำนวนคน</span>
+<div style="display:flex;align-items:center;gap:4px;border:1.5px solid #d6d3cb;border-radius:12px;padding:2px"><div onClick="{{ edDec }}" style="width:38px;height:38px;display:flex;align-items:center;justify-content:center;font-size:20px;cursor:pointer">−</div><span style="min-width:56px;text-align:center;font-size:16px;font-weight:600">{{ edParty }}</span><div onClick="{{ edInc }}" style="width:38px;height:38px;display:flex;align-items:center;justify-content:center;font-size:20px;cursor:pointer">+</div></div></div>
+<div style="flex:1"></div>
+<div style="display:flex;flex-direction:column;align-items:flex-end;gap:8px"><span style="font-size:14px;color:#5f6168">{{ edSummary }}</span>
+<div style="display:flex;gap:8px"><span onClick="{{ edClose }}" style="height:44px;padding:0 18px;border-radius:12px;border:1.5px solid #d6d3cb;font-size:15px;font-weight:600;display:flex;align-items:center;cursor:pointer">ปิด</span><span onClick="{{ edSave }}" style="height:44px;padding:0 22px;border-radius:12px;background:#1262ee;color:#fff;font-size:15px;font-weight:600;display:flex;align-items:center;cursor:pointer">บันทึก</span></div></div>
+</div>
+</div>
+</sc-if>
+</div>
+</sc-for>
+<div style="font-size:15px;font-weight:600;color:#5f6168;padding-top:16px">ยกเลิกแล้ว</div>
+<sc-for list="{{ cancelledR }}" as="r" hint-placeholder-count="2">
+<div style="border:1px solid #e3e1da;border-radius:16px;padding:12px 16px;display:grid;grid-template-columns:52px minmax(0,1fr);gap:14px;align-items:center;color:#5f6168">
+<div style="width:52px;height:52px;border-radius:12px;background:#eeede8;display:flex;flex-direction:column;align-items:center;justify-content:center;line-height:1.15"><span style="font-size:11px">{{ r.dow }}</span><span style="font-size:18px;font-weight:700">{{ r.d }}</span></div>
+<div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap"><span style="font-size:16px;font-weight:600;color:#3b3d43">{{ r.name }}</span><span style="font-size:14px">{{ r.timeText }} · {{ r.partyText }}</span><span style="font-size:13px;padding:3px 10px;border-radius:999px;background:#eeede8;font-weight:600">ยกเลิกแล้ว</span></div>
+</div>
+</sc-for>
+</div></div>
+</div>
+</div>
+
+<div id="2e" style="display:flex;flex-direction:column;gap:14px">
+<div style="display:flex;align-items:center;gap:10px"><span style="background:#1a1c20;color:#fff;font-size:14px;font-weight:700;padding:3px 10px;border-radius:6px">2e</span><span style="font-size:18px;font-weight:600">โปรไฟล์ · 1200 (กดแก้คำแนะนำตัวได้)</span></div>
+<div style="width:1200px;background:#f6f5f2;border-radius:12px;overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,.08)">
+<div style="height:64px;background:#fff;border-bottom:1px solid #e3e1da;display:flex;align-items:center;justify-content:center">
+<div style="width:1024px;display:flex;align-items:center;justify-content:space-between">
+<div style="display:flex;align-items:center;gap:28px">
+<div style="display:flex;align-items:center;gap:10px"><img src="assets/logo.png" style="width:32px;height:32px;border-radius:8px"><span style="font-size:19px;font-weight:700;color:#1568d8">Table Not Found</span></div>
+<div style="display:flex;gap:4px;font-size:15px"><span style="padding:8px 14px;border-radius:999px;color:#5f6168">ร้านทั้งหมด</span><span style="padding:8px 14px;border-radius:999px;color:#5f6168">การจองของฉัน</span><span style="padding:8px 14px;border-radius:999px;color:#5f6168">ร้านของฉัน</span></div>
+</div>
+<div style="display:flex;align-items:center;gap:8px;padding:4px 10px 4px 4px;border-radius:999px;border:1.5px solid #1262ee"><span style="width:34px;height:34px;border-radius:50%;background:#eaf1fe;color:#0f4fc0;font-size:13px;font-weight:600;display:flex;align-items:center;justify-content:center">สจ</span><span style="font-size:15px">สมศรี ใจดี</span><span style="font-size:11px;color:#5f6168">▼</span></div>
+</div></div>
+<div style="display:flex;justify-content:center;padding:36px 0 64px">
+<div style="width:1024px;display:grid;grid-template-columns:340px minmax(0,1fr);gap:24px;align-items:start">
+<div style="display:flex;flex-direction:column;gap:16px">
+<div style="background:#fff;border:1px solid #ebe9e3;border-radius:20px;padding:24px;display:flex;flex-direction:column;gap:14px">
+<span style="width:88px;height:88px;border-radius:50%;background:#eaf1fe;color:#0f4fc0;font-size:30px;font-weight:700;display:flex;align-items:center;justify-content:center">สจ</span>
+<div style="display:flex;flex-direction:column;gap:2px"><div style="font-size:24px;font-weight:700">สมศรี ใจดี</div><div style="font-size:14px;color:#5f6168;word-break:break-all">somsri@example.com</div></div>
+<sc-if value="{{ bioView }}" hint-placeholder-val="{{ true }}">
+<div style="font-size:15px;line-height:1.6;color:{{ bioColor }}">{{ bioText }}</div>
+<span onClick="{{ onBioEdit }}" style="height:44px;border-radius:12px;border:1.5px solid #d6d3cb;font-size:15px;font-weight:600;display:flex;align-items:center;justify-content:center;cursor:pointer" style-hover="background:#f6f5f2">แก้ไขคำแนะนำตัว</span>
+</sc-if>
+<sc-if value="{{ bioEdit }}" hint-placeholder-val="{{ false }}">
+<textarea value="{{ bioDraft }}" onChange="{{ onBioChange }}" placeholder="เช่น ชอบชาบูน้ำดำ ไปกันทุกศุกร์" style="min-height:90px;border:1.5px solid #1262ee;box-shadow:0 0 0 3px #eaf1fe;border-radius:12px;padding:10px 12px;font-size:15px;outline:none;resize:vertical;color:#1a1c20"></textarea>
+<div style="display:flex;gap:8px"><span onClick="{{ onBioCancel }}" style="flex:1;height:44px;border-radius:12px;border:1.5px solid #d6d3cb;font-size:15px;font-weight:600;display:flex;align-items:center;justify-content:center;cursor:pointer">ยกเลิก</span><span onClick="{{ onBioSave }}" style="flex:1;height:44px;border-radius:12px;background:#1262ee;color:#fff;font-size:15px;font-weight:600;display:flex;align-items:center;justify-content:center;cursor:pointer">บันทึก</span></div>
+</sc-if>
+<div style="font-size:13px;color:#5f6168;border-top:1px solid #f0efea;padding-top:12px">ชื่อและอีเมลมาจากบัญชีที่ใช้เข้าสู่ระบบ แก้ไขที่นี่ไม่ได้</div>
+</div>
+<div style="background:#1a1c20;color:#fff;border-radius:20px;padding:18px;display:flex;flex-direction:column;gap:12px">
+<div style="font-size:14px;color:#c9cad0">การจองถัดไป</div>
+<div style="display:flex;gap:12px;align-items:center"><div style="width:56px;height:56px;border-radius:12px;background:#fff;color:#1a1c20;display:flex;flex-direction:column;align-items:center;justify-content:center;line-height:1.1"><span style="font-size:11px;color:#5f6168">จ.</span><span style="font-size:22px;font-weight:700">12</span></div><div style="display:flex;flex-direction:column"><span style="font-size:17px;font-weight:600">ชาบูทองคำ</span><span style="font-size:14px;color:#c9cad0">12:00–13:00 · 2 คน</span></div></div>
+<a href="#2d" style="font-size:14px;color:#9fc0ff;font-weight:600">จัดการการจอง →</a>
+</div>
+</div>
+<div style="display:flex;flex-direction:column;gap:28px">
+<div style="display:flex;flex-direction:column;gap:12px">
+<div style="font-size:20px;font-weight:600">สถิติการใช้งาน</div>
+<div style="display:grid;grid-template-columns:1.3fr 1fr 1fr;gap:12px">
+<div style="background:#1262ee;color:#fff;border-radius:16px;padding:18px;display:flex;flex-direction:column;gap:4px"><span style="font-size:14px">กำลังจะถึง</span><span style="font-size:36px;font-weight:700;line-height:1.1">3</span><span style="font-size:13px;color:#dbe6fd">รวม 15 คน</span></div>
+<div style="background:#fff;border:1px solid #ebe9e3;border-radius:16px;padding:18px;display:flex;flex-direction:column;gap:4px"><span style="font-size:14px;color:#5f6168">การจองทั้งหมด</span><span style="font-size:28px;font-weight:700">5</span></div>
+<div style="background:#fff;border:1px solid #ebe9e3;border-radius:16px;padding:18px;display:flex;flex-direction:column;gap:4px"><span style="font-size:14px;color:#5f6168">ยกเลิกแล้ว</span><span style="font-size:28px;font-weight:700;color:#5f6168">2</span></div>
+</div>
+<div style="display:flex;gap:10px;flex-wrap:wrap;font-size:14px">
+<span style="padding:8px 14px;border-radius:999px;background:#fff;border:1px solid #ebe9e3">รีวิวที่เขียน <b>2</b></span>
+<span style="padding:8px 14px;border-radius:999px;background:#fff;border:1px solid #ebe9e3">คะแนนเฉลี่ยที่ให้ <b>4.5 ★</b></span>
+<span style="padding:8px 14px;border-radius:999px;background:#fff;border:1px solid #ebe9e3">ร้านที่เป็นเจ้าของ <b>0</b></span>
+</div></div>
+<div style="display:flex;flex-direction:column;gap:12px">
+<div style="font-size:20px;font-weight:600">รีวิวของฉัน</div>
+<div style="background:#fff;border:1px solid #ebe9e3;border-radius:16px;padding:14px;display:grid;grid-template-columns:72px minmax(0,1fr);gap:14px">
+<img src="assets/9004.jpg" style="width:72px;height:72px;border-radius:12px;object-fit:cover">
+<div style="display:flex;flex-direction:column;gap:3px"><div style="display:flex;justify-content:space-between;gap:10px"><span style="font-size:16px;font-weight:600">ปิ้งย่างเตาถ่านลุงแดง</span><span style="font-size:13px;color:#5f6168">10 ต.ค. 2569</span></div><span style="color:#9a5b00;font-size:15px">★★★★★</span><span style="font-size:15px">หมูหมักได้รสมาก เตาถ่านหอม พนักงานบริการดี</span></div>
+</div>
+<div style="background:#fff;border:1px solid #ebe9e3;border-radius:16px;padding:14px;display:grid;grid-template-columns:72px minmax(0,1fr);gap:14px">
+<img src="assets/9001.jpg" style="width:72px;height:72px;border-radius:12px;object-fit:cover">
+<div style="display:flex;flex-direction:column;gap:3px"><div style="display:flex;justify-content:space-between;gap:10px"><span style="font-size:16px;font-weight:600">ชาบูริมคลอง</span><span style="font-size:13px;color:#5f6168">10 ต.ค. 2569</span></div><span style="color:#9a5b00;font-size:15px">★★★★<span style="color:#d6d3cb">★</span></span><span style="font-size:15px">น้ำซุปเข้มข้นดี เนื้อสด แต่รอคิวนานนิดหน่อย</span></div>
+</div>
+</div>
+</div>
+</div></div>
+</div>
+</div>
+
+</div>
+</section>
+
+<section style="padding:72px 80px 120px;display:flex;flex-direction:column;gap:40px;border-top:2px dashed #c4c1b8">
+<div style="display:flex;flex-direction:column;gap:8px;max-width:900px">
+<div style="font-size:14px;font-weight:600;color:#5f6168;letter-spacing:.04em">รอบที่ 1</div>
+<div style="font-size:40px;font-weight:700;line-height:1.25">Table Not Found: อบอุ่น ใช้ง่าย ให้รูปอาหารนำ</div>
+<div style="font-size:18px;color:#5f6168;line-height:1.6;text-wrap:pretty">พื้นหลังเปลี่ยนจากเทาเย็นเป็นขาวนวลอุ่น รวมสีฟ้าเป็น #1262ee ให้ตรงไอคอนแอป ช่องกรอกและปุ่มสูง 44px เท่ากันทุกที่ หน้าร้านรวม "ช่วงว่าง" กับ "ฟอร์มจอง" เป็นขั้นตอนเดียว: เลือกวัน → แตะช่วงเวลา → ใส่จำนวนคน → จองโต๊ะ (หน้าร้าน <a href="#1c">1c</a> และ <a href="#1e">1e</a> กดลองได้จริง)</div>
+</div>
+
+<div style="display:flex;flex-wrap:wrap;gap:72px;align-items:flex-start">
+
+<!-- 1a LANDING -->
+<div id="1a" style="display:flex;flex-direction:column;gap:14px">
+<div style="display:flex;align-items:center;gap:10px"><span style="background:#1a1c20;color:#fff;font-size:14px;font-weight:700;padding:3px 10px;border-radius:6px">1a</span><span style="font-size:18px;font-weight:600">Landing ก่อนล็อกอิน · 1200</span></div>
+<div style="width:1200px;background:#f6f5f2;border-radius:12px;overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,.08)">
+<div style="height:64px;background:#fff;border-bottom:1px solid #e3e1da;display:flex;align-items:center;justify-content:center">
+<div style="width:1024px;display:flex;align-items:center;justify-content:space-between">
+<div style="display:flex;align-items:center;gap:10px"><img src="assets/logo.png" style="width:32px;height:32px;border-radius:8px"><span style="font-size:19px;font-weight:700;color:#1568d8">Table Not Found</span></div>
+<div style="height:44px;padding:0 20px;border-radius:10px;background:#1262ee;color:#fff;font-size:15px;font-weight:600;display:flex;align-items:center">เข้าสู่ระบบ</div>
+</div></div>
+<div style="display:flex;justify-content:center;padding:56px 0 40px">
+<div style="width:1024px;display:grid;grid-template-columns:1fr 1fr;gap:48px;align-items:center">
+<div style="display:flex;flex-direction:column;gap:20px">
+<div style="font-size:15px;font-weight:600;color:#1568d8">Find a table. Find your food.</div>
+<div style="font-size:44px;font-weight:700;line-height:1.3">จองโต๊ะร้านชาบูและปิ้งย่าง<br><span style="color:#1262ee">ดูช่วงว่างแล้วจองได้ทันที</span></div>
+<div style="font-size:18px;line-height:1.7;color:#5f6168;text-wrap:pretty">ไม่ต้องโทรถามว่าโต๊ะว่างไหม ดูที่นั่งที่เหลือรายชั่วโมง จอง แก้ หรือยกเลิกได้เอง และอ่านรีวิวก่อนตัดสินใจ</div>
+<div style="display:flex;gap:12px;padding-top:4px">
+<div style="height:52px;padding:0 28px;border-radius:12px;background:#1262ee;color:#fff;font-size:17px;font-weight:600;display:flex;align-items:center">เข้าสู่ระบบเพื่อจองโต๊ะ</div>
+</div>
+</div>
+<div style="position:relative;height:420px">
+<img src="assets/9002.jpg" style="position:absolute;left:0;top:0;width:380px;height:380px;object-fit:cover;border-radius:20px">
+<img src="assets/9001.jpg" style="position:absolute;right:0;bottom:0;width:220px;height:220px;object-fit:cover;border-radius:20px;border:6px solid #f6f5f2">
+<div style="position:absolute;left:28px;bottom:8px;background:#fff;border-radius:14px;padding:14px 16px;box-shadow:0 8px 24px rgba(26,28,32,.12);display:flex;flex-direction:column;gap:8px;width:250px">
+<div style="font-size:13px;color:#5f6168">วันนี้ 18:00–19:00</div>
+<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px">
+<div style="border:1px solid #e3e1da;border-radius:8px;padding:6px 8px;font-size:12px"><div style="font-weight:600">18:00</div><div style="color:#0f7a55">เหลือ 8 ที่</div></div>
+<div style="background:#fff1dc;border:1px solid #f1d2a0;border-radius:8px;padding:6px 8px;font-size:12px"><div style="font-weight:600">19:00</div><div style="color:#9a5b00">เหลือ 2 ที่</div></div>
+<div style="background:#eeede8;border-radius:8px;padding:6px 8px;font-size:12px;color:#8a8c92"><div style="font-weight:600">20:00</div><div>เต็ม</div></div>
+</div></div>
+</div>
+</div></div>
+<div style="display:flex;justify-content:center;padding:24px 0 56px">
+<div style="width:1024px;display:grid;grid-template-columns:repeat(3,1fr);gap:16px">
+<div style="background:#fff;border-radius:16px;padding:24px;display:flex;flex-direction:column;gap:10px;border:1px solid #ebe9e3"><div style="font-size:28px;font-weight:700;color:#1262ee">1</div><div style="font-size:18px;font-weight:600">เลือกร้าน</div><div style="font-size:15px;color:#5f6168;line-height:1.6">ค้นหาตามชื่อ หรือเรียงตามคะแนนและจำนวนรีวิว</div></div>
+<div style="background:#fff;border-radius:16px;padding:24px;display:flex;flex-direction:column;gap:10px;border:1px solid #ebe9e3"><div style="font-size:28px;font-weight:700;color:#1262ee">2</div><div style="font-size:18px;font-weight:600">เลือกเวลา</div><div style="font-size:15px;color:#5f6168;line-height:1.6">ดูช่วงที่ว่างรายชั่วโมง แล้วกดจองได้เลย ระบบตรวจที่นั่งให้ ไม่จองเกินที่นั่ง</div></div>
+<div style="background:#fff;border-radius:16px;padding:24px;display:flex;flex-direction:column;gap:10px;border:1px solid #ebe9e3"><div style="font-size:28px;font-weight:700;color:#1262ee">3</div><div style="font-size:18px;font-weight:600">ไปทานได้เลย</div><div style="font-size:15px;color:#5f6168;line-height:1.6">ยกเลิกหรือเลื่อนได้ตามเวลาที่ร้านกำหนด แล้วกลับมาให้คะแนนรีวิว</div></div>
+</div></div>
+<div style="display:flex;justify-content:center;padding:0 0 64px">
+<div style="width:1024px;background:#1a1c20;color:#fff;border-radius:20px;padding:32px 36px;display:flex;align-items:center;justify-content:space-between;gap:24px">
+<div style="display:flex;flex-direction:column;gap:6px"><div style="font-size:22px;font-weight:600">มีร้านของตัวเอง?</div><div style="font-size:15px;color:#c9cad0">บัญชีเดียวเป็นได้ทั้งลูกค้าและเจ้าของร้าน ตั้งเวลาเปิด จำนวนที่นั่ง และรูปร้าน แล้วรับการจองได้เลย</div></div>
+<div style="height:48px;padding:0 22px;border-radius:12px;background:#fff;color:#1a1c20;font-size:15px;font-weight:600;display:flex;align-items:center;white-space:nowrap">เข้าสู่ระบบเพื่อเปิดร้าน</div>
+</div></div>
+</div>
+</div>
+
+<!-- 1b HOME -->
+<div id="1b" style="display:flex;flex-direction:column;gap:14px">
+<div style="display:flex;align-items:center;gap:10px"><span style="background:#1a1c20;color:#fff;font-size:14px;font-weight:700;padding:3px 10px;border-radius:6px">1b</span><span style="font-size:18px;font-weight:600">หน้าแรกหลังล็อกอิน · 1200 (ค้นหาและเรียงได้จริง)</span></div>
+<div style="width:1200px;background:#f6f5f2;border-radius:12px;overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,.08)">
+<div style="height:64px;background:#fff;border-bottom:1px solid #e3e1da;display:flex;align-items:center;justify-content:center">
+<div style="width:1024px;display:flex;align-items:center;justify-content:space-between">
+<div style="display:flex;align-items:center;gap:28px">
+<div style="display:flex;align-items:center;gap:10px"><img src="assets/logo.png" style="width:32px;height:32px;border-radius:8px"><span style="font-size:19px;font-weight:700;color:#1568d8">Table Not Found</span></div>
+<div style="display:flex;gap:4px;font-size:15px">
+<span style="padding:8px 14px;border-radius:999px;background:#eaf1fe;color:#0f4fc0;font-weight:600">ร้านทั้งหมด</span>
+<span style="padding:8px 14px;border-radius:999px;color:#5f6168">การจองของฉัน</span>
+<span style="padding:8px 14px;border-radius:999px;color:#5f6168">ร้านของฉัน</span>
+</div></div>
+<div style="display:flex;align-items:center;gap:8px;padding:4px 10px 4px 4px;border-radius:999px;border:1px solid #e3e1da">
+<span style="width:34px;height:34px;border-radius:50%;background:#eaf1fe;color:#0f4fc0;font-size:13px;font-weight:600;display:flex;align-items:center;justify-content:center">สจ</span>
+<span style="font-size:15px">สมศรี ใจดี</span><span style="font-size:11px;color:#5f6168">▼</span>
+</div>
+</div></div>
+<div style="display:flex;justify-content:center;padding:36px 0 24px">
+<div style="width:1024px;display:grid;grid-template-columns:1fr 380px;gap:20px">
+<div style="background:#fff;border-radius:20px;padding:28px;display:flex;flex-direction:column;gap:18px;border:1px solid #ebe9e3">
+<div style="display:flex;flex-direction:column;gap:4px"><div style="font-size:28px;font-weight:700">สวัสดี สมศรี</div><div style="font-size:16px;color:#5f6168">วันนี้อยากทานร้านไหน? ค้นหาแล้วดูช่วงที่ว่างได้เลย</div></div>
+<div style="display:flex;gap:10px">
+<div style="flex:1;height:48px;border:1.5px solid #d6d3cb;border-radius:12px;display:flex;align-items:center;gap:10px;padding:0 14px;background:#fff">
+<span style="width:12px;height:12px;border:2px solid #8a8c92;border-radius:50%"></span>
+<input value="{{ q }}" onChange="{{ onQ }}" placeholder="ค้นหาตามชื่อร้าน" style="flex:1;border:0;outline:none;font-size:16px;background:transparent;color:#1a1c20">
+</div>
+<div style="height:48px;padding:0 24px;border-radius:12px;background:#1262ee;color:#fff;font-size:16px;font-weight:600;display:flex;align-items:center">ค้นหา</div>
+</div>
+</div>
+<div style="background:#1a1c20;color:#fff;border-radius:20px;padding:20px;display:flex;flex-direction:column;gap:14px">
+<div style="font-size:14px;color:#c9cad0">การจองถัดไปของคุณ</div>
+<div style="display:flex;gap:14px;align-items:center">
+<div style="width:64px;height:64px;border-radius:14px;background:#fff;color:#1a1c20;display:flex;flex-direction:column;align-items:center;justify-content:center;line-height:1.1"><span style="font-size:12px;color:#5f6168">จ.</span><span style="font-size:24px;font-weight:700">12</span><span style="font-size:12px;color:#5f6168">ต.ค.</span></div>
+<div style="display:flex;flex-direction:column;gap:2px"><div style="font-size:18px;font-weight:600">ชาบูทองคำ</div><div style="font-size:15px;color:#c9cad0">12:00–13:00 · 2 คน</div></div>
+</div>
+<div style="display:flex;justify-content:space-between;align-items:center;border-top:1px solid #34363c;padding-top:12px"><span style="font-size:13px;padding:3px 10px;border-radius:999px;background:#eaf1fe;color:#0f4fc0;font-weight:600">ยืนยันแล้ว</span><span style="font-size:14px;color:#9fc0ff;font-weight:600">จัดการการจอง →</span></div>
+</div>
+</div></div>
+<div style="display:flex;justify-content:center;padding:8px 0 20px">
+<div style="width:1024px;display:flex;flex-direction:column;gap:14px">
+<div style="font-size:20px;font-weight:600">ร้านคะแนนสูงสุด</div>
+<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px">
+<sc-for list="{{ top3 }}" as="r" hint-placeholder-count="3">
+<div style="position:relative;height:200px;border-radius:18px;overflow:hidden">
+<img src="{{ r.img }}" style="width:100%;height:100%;object-fit:cover;display:block">
+<div style="position:absolute;inset:0;background:linear-gradient(180deg,rgba(0,0,0,0) 35%,rgba(10,10,12,.82) 100%)"></div>
+<div style="position:absolute;top:12px;left:12px;background:#fff;color:#1a1c20;font-size:13px;font-weight:700;padding:4px 10px;border-radius:999px">อันดับ {{ r.rank }}</div>
+<div style="position:absolute;left:16px;right:16px;bottom:14px;color:#fff;display:flex;flex-direction:column;gap:2px"><div style="font-size:19px;font-weight:600">{{ r.name }}</div><div style="font-size:14px">★ {{ r.ratingText }}</div></div>
+</div>
+</sc-for>
+</div></div></div>
+<div style="display:flex;justify-content:center;padding:20px 0 56px">
+<div style="width:1024px;display:flex;flex-direction:column;gap:16px">
+<div style="display:flex;justify-content:space-between;align-items:center">
+<div style="font-size:20px;font-weight:600">ร้านทั้งหมด</div>
+<div style="display:flex;gap:6px;background:#ecebe6;padding:4px;border-radius:12px">
+<sc-for list="{{ sorts }}" as="s" hint-placeholder-count="3">
+<div onClick="{{ s.pick }}" style="height:36px;padding:0 14px;border-radius:9px;font-size:14px;font-weight:{{ s.fw }};display:flex;align-items:center;cursor:pointer;background:{{ s.bg }};color:{{ s.fg }};box-shadow:{{ s.sh }}">{{ s.label }}</div>
+</sc-for>
+</div></div>
+<sc-if value="{{ noResults }}" hint-placeholder-val="{{ false }}">
+<div style="background:#fff;border-radius:18px;padding:48px;display:flex;flex-direction:column;align-items:center;gap:10px;text-align:center;border:1px solid #ebe9e3">
+<div style="width:56px;height:56px;border-radius:50%;background:#eaf1fe;display:flex;align-items:center;justify-content:center;font-size:24px;color:#1262ee">?</div>
+<div style="font-size:18px;font-weight:600">ไม่พบร้านที่ค้นหา</div>
+<div style="font-size:15px;color:#5f6168">ลองพิมพ์ชื่อร้านให้สั้นลง หรือดูร้านทั้งหมด</div>
+<div onClick="{{ clearQ }}" style="margin-top:6px;height:44px;padding:0 18px;border-radius:12px;border:1.5px solid #d6d3cb;font-size:15px;font-weight:600;display:flex;align-items:center;cursor:pointer">ล้างคำค้นหา</div>
+</div>
+</sc-if>
+<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px">
+<sc-for list="{{ list }}" as="r" hint-placeholder-count="6">
+<div style="background:#fff;border-radius:18px;overflow:hidden;border:1px solid #ebe9e3;display:flex;flex-direction:column;cursor:pointer" style-hover="box-shadow:0 8px 24px rgba(26,28,32,.10)">
+<div style="position:relative;height:190px"><img src="{{ r.img }}" style="width:100%;height:100%;object-fit:cover;display:block">
+<div style="position:absolute;left:12px;bottom:12px;background:#fff;border-radius:999px;padding:4px 10px;font-size:13px;font-weight:600;color:#1a1c20">★ {{ r.ratingText }}</div></div>
+<div style="padding:14px 16px 16px;display:flex;flex-direction:column;gap:4px">
+<div style="font-size:18px;font-weight:600">{{ r.name }}</div>
+<div style="font-size:14px;color:#5f6168;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ r.addr }}</div>
+<div style="font-size:14px;color:#5f6168">ที่นั่ง {{ r.seats }}</div>
+</div></div>
+</sc-for>
+</div>
+<div style="display:flex;justify-content:center;gap:6px;padding-top:8px">
+<span style="width:40px;height:40px;border-radius:10px;background:#1a1c20;color:#fff;display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:600">1</span>
+<span style="width:40px;height:40px;border-radius:10px;border:1px solid #e3e1da;background:#fff;display:flex;align-items:center;justify-content:center;font-size:15px">2</span>
+</div>
+</div></div>
+</div>
+</div>
+
+<!-- 1c RESTAURANT -->
+<div id="1c" style="display:flex;flex-direction:column;gap:14px">
+<div style="display:flex;align-items:center;gap:10px"><span style="background:#1a1c20;color:#fff;font-size:14px;font-weight:700;padding:3px 10px;border-radius:6px">1c</span><span style="font-size:18px;font-weight:600">หน้าร้าน + จอง · 1200 (กดวัน ช่วงเวลา จำนวนคน แล้วจองได้)</span></div>
+<div style="width:1200px;background:#f6f5f2;border-radius:12px;overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,.08)">
+<div style="height:64px;background:#fff;border-bottom:1px solid #e3e1da;display:flex;align-items:center;justify-content:center">
+<div style="width:1024px;display:flex;align-items:center;justify-content:space-between">
+<div style="display:flex;align-items:center;gap:28px">
+<div style="display:flex;align-items:center;gap:10px"><img src="assets/logo.png" style="width:32px;height:32px;border-radius:8px"><span style="font-size:19px;font-weight:700;color:#1568d8">Table Not Found</span></div>
+<div style="display:flex;gap:4px;font-size:15px">
+<span style="padding:8px 14px;border-radius:999px;background:#eaf1fe;color:#0f4fc0;font-weight:600">ร้านทั้งหมด</span>
+<span style="padding:8px 14px;border-radius:999px;color:#5f6168">การจองของฉัน</span>
+<span style="padding:8px 14px;border-radius:999px;color:#5f6168">ร้านของฉัน</span>
+</div></div>
+<div style="display:flex;align-items:center;gap:8px;padding:4px 10px 4px 4px;border-radius:999px;border:1px solid #e3e1da">
+<span style="width:34px;height:34px;border-radius:50%;background:#eaf1fe;color:#0f4fc0;font-size:13px;font-weight:600;display:flex;align-items:center;justify-content:center">สจ</span>
+<span style="font-size:15px">สมศรี ใจดี</span><span style="font-size:11px;color:#5f6168">▼</span>
+</div>
+</div></div>
+<div style="display:flex;justify-content:center;padding:24px 0 0">
+<div style="width:1024px;height:320px;border-radius:20px;overflow:hidden"><img src="assets/9001.jpg" style="width:100%;height:100%;object-fit:cover;display:block"></div>
+</div>
+<div style="display:flex;justify-content:center;padding:28px 0 64px">
+<div style="width:1024px;display:grid;grid-template-columns:minmax(0,1fr) 340px;gap:32px;align-items:start">
+<div style="display:flex;flex-direction:column;gap:36px">
+<div style="display:flex;flex-direction:column;gap:10px">
+<div style="font-size:34px;font-weight:700;line-height:1.2">ชาบูริมคลอง</div>
+<div style="display:flex;flex-wrap:wrap;gap:8px 18px;font-size:15px;color:#5f6168;align-items:center">
+<span style="color:#1a1c20;font-weight:600">★ 4.0 <span style="font-weight:400;color:#5f6168">(1 รีวิว)</span></span>
+<span>88 ถ.เจริญกรุง แขวงบางรัก กรุงเทพฯ</span>
+</div>
+<div style="font-size:16px;line-height:1.7;color:#3b3d43">ชาบูหม้อไฟ น้ำซุปเข้มข้น เนื้อสดส่งทุกเช้า นั่งริมคลองบรรยากาศดี</div>
+<div style="display:flex;flex-wrap:wrap;gap:8px;padding-top:4px">
+<span style="font-size:14px;padding:6px 12px;border-radius:999px;background:#fff;border:1px solid #e3e1da">ที่นั่ง 10</span>
+<span style="font-size:14px;padding:6px 12px;border-radius:999px;background:#fff;border:1px solid #e3e1da">ยกเลิกได้ล่วงหน้า 60 นาที</span>
+<span style="font-size:14px;padding:6px 12px;border-radius:999px;background:#fff;border:1px solid #e3e1da">เปิด 11:00–22:00 · ปิดวันอาทิตย์</span>
+</div>
+</div>
+
+<div style="display:flex;flex-direction:column;gap:16px">
+<div style="display:flex;justify-content:space-between;align-items:baseline"><div style="font-size:22px;font-weight:600">ช่วงว่าง</div><div style="font-size:14px;color:#5f6168">ตุลาคม พ.ศ. 2569</div></div>
+<div style="display:grid;grid-template-columns:repeat(7,1fr);gap:8px">
+<sc-for list="{{ days }}" as="d" hint-placeholder-count="7">
+<div onClick="{{ d.pick }}" style="height:72px;border-radius:14px;border:1.5px solid {{ d.bd }};background:{{ d.bg }};color:{{ d.fg }};display:flex;flex-direction:column;align-items:center;justify-content:center;gap:0;cursor:pointer">
+<span style="font-size:13px;color:{{ d.subc }}">{{ d.top }}</span><span style="font-size:22px;font-weight:700;line-height:1.2">{{ d.d }}</span><span style="font-size:12px;color:{{ d.subc }}">{{ d.sub }}</span>
+</div>
+</sc-for>
+</div>
+<sc-if value="{{ closed }}" hint-placeholder-val="{{ false }}">
+<div style="background:#fff;border:1.5px dashed #d6d3cb;border-radius:16px;padding:36px;text-align:center;display:flex;flex-direction:column;gap:6px">
+<div style="font-size:18px;font-weight:600">ร้านปิดวันอาทิตย์</div>
+<div style="font-size:15px;color:#5f6168">วันนี้โต๊ะหาไม่เจอจริง ๆ ลองเลือกวันอื่นดูนะ</div>
+</div>
+</sc-if>
+<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px">
+<sc-for list="{{ slots }}" as="s" hint-placeholder-count="11">
+<div onClick="{{ s.pick }}" style="border-radius:12px;border:1.5px solid {{ s.bd }};background:{{ s.bg }};opacity:{{ s.op }};cursor:{{ s.cursor }};padding:10px 12px;display:flex;flex-direction:column;gap:2px;min-height:44px">
+<span style="font-size:16px;font-weight:600;color:{{ s.tc }}">{{ s.time }}</span><span style="font-size:13px;color:{{ s.sc }}">{{ s.sub }}</span>
+</div>
+</sc-for>
+</div>
+<div style="display:flex;flex-wrap:wrap;gap:16px;font-size:13px;color:#5f6168;align-items:center">
+<span style="display:flex;align-items:center;gap:6px"><span style="width:10px;height:10px;border-radius:3px;border:1.5px solid #c9c6bd;background:#fff"></span>ว่าง</span>
+<span style="display:flex;align-items:center;gap:6px"><span style="width:10px;height:10px;border-radius:3px;background:#f1d2a0"></span>ใกล้เต็ม</span>
+<span style="display:flex;align-items:center;gap:6px"><span style="width:10px;height:10px;border-radius:3px;background:#dcdad3"></span>เต็ม</span>
+<span style="display:flex;align-items:center;gap:6px"><span style="width:10px;height:10px;border-radius:3px;border:1.5px dashed #c9c6bd"></span>ผ่านไปแล้ว</span>
+<span style="flex:1;text-align:right">จำนวนที่เหลือเป็นข้อมูลล่าสุดที่โหลดมา ระบบจะตรวจอีกครั้งตอนกดจอง</span>
+</div>
+</div>
+
+<div style="display:flex;flex-direction:column;gap:14px">
+<div style="font-size:22px;font-weight:600">เวลาเปิด</div>
+<div style="display:grid;grid-template-columns:repeat(7,1fr);background:#fff;border:1px solid #ebe9e3;border-radius:14px;overflow:hidden">
+<sc-for list="{{ hours }}" as="h" hint-placeholder-count="7">
+<div style="padding:12px 6px;text-align:center;display:flex;flex-direction:column;gap:2px;background:{{ h.bg }}"><span style="font-size:14px;font-weight:600">{{ h.day }}</span><span style="font-size:13px;color:{{ h.c }}">{{ h.t }}</span></div>
+</sc-for>
+</div></div>
+
+<div style="display:flex;flex-direction:column;gap:16px">
+<div style="font-size:22px;font-weight:600">รีวิว</div>
+<div style="display:grid;grid-template-columns:200px 1fr;gap:16px">
+<div style="background:#fff;border:1px solid #ebe9e3;border-radius:16px;padding:20px;display:flex;flex-direction:column;gap:4px;align-items:flex-start">
+<span style="font-size:40px;font-weight:700;line-height:1">4.0</span><span style="color:#9a5b00;font-size:18px;letter-spacing:2px">★★★★<span style="color:#d6d3cb">★</span></span><span style="font-size:14px;color:#5f6168">จาก 1 รีวิว</span>
+</div>
+<div style="background:#fff;border:1px solid #ebe9e3;border-radius:16px;padding:16px;display:flex;flex-direction:column;gap:10px">
+<div style="display:flex;justify-content:space-between;align-items:center"><span style="font-size:15px;font-weight:600">เขียนรีวิว</span><span style="font-size:24px;color:#d6d3cb;letter-spacing:4px">★★★★★</span></div>
+<div style="height:64px;border:1.5px solid #d6d3cb;border-radius:12px;padding:10px 12px;font-size:15px;color:#8a8c92">เล่าประสบการณ์ของคุณ</div>
+<div style="display:flex;justify-content:flex-end"><span style="height:40px;padding:0 18px;border-radius:10px;background:#eeede8;color:#8a8c92;font-size:15px;font-weight:600;display:flex;align-items:center">ส่งรีวิว</span></div>
+</div></div>
+<div style="background:#fff;border:1px solid #ebe9e3;border-radius:16px;padding:16px 18px;display:flex;gap:12px">
+<span style="width:40px;height:40px;flex:none;border-radius:50%;background:#eaf1fe;color:#0f4fc0;font-size:14px;font-weight:600;display:flex;align-items:center;justify-content:center">สจ</span>
+<div style="display:flex;flex-direction:column;gap:4px"><div style="display:flex;gap:10px;align-items:center;font-size:14px"><span style="font-weight:600;font-size:15px">สมศรี ใจดี</span><span style="color:#9a5b00">★★★★<span style="color:#d6d3cb">★</span></span><span style="color:#5f6168">10 ต.ค. 2569</span></div><div style="font-size:16px">น้ำซุปเข้มข้นดี เนื้อสด แต่รอคิวนานนิดหน่อย</div></div>
+</div>
+</div>
+</div>
+
+<div style="position:sticky;top:24px;background:#fff;border-radius:20px;border:1px solid #ebe9e3;box-shadow:0 10px 30px rgba(26,28,32,.08);padding:22px;display:flex;flex-direction:column;gap:18px">
+<div style="font-size:20px;font-weight:700">จองโต๊ะ</div>
+<div style="display:flex;flex-direction:column;gap:6px;padding:14px;border-radius:14px;background:#f6f5f2">
+<span style="font-size:13px;color:#5f6168">วันและเวลา</span>
+<sc-if value="{{ hasSlot }}" hint-placeholder-val="{{ true }}"><span style="font-size:16px;font-weight:600">{{ summaryDate }}</span><span style="font-size:22px;font-weight:700;color:#1262ee">{{ summaryTime }}</span></sc-if>
+<sc-if value="{{ noSlot }}" hint-placeholder-val="{{ false }}"><span style="font-size:15px;color:#5f6168">แตะช่วงเวลาที่ว่างทางซ้าย</span></sc-if>
+</div>
+<div style="display:flex;flex-direction:column;gap:8px">
+<span style="font-size:14px;font-weight:600">ระยะเวลา</span>
+<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px">
+<sc-for list="{{ durs }}" as="u" hint-placeholder-count="3">
+<div onClick="{{ u.pick }}" style="height:44px;border-radius:10px;border:1.5px solid {{ u.bd }};background:{{ u.bg }};color:{{ u.fg }};opacity:{{ u.op }};font-size:15px;font-weight:600;display:flex;align-items:center;justify-content:center;cursor:pointer">{{ u.label }}</div>
+</sc-for>
+</div></div>
+<div style="display:flex;justify-content:space-between;align-items:center">
+<span style="font-size:14px;font-weight:600">จำนวนคน</span>
+<div style="display:flex;align-items:center;gap:4px;border:1.5px solid #d6d3cb;border-radius:12px;padding:3px">
+<div onClick="{{ dec }}" style="width:38px;height:38px;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:20px;cursor:pointer" style-hover="background:#f0efea">−</div>
+<span style="min-width:56px;text-align:center;font-size:17px;font-weight:600">{{ party }} คน</span>
+<div onClick="{{ inc }}" style="width:38px;height:38px;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:20px;cursor:pointer" style-hover="background:#f0efea">+</div>
+</div></div>
+<sc-if value="{{ isErr }}" hint-placeholder-val="{{ false }}">
+<div style="background:#fdecea;color:#a3221b;border-radius:12px;padding:12px 14px;display:flex;flex-direction:column;gap:2px"><span style="font-size:15px;font-weight:600">ที่นั่งไม่พอสำหรับช่วงเวลานี้</span><span style="font-size:13px">ลองลดจำนวนคน หรือเลือกช่วงเวลาอื่น</span></div>
+</sc-if>
+<sc-if value="{{ isOk }}" hint-placeholder-val="{{ false }}">
+<div style="background:#e5f4ee;color:#0b5e42;border-radius:12px;padding:12px 14px;display:flex;flex-direction:column;gap:2px"><span style="font-size:15px;font-weight:600">จองสำเร็จ</span><span style="font-size:13px">ดูหรือแก้ได้ที่ "การจองของฉัน"</span></div>
+</sc-if>
+<div onClick="{{ book }}" style="height:52px;border-radius:12px;background:{{ btnBg }};color:#fff;font-size:17px;font-weight:600;display:flex;align-items:center;justify-content:center;cursor:pointer">จองโต๊ะ</div>
+<div style="font-size:13px;color:#5f6168;text-align:center">เวลาทั้งหมดเป็นเวลาประเทศไทย (UTC+7)</div>
+</div>
+</div></div>
+</div>
+</div>
+</div>
+
+<div style="display:flex;flex-wrap:wrap;gap:72px;align-items:flex-start">
+
+<!-- 1d MOBILE HOME -->
+<div id="1d" style="display:flex;flex-direction:column;gap:14px">
+<div style="display:flex;align-items:center;gap:10px"><span style="background:#1a1c20;color:#fff;font-size:14px;font-weight:700;padding:3px 10px;border-radius:6px">1d</span><span style="font-size:18px;font-weight:600">หน้าแรก · มือถือ 390</span></div>
+<div style="width:390px;height:844px;border-radius:44px;border:10px solid #1a1c20;overflow:hidden;position:relative;background:#f6f5f2">
+<div style="height:100%;overflow-y:auto;padding-bottom:84px;box-sizing:border-box">
+<div style="height:56px;background:#fff;border-bottom:1px solid #e3e1da;display:flex;align-items:center;justify-content:space-between;padding:0 16px;position:sticky;top:0;z-index:2">
+<div style="display:flex;align-items:center;gap:8px"><img src="assets/logo.png" style="width:28px;height:28px;border-radius:7px"><span style="font-size:17px;font-weight:700;color:#1568d8">Table Not Found</span></div>
+<span style="width:36px;height:36px;border-radius:50%;background:#eaf1fe;color:#0f4fc0;font-size:13px;font-weight:600;display:flex;align-items:center;justify-content:center">สจ</span>
+</div>
+<div style="padding:20px 16px 0;display:flex;flex-direction:column;gap:14px">
+<div style="font-size:24px;font-weight:700">สวัสดี สมศรี</div>
+<div style="display:flex;gap:8px">
+<div style="flex:1;height:48px;border:1.5px solid #d6d3cb;border-radius:12px;background:#fff;display:flex;align-items:center;padding:0 14px;font-size:16px;color:#8a8c92">ค้นหาตามชื่อร้าน</div>
+<div style="height:48px;padding:0 16px;border-radius:12px;background:#1262ee;color:#fff;font-size:16px;font-weight:600;display:flex;align-items:center">ค้นหา</div>
+</div>
+<div style="background:#1a1c20;color:#fff;border-radius:16px;padding:14px;display:flex;align-items:center;gap:12px">
+<div style="width:52px;height:52px;border-radius:12px;background:#fff;color:#1a1c20;display:flex;flex-direction:column;align-items:center;justify-content:center;line-height:1.1"><span style="font-size:11px;color:#5f6168">จ.</span><span style="font-size:20px;font-weight:700">12</span></div>
+<div style="flex:1;display:flex;flex-direction:column"><span style="font-size:12px;color:#c9cad0">การจองถัดไป</span><span style="font-size:16px;font-weight:600">ชาบูทองคำ</span><span style="font-size:13px;color:#c9cad0">12:00–13:00 · 2 คน</span></div>
+<span style="font-size:20px;color:#9fc0ff">›</span>
+</div>
+<div style="display:flex;gap:6px;overflow-x:auto;padding:4px 0">
+<span style="flex:none;height:36px;padding:0 14px;border-radius:999px;background:#1a1c20;color:#fff;font-size:14px;display:flex;align-items:center">ใหม่ล่าสุด</span>
+<span style="flex:none;height:36px;padding:0 14px;border-radius:999px;background:#fff;border:1px solid #e3e1da;font-size:14px;display:flex;align-items:center">คะแนนสูงสุด</span>
+<span style="flex:none;height:36px;padding:0 14px;border-radius:999px;background:#fff;border:1px solid #e3e1da;font-size:14px;display:flex;align-items:center">รีวิวมากที่สุด</span>
+</div>
+<sc-for list="{{ mlist }}" as="r" hint-placeholder-count="5">
+<div style="background:#fff;border-radius:16px;overflow:hidden;border:1px solid #ebe9e3;display:flex;gap:12px;padding:10px">
+<img src="{{ r.img }}" style="width:96px;height:96px;border-radius:12px;object-fit:cover;flex:none">
+<div style="display:flex;flex-direction:column;gap:3px;min-width:0;justify-content:center">
+<div style="font-size:16px;font-weight:600">{{ r.name }}</div>
+<div style="font-size:13px;color:#5f6168;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ r.addr }}</div>
+<div style="font-size:13px"><span style="font-weight:600">★ {{ r.ratingText }}</span><span style="color:#5f6168"> · ที่นั่ง {{ r.seats }}</span></div>
+</div></div>
+</sc-for>
+</div></div>
+<div style="position:absolute;left:0;right:0;bottom:0;height:72px;background:#fff;border-top:1px solid #e3e1da;display:grid;grid-template-columns:repeat(3,1fr);padding-bottom:8px">
+<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;color:#1262ee;font-size:12px;font-weight:600"><span style="width:22px;height:4px;border-radius:2px;background:#1262ee"></span>ร้านทั้งหมด</div>
+<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;color:#5f6168;font-size:12px"><span style="width:22px;height:4px"></span>การจองของฉัน</div>
+<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;color:#5f6168;font-size:12px"><span style="width:22px;height:4px"></span>ร้านของฉัน</div>
+</div>
+</div>
+<div style="width:390px;font-size:14px;color:#5f6168;line-height:1.6">หัวเว็บเหลือแถวเดียว เมนูย้ายลงแถบล่าง ชื่อผู้ใช้และ "ออกจากระบบ" อยู่ในเมนูเมื่อแตะรูปโปรไฟล์ การ์ดร้านเป็นแนวนอนให้เห็นได้หลายร้านต่อจอ</div>
+</div>
+
+<!-- 1e MOBILE RESTAURANT -->
+<div id="1e" style="display:flex;flex-direction:column;gap:14px">
+<div style="display:flex;align-items:center;gap:10px"><span style="background:#1a1c20;color:#fff;font-size:14px;font-weight:700;padding:3px 10px;border-radius:6px">1e</span><span style="font-size:18px;font-weight:600">หน้าร้าน + จอง · มือถือ 390</span></div>
+<div style="width:390px;height:844px;border-radius:44px;border:10px solid #1a1c20;overflow:hidden;position:relative;background:#f6f5f2">
+<div style="height:100%;overflow-y:auto;padding-bottom:150px;box-sizing:border-box">
+<div style="position:relative;height:240px"><img src="assets/9001.jpg" style="width:100%;height:100%;object-fit:cover;display:block">
+<div style="position:absolute;top:14px;left:14px;width:40px;height:40px;border-radius:50%;background:#fff;display:flex;align-items:center;justify-content:center;font-size:20px">‹</div></div>
+<div style="padding:18px 16px 0;display:flex;flex-direction:column;gap:22px">
+<div style="display:flex;flex-direction:column;gap:6px">
+<div style="font-size:26px;font-weight:700">ชาบูริมคลอง</div>
+<div style="font-size:14px"><span style="font-weight:600">★ 4.0</span><span style="color:#5f6168"> (1 รีวิว) · 88 ถ.เจริญกรุง แขวงบางรัก กรุงเทพฯ</span></div>
+<div style="display:flex;flex-wrap:wrap;gap:6px;padding-top:4px">
+<span style="font-size:13px;padding:5px 10px;border-radius:999px;background:#fff;border:1px solid #e3e1da">ที่นั่ง 10</span>
+<span style="font-size:13px;padding:5px 10px;border-radius:999px;background:#fff;border:1px solid #e3e1da">ยกเลิกล่วงหน้า 60 นาที</span>
+<span style="font-size:13px;padding:5px 10px;border-radius:999px;background:#fff;border:1px solid #e3e1da">11:00–22:00 · ปิดอา.</span>
+</div></div>
+<div style="display:flex;flex-direction:column;gap:12px">
+<div style="font-size:19px;font-weight:600">ช่วงว่าง</div>
+<div style="display:flex;gap:8px;overflow-x:auto;margin:0 -16px;padding:0 16px 2px">
+<sc-for list="{{ days }}" as="d" hint-placeholder-count="7">
+<div onClick="{{ d.pick }}" style="flex:none;width:56px;height:68px;border-radius:14px;border:1.5px solid {{ d.bd }};background:{{ d.bg }};color:{{ d.fg }};display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer">
+<span style="font-size:12px;color:{{ d.subc }}">{{ d.top }}</span><span style="font-size:20px;font-weight:700;line-height:1.2">{{ d.d }}</span><span style="font-size:11px;color:{{ d.subc }}">{{ d.sub }}</span>
+</div>
+</sc-for>
+</div>
+<sc-if value="{{ closed }}" hint-placeholder-val="{{ false }}">
+<div style="background:#fff;border:1.5px dashed #d6d3cb;border-radius:14px;padding:24px;text-align:center"><div style="font-size:16px;font-weight:600">ร้านปิดวันอาทิตย์</div><div style="font-size:14px;color:#5f6168">วันนี้โต๊ะหาไม่เจอจริง ๆ ลองเลือกวันอื่นดูนะ</div></div>
+</sc-if>
+<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px">
+<sc-for list="{{ slots }}" as="s" hint-placeholder-count="11">
+<div onClick="{{ s.pick }}" style="border-radius:10px;border:1.5px solid {{ s.bd }};background:{{ s.bg }};opacity:{{ s.op }};cursor:{{ s.cursor }};padding:8px 10px;display:flex;flex-direction:column;min-height:44px;box-sizing:border-box">
+<span style="font-size:15px;font-weight:600;color:{{ s.tc }}">{{ s.short }}</span><span style="font-size:12px;color:{{ s.sc }}">{{ s.sub }}</span>
+</div>
+</sc-for>
+</div></div>
+<div style="display:flex;flex-direction:column;gap:10px">
+<div style="font-size:19px;font-weight:600">รีวิว</div>
+<div style="background:#fff;border:1px solid #ebe9e3;border-radius:14px;padding:14px;display:flex;flex-direction:column;gap:4px">
+<div style="display:flex;gap:8px;font-size:14px"><span style="font-weight:600">สมศรี ใจดี</span><span style="color:#9a5b00">★★★★<span style="color:#d6d3cb">★</span></span></div>
+<div style="font-size:15px">น้ำซุปเข้มข้นดี เนื้อสด แต่รอคิวนานนิดหน่อย</div>
+</div></div>
+</div></div>
+<div style="position:absolute;left:0;right:0;bottom:0;background:#fff;border-top:1px solid #e3e1da;box-shadow:0 -8px 24px rgba(26,28,32,.08);padding:12px 16px 22px;display:flex;flex-direction:column;gap:10px">
+<sc-if value="{{ isErr }}" hint-placeholder-val="{{ false }}"><div style="background:#fdecea;color:#a3221b;border-radius:10px;padding:8px 12px;font-size:14px;font-weight:600">ที่นั่งไม่พอสำหรับช่วงเวลานี้</div></sc-if>
+<sc-if value="{{ isOk }}" hint-placeholder-val="{{ false }}"><div style="background:#e5f4ee;color:#0b5e42;border-radius:10px;padding:8px 12px;font-size:14px;font-weight:600">จองสำเร็จ</div></sc-if>
+<div style="display:flex;align-items:center;justify-content:space-between;gap:10px">
+<div style="display:flex;flex-direction:column;min-width:0">
+<sc-if value="{{ hasSlot }}" hint-placeholder-val="{{ true }}"><span style="font-size:13px;color:#5f6168">{{ summaryDateShort }}</span><span style="font-size:17px;font-weight:700">{{ summaryTime }}</span></sc-if>
+<sc-if value="{{ noSlot }}" hint-placeholder-val="{{ false }}"><span style="font-size:14px;color:#5f6168">เลือกช่วงเวลาด้านบน</span></sc-if>
+</div>
+<div style="display:flex;align-items:center;border:1.5px solid #d6d3cb;border-radius:12px;padding:2px">
+<div onClick="{{ dec }}" style="width:36px;height:40px;display:flex;align-items:center;justify-content:center;font-size:18px;cursor:pointer">−</div>
+<span style="min-width:40px;text-align:center;font-size:15px;font-weight:600">{{ party }} คน</span>
+<div onClick="{{ inc }}" style="width:36px;height:40px;display:flex;align-items:center;justify-content:center;font-size:18px;cursor:pointer">+</div>
+</div></div>
+<div onClick="{{ book }}" style="height:50px;border-radius:12px;background:{{ btnBg }};color:#fff;font-size:17px;font-weight:600;display:flex;align-items:center;justify-content:center;cursor:pointer">จองโต๊ะ</div>
+</div>
+</div>
+<div style="width:390px;font-size:14px;color:#5f6168;line-height:1.6">แถบจองติดล่างจอตลอด แตะช่วงเวลาแล้วสรุปขึ้นทันที ไม่ต้องเลื่อนหาฟอร์ม (บนมือถือใช้ 1 ชม. เป็นค่าเริ่มต้น แตะช่องถัดไปเพื่อขยายเป็นทางเลือกที่เสนอ)</div>
+</div>
+
+<!-- 1f COMPONENTS -->
+<div id="1f" style="display:flex;flex-direction:column;gap:14px">
+<div style="display:flex;align-items:center;gap:10px"><span style="background:#1a1c20;color:#fff;font-size:14px;font-weight:700;padding:3px 10px;border-radius:6px">1f</span><span style="font-size:18px;font-weight:600">Component และสถานะ</span></div>
+<div style="width:880px;background:#f6f5f2;border-radius:12px;padding:36px;box-sizing:border-box;display:flex;flex-direction:column;gap:36px;box-shadow:0 1px 3px rgba(0,0,0,.08)">
+<div style="display:flex;flex-direction:column;gap:12px">
+<div style="font-size:14px;font-weight:600;color:#5f6168">ช่องช่วงเวลา · 7 สถานะ</div>
+<div style="display:grid;grid-template-columns:repeat(7,1fr);gap:8px">
+<div style="display:flex;flex-direction:column;gap:6px"><div style="border-radius:12px;border:1.5px solid #e3e1da;background:#fff;padding:10px"><div style="font-size:15px;font-weight:600">18:00</div><div style="font-size:12px;color:#0f7a55">เหลือ 10 ที่</div></div><span style="font-size:12px;color:#5f6168">ว่าง</span></div>
+<div style="display:flex;flex-direction:column;gap:6px"><div style="border-radius:12px;border:1.5px solid #f1d2a0;background:#fff1dc;padding:10px"><div style="font-size:15px;font-weight:600">20:00</div><div style="font-size:12px;color:#9a5b00">เหลือ 3 ที่</div></div><span style="font-size:12px;color:#5f6168">ใกล้เต็ม ≤30%</span></div>
+<div style="display:flex;flex-direction:column;gap:6px"><div style="border-radius:12px;border:1.5px solid #eeede8;background:#eeede8;padding:10px;color:#8a8c92"><div style="font-size:15px;font-weight:600">19:00</div><div style="font-size:12px">เต็ม</div></div><span style="font-size:12px;color:#5f6168">เต็ม</span></div>
+<div style="display:flex;flex-direction:column;gap:6px"><div style="border-radius:12px;border:1.5px dashed #e3e1da;padding:10px;color:#8a8c92;opacity:.55"><div style="font-size:15px;font-weight:600">11:00</div><div style="font-size:12px">ผ่านไปแล้ว</div></div><span style="font-size:12px;color:#5f6168">ผ่านไปแล้ว</span></div>
+<div style="display:flex;flex-direction:column;gap:6px"><div style="border-radius:12px;border:1.5px solid #1262ee;background:#1262ee;padding:10px;color:#fff"><div style="font-size:15px;font-weight:600">18:00</div><div style="font-size:12px">เหลือ 4 ที่</div></div><span style="font-size:12px;color:#5f6168">เลือกแล้ว</span></div>
+<div style="display:flex;flex-direction:column;gap:6px"><div style="border-radius:12px;border:1.5px solid #1262ee;background:#eaf1fe;padding:10px;color:#0f4fc0"><div style="font-size:15px;font-weight:600">19:00</div><div style="font-size:12px">เหลือ 6 ที่</div></div><span style="font-size:12px;color:#5f6168">ในช่วงที่จอง</span></div>
+<div style="display:flex;flex-direction:column;gap:6px"><div style="border-radius:12px;border:1.5px solid #d4342c;background:#fdecea;padding:10px;color:#b3261e"><div style="font-size:15px;font-weight:600">19:00</div><div style="font-size:12px">เต็ม</div></div><span style="font-size:12px;color:#5f6168">ชนช่วงเต็ม</span></div>
+</div></div>
+<div style="display:flex;flex-direction:column;gap:12px">
+<div style="font-size:14px;font-weight:600;color:#5f6168">การ์ดสถิติ · ใบหลักเด่น ใบรองเรียบ</div>
+<div style="display:grid;grid-template-columns:1.4fr 1fr 1fr 1fr;gap:10px">
+<div style="background:#1262ee;color:#fff;border-radius:16px;padding:18px;display:flex;flex-direction:column;gap:4px"><span style="font-size:14px">วันนี้</span><span style="font-size:36px;font-weight:700;line-height:1.1">0</span><span style="font-size:13px;color:#dbe6fd">การจองที่ยืนยันแล้วของวันนี้</span></div>
+<div style="background:#fff;border:1px solid #ebe9e3;border-radius:16px;padding:18px;display:flex;flex-direction:column;gap:4px"><span style="font-size:14px;color:#5f6168">กำลังจะถึง</span><span style="font-size:28px;font-weight:700">3</span></div>
+<div style="background:#fff;border:1px solid #ebe9e3;border-radius:16px;padding:18px;display:flex;flex-direction:column;gap:4px"><span style="font-size:14px;color:#5f6168">แขกที่กำลังจะมา</span><span style="font-size:28px;font-weight:700">17</span></div>
+<div style="background:#fff;border:1px solid #ebe9e3;border-radius:16px;padding:18px;display:flex;flex-direction:column;gap:4px"><span style="font-size:14px;color:#5f6168">ยกเลิกแล้ว</span><span style="font-size:28px;font-weight:700;color:#5f6168">1</span></div>
+</div></div>
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+<div style="display:flex;flex-direction:column;gap:12px">
+<div style="font-size:14px;font-weight:600;color:#5f6168">EmptyState</div>
+<div style="background:#fff;border:1px solid #ebe9e3;border-radius:16px;padding:28px;display:flex;flex-direction:column;align-items:center;gap:8px;text-align:center">
+<div style="width:52px;height:52px;border-radius:50%;background:#eaf1fe;display:flex;align-items:center;justify-content:center"><span style="width:20px;height:16px;border:2.5px solid #1262ee;border-radius:4px"></span></div>
+<div style="font-size:17px;font-weight:600">ยังไม่มีการจอง</div><div style="font-size:14px;color:#5f6168">โต๊ะยังว่างรอคุณอยู่ เลือกร้านแล้วจองได้เลย</div>
+<div style="margin-top:4px;height:44px;padding:0 18px;border-radius:12px;background:#1262ee;color:#fff;font-size:15px;font-weight:600;display:flex;align-items:center">ดูร้านทั้งหมด</div>
+</div></div>
+<div style="display:flex;flex-direction:column;gap:12px">
+<div style="font-size:14px;font-weight:600;color:#5f6168">ErrorAlert + Skeleton</div>
+<div style="background:#fdecea;border-radius:14px;padding:14px 16px;display:flex;align-items:center;justify-content:space-between;gap:12px"><div style="display:flex;flex-direction:column"><span style="font-size:15px;font-weight:600;color:#a3221b">โหลดรายชื่อร้านไม่สำเร็จ</span><span style="font-size:13px;color:#a3221b">ตรวจสอบอินเทอร์เน็ตแล้วลองใหม่</span></div><span style="height:40px;padding:0 14px;border-radius:10px;background:#fff;border:1.5px solid #f2b8b3;color:#a3221b;font-size:14px;font-weight:600;display:flex;align-items:center;white-space:nowrap">ลองอีกครั้ง</span></div>
+<div style="background:#fff;border:1px solid #ebe9e3;border-radius:16px;overflow:hidden"><div style="height:110px;background:#eeede8"></div><div style="padding:14px;display:flex;flex-direction:column;gap:8px"><div style="height:16px;width:60%;border-radius:6px;background:#eeede8"></div><div style="height:12px;width:85%;border-radius:6px;background:#f3f2ee"></div><div style="height:12px;width:30%;border-radius:6px;background:#f3f2ee"></div></div></div>
+</div></div>
+<div style="display:flex;flex-direction:column;gap:12px">
+<div style="font-size:14px;font-weight:600;color:#5f6168">ป้ายสถานะ + ช่องกรอก/ปุ่ม สูงเท่ากัน 44px</div>
+<div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+<span style="font-size:13px;padding:4px 10px;border-radius:999px;background:#eaf1fe;color:#0f4fc0;font-weight:600">ยืนยันแล้ว</span>
+<span style="font-size:13px;padding:4px 10px;border-radius:999px;background:#eeede8;color:#5f6168;font-weight:600">ยกเลิกแล้ว</span>
+<span style="width:20px"></span>
+<span style="height:44px;width:220px;border:1.5px solid #d6d3cb;border-radius:12px;background:#fff;display:flex;align-items:center;padding:0 14px;font-size:15px;color:#8a8c92;box-sizing:border-box">ช่องกรอก</span>
+<span style="height:44px;padding:0 18px;border-radius:12px;background:#1262ee;color:#fff;font-size:15px;font-weight:600;display:flex;align-items:center">ปุ่มหลัก</span>
+<span style="height:44px;padding:0 18px;border-radius:12px;border:1.5px solid #d6d3cb;background:#fff;font-size:15px;font-weight:600;display:flex;align-items:center">ปุ่มรอง</span>
+</div></div>
+</div>
+</div>
+
+<!-- 1g NOTES -->
+<div id="1g" style="display:flex;flex-direction:column;gap:14px">
+<div style="display:flex;align-items:center;gap:10px"><span style="background:#1a1c20;color:#fff;font-size:14px;font-weight:700;padding:3px 10px;border-radius:6px">1g</span><span style="font-size:18px;font-weight:600">Token และสิ่งที่ต้องเพิ่ม</span></div>
+<div style="width:620px;background:#fff;border-radius:12px;padding:32px;box-sizing:border-box;display:flex;flex-direction:column;gap:26px;box-shadow:0 1px 3px rgba(0,0,0,.08);font-size:14px;line-height:1.6">
+<div style="display:flex;flex-direction:column;gap:8px">
+<div style="font-size:16px;font-weight:700">Token ที่เปลี่ยน (เก่า → ใหม่)</div>
+<sc-for list="{{ tokens }}" as="t" hint-placeholder-count="10">
+<div style="display:grid;grid-template-columns:20px 170px 1fr;gap:10px;align-items:center;border-bottom:1px solid #f0efea;padding:4px 0">
+<span style="width:18px;height:18px;border-radius:5px;background:{{ t.sw }};border:1px solid #e3e1da"></span>
+<code style="font-size:13px">{{ t.name }}</code><span style="color:#5f6168"><span style="text-decoration:line-through">{{ t.old }}</span> → <b style="color:#1a1c20">{{ t.neu }}</b> {{ t.note }}</span>
+</div>
+</sc-for>
+</div>
+<div style="display:flex;flex-direction:column;gap:6px">
+<div style="font-size:16px;font-weight:700">Primitive ที่ต้องเพิ่ม (shadcn ไม่มี dependency ใหม่)</div>
+<div style="color:#3b3d43">dropdown menu (เมนูโปรไฟล์ที่มี "ออกจากระบบ"), segmented/tabs (เรียงลำดับ ระยะเวลา กรองสถานะแทน select), ตัวเลือกวัน 7 วันแทน input date</div>
+</div>
+<div style="display:flex;flex-direction:column;gap:6px">
+<div style="font-size:16px;font-weight:700">ข้อมูล backend</div>
+<div style="color:#3b3d43">ไม่ต้องเพิ่ม ทุกอย่างคำนวณจากข้อมูลเดิม (ระยะเวลา = เวลาสิ้นสุด − เริ่ม, "ปิดวันอาทิตย์" จากเวลาเปิดรายวัน)</div>
+</div>
+<div style="display:flex;flex-direction:column;gap:6px">
+<div style="font-size:16px;font-weight:700">ข้อความที่เสนอเปลี่ยน</div>
+<div style="color:#3b3d43">"สวัสดี สมศรี ใจดี" → ชื่อต้นอย่างเดียว · หัวข้อ "ทำไมต้อง Table Not Found" รวมเข้ากับ 3 ขั้นตอน · ข้อความวันปิด "วันนี้โต๊ะหาไม่เจอจริง ๆ ลองเลือกวันอื่นดูนะ" · ข้อความที่สคริปต์ทดสอบตรวจอยู่ทั้งหมดคงเดิม ("ออกจากระบบ" ย้ายเข้าเมนู ต้องให้สคริปต์เปิดเมนูก่อน)</div>
+</div>
+<div style="display:flex;flex-direction:column;gap:6px">
+<div style="font-size:16px;font-weight:700">ลำดับที่ควรทำ</div>
+<div style="color:#3b3d43">1. token + ปุ่ม/ช่องกรอก 44px · 2. หัวเว็บ (เดสก์ท็อป + แถบล่างมือถือ) · 3. หน้าร้าน + การ์ดจอง · 4. หน้าแรก · 5. landing · 6. หน้าเจ้าของร้าน การจองของฉัน โปรไฟล์</div>
+</div>
+</div>
+</div>
+
+</div>
+</section>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+const SEATS = 10;
+const DAYS = [
+  { dow: 'ส.', full: 'เสาร์', d: 10, top: 'วันนี้' },
+  { dow: 'อา.', full: 'อาทิตย์', d: 11, closed: true },
+  { dow: 'จ.', full: 'จันทร์', d: 12 },
+  { dow: 'อ.', full: 'อังคาร', d: 13 },
+  { dow: 'พ.', full: 'พุธ', d: 14 },
+  { dow: 'พฤ.', full: 'พฤหัสบดี', d: 15 },
+  { dow: 'ศ.', full: 'ศุกร์', d: 16 }
+];
+const REM = [
+  [10,10,10,10,10,6,4,2,0,3,8], null,
+  [10,10,10,10,10,10,10,4,0,3,10],
+  [10,10,8,10,10,10,7,5,2,6,10],
+  [10,10,10,9,10,10,6,3,0,0,7],
+  [10,10,10,10,8,10,5,2,0,1,6],
+  [10,9,10,10,10,8,3,0,0,2,9]
+];
+const PAST = [5,0,0,0,0,0,0];
+const hh = h => String(h).padStart(2, '0') + ':00';
+const STY = {
+  avail: { bg: '#fff', bd: '#e3e1da', tc: '#1a1c20', sc: '#0f7a55', op: 1 },
+  near: { bg: '#fff1dc', bd: '#f1d2a0', tc: '#1a1c20', sc: '#9a5b00', op: 1 },
+  full: { bg: '#eeede8', bd: '#eeede8', tc: '#8a8c92', sc: '#8a8c92', op: 1 },
+  past: { bg: 'transparent', bd: '#e3e1da', tc: '#8a8c92', sc: '#8a8c92', op: 0.55 },
+  sel: { bg: '#1262ee', bd: '#1262ee', tc: '#fff', sc: '#fff', op: 1 },
+  range: { bg: '#eaf1fe', bd: '#1262ee', tc: '#0f4fc0', sc: '#0f4fc0', op: 1 },
+  conflict: { bg: '#fdecea', bd: '#d4342c', tc: '#b3261e', sc: '#b3261e', op: 1 }
+};
+const RESTS = [
+  { name: 'ปิ้งย่างเตาถ่านลุงแดง', addr: '12 ซ.อารีย์ 4 แขวงสามเสนใน กรุงเทพฯ', rating: 5.0, reviews: 1, seats: 24, img: 'assets/9004.jpg', order: 7 },
+  { name: 'ชาบูริมคลอง', addr: '88 ถ.เจริญกรุง แขวงบางรัก กรุงเทพฯ', rating: 4.0, reviews: 1, seats: 10, img: 'assets/9001.jpg', order: 6 },
+  { name: 'ชาบูทองคำ', addr: '123 ถ.สุขุมวิท แขวงคลองเตย กรุงเทพฯ', rating: 4.7, reviews: 3, seats: 40, img: 'assets/9001.jpg', order: 5 },
+  { name: 'หมูกระทะบ้านสวน', addr: '45/6 ซ.ลาดพร้าว 71 แขวงลาดพร้าว กรุงเทพฯ', rating: 3.5, reviews: 2, seats: 60, img: 'assets/9002.jpg', order: 4 },
+  { name: 'ยากินิกุโตเกียว', addr: '8 ถ.เพชรบุรีตัดใหม่ แขวงมักกะสัน กรุงเทพฯ', rating: 4.0, reviews: 3, seats: 24, img: 'assets/9003.jpg', order: 3 },
+  { name: 'ปิ้งย่างลุงหนวด', addr: '77 ถ.นิมมานเหมินท์ ต.สุเทพ เชียงใหม่', rating: 2.0, reviews: 1, seats: 30, img: 'assets/9004.jpg', order: 2 },
+  { name: 'ชาบูหม้อไฟเจ้าเก่า', addr: '19 ถ.ท่าพระจันทร์ แขวงพระบรมมหาราชวัง กรุงเทพฯ', rating: null, reviews: 0, seats: 16, img: 'assets/9005.jpg', order: 1 }
+].map(r => ({ ...r, ratingText: r.rating == null ? 'ยังไม่มีรีวิว' : `${r.rating.toFixed(1)} (${r.reviews} รีวิว)` }));
+const TOKENS = [
+  ['--background', '#f0f2f5', '#f6f5f2', 'ขาวนวลอุ่น'],
+  ['--foreground', '#050505', '#1a1c20', ''],
+  ['--primary', '#0866ff', '#1262ee', 'ตรงไอคอน ขาวบนสี 5.2:1'],
+  ['--primary-hover', '#0759e0', '#0e52cc', 'ใช้จริงใน Button'],
+  ['--primary-subtle', '#e7f3ff', '#eaf1fe', ''],
+  ['--muted', '#e4e6eb', '#eeede8', ''],
+  ['--muted-foreground', '#65676b', '#5f6168', '5.7:1 บนพื้นใหม่'],
+  ['--border / --input', '#ced0d4', '#e3e1da / #d6d3cb', 'ช่องกรอกเข้มกว่าเส้นการ์ด'],
+  ['--accent-strong', 'hsl(35 100% 35%)', '#9a5b00', '4.8:1 บน accent-subtle'],
+  ['--accent-subtle', 'hsl(36 100% 93%)', '#fff1dc', ''],
+  ['--success', 'hsl(157 78% 27%)', '#0f7a55', ''],
+  ['--surface-inverse (ใหม่)', '—', '#1a1c20', 'การ์ดการจองถัดไป แถบเจ้าของร้าน'],
+  ['--radius', '10px', '12px', 'การ์ด 16–20px']
+].map(([name, old, neu, note]) => ({ name, old, neu, note, sw: neu.split(' ')[0].startsWith('#') ? neu.split(' ')[0] : 'transparent' }));
+
+const MYR0 = [
+  { id: 1, name: 'ชาบูทองคำ', img: 9001, dow: 'จ.', d: 12, start: 12, end: 13, party: 2, status: 'ok' },
+  { id: 2, name: 'ชาบูริมคลอง', img: 9001, dow: 'จ.', d: 12, start: 18, end: 20, party: 6, status: 'ok' },
+  { id: 3, name: 'ชาบูริมคลอง', img: 9001, dow: 'จ.', d: 12, start: 20, end: 21, party: 7, status: 'ok' },
+  { id: 4, name: 'ชาบูริมคลอง', img: 9001, dow: 'อ.', d: 13, start: 12, end: 13, party: 2, status: 'cancel' },
+  { id: 5, name: 'หมูกระทะบ้านสวน', img: 9002, dow: 'จ.', d: 12, start: 18, end: 19, party: 2, status: 'cancel' }
+];
+const OWN = [
+  { who: 'สมศรี ใจดี', ini: 'สจ', d: 12, start: 18, end: 20, party: 6, status: 'ok' },
+  { who: 'สมชาย เจ้าของร้าน', ini: 'สจ', d: 12, start: 19, end: 20, party: 4, status: 'ok' },
+  { who: 'สมศรี ใจดี', ini: 'สจ', d: 12, start: 20, end: 21, party: 7, status: 'ok' },
+  { who: 'สมศรี ใจดี', ini: 'สจ', d: 13, start: 12, end: 13, party: 2, status: 'cancel' }
+];
+const DAYNAME = { 12: 'วันจันทร์', 13: 'วันอังคาร' };
+const FORM_DAYS = ['อาทิตย์', 'จันทร์', 'อังคาร', 'พุธ', 'พฤหัสบดี', 'ศุกร์', 'เสาร์'];
+const ED_DAYS = [{ dow: 'ส.', d: 10 }, { dow: 'จ.', d: 12 }, { dow: 'อ.', d: 13 }, { dow: 'พ.', d: 14 }, { dow: 'พฤ.', d: 15 }, { dow: 'ศ.', d: 16 }];
+
+class Component extends DCLogic {
+  state = { day: 2, slot: 7, dur: 1, party: 2, result: null, sort: 'new', q: '',
+    myr: MYR0, editId: null, draft: null, oFilter: 'all', open: [false, true, true, true, true, true, true],
+    fName: 'ชาบูริมคลอง', fSeats: 10, bioEdit: false, bio: '', bioDraft: '' };
+
+  renderVals() { return { ...this.rv1(), ...this.rv2() }; }
+
+  rv2() {
+    const { myr, editId, draft, oFilter, open, fName, fSeats, bioEdit, bio, bioDraft } = this.state;
+    const fmt = r => ({
+      ...r, img: `assets/${r.img}.jpg`, dateText: `${r.dow} ${r.d} ต.ค. 2569`,
+      timeText: `${hh(r.start)}–${hh(r.end)}`, partyText: `${r.party} คน`,
+      deadline: `ยกเลิกได้ถึง ${hh(r.start - 1)} วันที่ ${r.d} ต.ค.`,
+      isEditing: r.id === editId, notEditing: r.id !== editId,
+      onEdit: () => this.setState({ editId: r.id, draft: { d: r.d, dow: r.dow, start: r.start, dur: r.end - r.start, party: r.party } }),
+      onCancel: () => this.setState(s => ({ myr: s.myr.map(x => x.id === r.id ? { ...x, status: 'cancel' } : x), editId: null }))
+    });
+    const upcoming = myr.filter(r => r.status === 'ok').sort((a, b) => a.d - b.d || a.start - b.start).map(fmt);
+    const cancelledR = myr.filter(r => r.status === 'cancel').map(fmt);
+    const dr = draft || { d: 12, dow: 'จ.', start: 12, dur: 1, party: 2 };
+    const setD = p => this.setState(s => ({ draft: { ...s.draft, ...p } }));
+    const chip = sel => ({ bg: sel ? '#1262ee' : '#fff', fg: sel ? '#fff' : '#1a1c20', bd: sel ? '#1262ee' : '#d6d3cb' });
+    const edDays = ED_DAYS.map(x => ({ ...x, ...chip(x.d === dr.d), pick: () => setD({ d: x.d, dow: x.dow }) }));
+    const edTimes = [11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21].map(h => {
+      const dis = h + dr.dur > 22;
+      return { label: hh(h), ...chip(h === dr.start), op: dis ? 0.35 : 1, pick: () => { if (!dis) setD({ start: h }); } };
+    });
+    const edDurs = [1, 2, 3].map(n => {
+      const dis = dr.start + n > 22;
+      return { label: `${n} ชม.`, ...chip(n === dr.dur), op: dis ? 0.35 : 1, pick: () => { if (!dis) setD({ dur: n }); } };
+    });
+    const own = OWN.filter(r => oFilter === 'all' || r.status === oFilter);
+    const groups = [12, 13].map(d => {
+      const rows = own.filter(r => r.d === d).sort((a, b) => a.start - b.start).map(r => ({
+        ...r, timeText: `${hh(r.start)}–${hh(r.end)}`, partyText: `${r.party} คน`,
+        label: r.status === 'ok' ? 'ยืนยันแล้ว' : 'ยกเลิกแล้ว',
+        bbg: r.status === 'ok' ? '#eaf1fe' : '#eeede8', bfg: r.status === 'ok' ? '#0f4fc0' : '#5f6168',
+        op: r.status === 'ok' ? 1 : 0.6
+      }));
+      if (!rows.length) return null;
+      const ok = OWN.filter(r => r.d === d && r.status === 'ok');
+      const bars = [11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21].map(h => {
+        const used = ok.filter(r => r.start <= h && h < r.end).reduce((a, r) => a + r.party, 0);
+        const left = 10 - used;
+        return { h: `${Math.max(4, used * 10)}%`, t: String(h), c: used === 0 ? '#e3e1da' : left <= 0 ? '#b3261e' : left <= 3 ? '#d99a3a' : '#1262ee' };
+      });
+      return { title: `${DAYNAME[d]} ${d} ต.ค. 2569`, meta: `${ok.length} การจอง · ${ok.reduce((a, r) => a + r.party, 0)} คน`, rows, bars };
+    }).filter(Boolean);
+    const oFilters = [['all', 'ทั้งหมด', OWN.length], ['ok', 'ยืนยันแล้ว', 3], ['cancel', 'ยกเลิกแล้ว', 1]].map(([k, label, n]) => ({
+      label: `${label} ${n}`, bg: oFilter === k ? '#fff' : 'transparent', fg: oFilter === k ? '#1a1c20' : '#5f6168',
+      fw: oFilter === k ? 600 : 400, sh: oFilter === k ? '0 1px 3px rgba(0,0,0,.1)' : 'none', pick: () => this.setState({ oFilter: k })
+    }));
+    const hoursRows = FORM_DAYS.map((name, i) => {
+      const on = open[i];
+      return { name, on, off: !on, swBg: on ? '#1262ee' : '#d6d3cb', knob: on ? '18px' : '2px',
+        toggle: () => this.setState(s => ({ open: s.open.map((v, j) => j === i ? !v : v) })) };
+    });
+    const closedNames = FORM_DAYS.filter((_, i) => !open[i]);
+    const openSummary = closedNames.length === 7 ? 'ยังไม่ได้ตั้งเวลาเปิด' : closedNames.length ? `11:00–22:00 · ปิดวัน${closedNames.join(' ')}` : 'เปิดทุกวัน 11:00–22:00';
+    return {
+      upcoming, cancelledR, hasUpcoming: upcoming.length > 0, noUpcoming: upcoming.length === 0,
+      edDays, edTimes, edDurs, edParty: `${dr.party} คน`,
+      edSummary: `${dr.dow} ${dr.d} ต.ค. 2569 · ${hh(dr.start)}–${hh(dr.start + dr.dur)}`,
+      edInc: () => setD({ party: Math.min(10, dr.party + 1) }), edDec: () => setD({ party: Math.max(1, dr.party - 1) }),
+      edClose: () => this.setState({ editId: null }),
+      edSave: () => this.setState(s => ({ editId: null, myr: s.myr.map(x => x.id === s.editId ? { ...x, d: dr.d, dow: dr.dow, start: dr.start, end: dr.start + dr.dur, party: dr.party } : x) })),
+      groups, oFilters, hoursRows, openSummary,
+      fName, onFName: e => this.setState({ fName: e.target.value }), previewName: fName.trim() || 'ชื่อร้าน',
+      fSeats, seatInc: () => this.setState(s => ({ fSeats: s.fSeats + 1 })), seatDec: () => this.setState(s => ({ fSeats: Math.max(1, s.fSeats - 1) })),
+      allOpen: () => this.setState({ open: [true, true, true, true, true, true, true] }),
+      bioEdit, bioView: !bioEdit, bioText: bio || 'ยังไม่มีคำแนะนำตัว', bioColor: bio ? '#3b3d43' : '#8a8c92', bioDraft,
+      onBioEdit: () => this.setState({ bioEdit: true, bioDraft: bio }), onBioChange: e => this.setState({ bioDraft: e.target.value }),
+      onBioSave: () => this.setState(s => ({ bio: s.bioDraft.trim(), bioEdit: false })), onBioCancel: () => this.setState({ bioEdit: false })
+    };
+  }
+
+  rv1() {
+    const { day, slot, dur, party, result, sort, q } = this.state;
+    const rem = REM[day];
+    const closed = !rem;
+    const days = DAYS.map((d, i) => {
+      const sel = i === day;
+      return {
+        ...d, top: d.top || d.dow, sub: d.closed ? 'ปิด' : 'ต.ค.',
+        bg: sel ? '#1262ee' : (d.closed ? '#f0efea' : '#fff'),
+        fg: sel ? '#fff' : (d.closed ? '#8a8c92' : '#1a1c20'),
+        bd: sel ? '#1262ee' : '#e3e1da', subc: sel ? '#dbe6fd' : '#5f6168',
+        pick: () => this.setState({ day: i, slot: null, result: null })
+      };
+    });
+    const slots = closed ? [] : rem.map((r, i) => {
+      const past = i < PAST[day];
+      const st = past ? 'past' : r === 0 ? 'full' : r <= SEATS * 0.3 ? 'near' : 'avail';
+      const inR = slot != null && i >= slot && i < slot + dur && !past;
+      let s = STY[st];
+      if (inR) s = st === 'full' ? STY.conflict : i === slot ? STY.sel : STY.range;
+      const blocked = past || r === 0;
+      return {
+        ...s, time: `${hh(11 + i)}–${hh(12 + i)}`, short: hh(11 + i),
+        sub: past ? 'ผ่านไปแล้ว' : r === 0 ? 'เต็ม' : `เหลือ ${r} ที่`,
+        cursor: blocked ? 'not-allowed' : 'pointer',
+        pick: () => { if (blocked) return; this.setState({ slot: i, dur: Math.max(1, Math.min(this.state.dur, 11 - i)), result: null }); }
+      };
+    });
+    const hasSlot = slot != null && !closed;
+    const durs = [1, 2, 3].map(n => {
+      const dis = slot == null || slot + n > 11;
+      const sel = n === dur;
+      return {
+        label: `${n} ชม.`, op: dis ? 0.4 : 1,
+        bg: sel ? '#eaf1fe' : '#fff', bd: sel ? '#1262ee' : '#d6d3cb', fg: sel ? '#0f4fc0' : '#1a1c20',
+        pick: () => { if (!dis) this.setState({ dur: n, result: null }); }
+      };
+    });
+    const sorted = [...RESTS].sort((a, b) =>
+      sort === 'rating' ? (b.rating ?? -1) - (a.rating ?? -1) :
+      sort === 'reviews' ? b.reviews - a.reviews : b.order - a.order);
+    const list = sorted.filter(r => r.name.includes(q.trim())).slice(0, 6);
+    const sorts = [['new', 'ใหม่ล่าสุด'], ['rating', 'คะแนนสูงสุด'], ['reviews', 'รีวิวมากที่สุด']].map(([k, label]) => ({
+      label, bg: sort === k ? '#fff' : 'transparent', fg: sort === k ? '#1a1c20' : '#5f6168',
+      fw: sort === k ? 600 : 400, sh: sort === k ? '0 1px 3px rgba(0,0,0,.1)' : 'none',
+      pick: () => this.setState({ sort: k })
+    }));
+    const top3 = [...RESTS].filter(r => r.rating != null).sort((a, b) => b.rating - a.rating).slice(0, 3).map((r, i) => ({ ...r, rank: i + 1 }));
+    const hours = [1, 2, 3, 4, 5, 6, 0].map(i => ({ i, d: DAYS[i] })).map(({ d, i }) => ({
+      day: d.dow, t: d.closed ? 'ปิด' : '11–22',
+      c: d.closed ? '#b3261e' : '#5f6168', bg: i === day ? '#eaf1fe' : '#fff'
+    }));
+    return {
+      days, slots, closed, hasSlot, noSlot: !hasSlot, durs, party,
+      summaryDate: hasSlot ? `วัน${DAYS[day].full} ${DAYS[day].d} ต.ค. 2569` : '',
+      summaryDateShort: hasSlot ? `${DAYS[day].dow} ${DAYS[day].d} ต.ค. 2569` : '',
+      summaryTime: hasSlot ? `${hh(11 + slot)}–${hh(11 + slot + dur)}` : '',
+      isErr: result === 'err', isOk: result === 'ok',
+      btnBg: hasSlot ? '#1262ee' : '#b9cdf7',
+      inc: () => this.setState(s => ({ party: Math.min(SEATS, s.party + 1), result: null })),
+      dec: () => this.setState(s => ({ party: Math.max(1, s.party - 1), result: null })),
+      book: () => {
+        if (!hasSlot) return;
+        const min = Math.min(...rem.slice(slot, slot + dur));
+        this.setState({ result: min >= party ? 'ok' : 'err' });
+      },
+      q, onQ: e => this.setState({ q: e.target.value }), clearQ: () => this.setState({ q: '' }),
+      list, noResults: list.length === 0, sorts, top3, mlist: RESTS.slice(0, 5), hours, tokens: TOKENS
+    };
+  }
+}
+</script>
+</body>
+</html>
