@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { fromApiDateTime, toApiDateTime, validateTimeRange, WEEKDAY_LABELS } from "@/lib/datetime";
+import { addDaysToKey, bangkokDateKey, fromApiDateTime, toApiDateTime, validateTimeRange, WEEKDAY_LABELS } from "@/lib/datetime";
 
 // npm test runs with TZ=America/New_York, so any code that leans on the machine's zone fails here.
 
@@ -45,5 +45,39 @@ describe("validateTimeRange", () => {
     ["2026-10-12T18:00", "2026-10-12T18:00"],
   ])("rejects an end that is not after the start (%s -> %s)", (start, end) => {
     expect(validateTimeRange(start, end)).toBe("เวลาสิ้นสุดต้องหลังเวลาเริ่ม");
+  });
+});
+
+describe("bangkokDateKey", () => {
+  it("is the Bangkok calendar day of an instant", () => {
+    expect(bangkokDateKey(new Date("2026-10-12T04:00:00Z"))).toBe("2026-10-12");
+  });
+
+  it("is already the next day in Bangkok while it is still evening in New York and UTC", () => {
+    // 2026-10-12 17:30 UTC = 00:30 on the 13th in Bangkok = 13:30 on the 12th in New York.
+    expect(bangkokDateKey(new Date("2026-10-12T17:30:00Z"))).toBe("2026-10-13");
+  });
+
+  it("is still the previous day just before Bangkok midnight", () => {
+    expect(bangkokDateKey(new Date("2026-10-12T16:59:59Z"))).toBe("2026-10-12");
+  });
+
+  it("crosses a year end", () => {
+    expect(bangkokDateKey(new Date("2026-12-31T20:00:00Z"))).toBe("2027-01-01");
+  });
+});
+
+describe("addDaysToKey", () => {
+  it("moves forward and backward", () => {
+    expect(addDaysToKey("2026-10-12", 1)).toBe("2026-10-13");
+    expect(addDaysToKey("2026-10-12", -1)).toBe("2026-10-11");
+    expect(addDaysToKey("2026-10-12", 0)).toBe("2026-10-12");
+  });
+
+  it("crosses month and year boundaries and leap days", () => {
+    expect(addDaysToKey("2026-10-31", 1)).toBe("2026-11-01");
+    expect(addDaysToKey("2026-12-31", 1)).toBe("2027-01-01");
+    expect(addDaysToKey("2028-02-28", 1)).toBe("2028-02-29");
+    expect(addDaysToKey("2027-03-01", -1)).toBe("2027-02-28");
   });
 });

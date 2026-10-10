@@ -8,6 +8,18 @@ export function toApiDateTime(local: string): string {
   return `${local}:00${BANGKOK_OFFSET}`;
 }
 
+/** The Bangkok calendar day of an instant as "YYYY-MM-DD" (the value a date input takes and the API's `date` query). */
+export function bangkokDateKey(instant: Date): string {
+  return new Date(instant.getTime() + BANGKOK_OFFSET_MS).toISOString().slice(0, 10);
+}
+
+/** "YYYY-MM-DD" plus (or minus) whole days, as calendar arithmetic that no time zone can disturb. */
+export function addDaysToKey(key: string, days: number): string {
+  const [year, month, day] = key.split("-").map(Number);
+
+  return new Date(Date.UTC(year, month - 1, day + days)).toISOString().slice(0, 10);
+}
+
 /** Any RFC 3339 instant -> "YYYY-MM-DDTHH:mm" in Bangkok time (the value a datetime-local input takes). */
 export function fromApiDateTime(iso: string): string {
   return new Date(new Date(iso).getTime() + BANGKOK_OFFSET_MS).toISOString().slice(0, 16);

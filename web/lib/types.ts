@@ -89,3 +89,37 @@ export interface SaveReservationInput {
   endAt: string;
   guests: number;
 }
+
+/** `GET /users/me`. `name` is missing when Keycloak gave none. */
+export interface Me {
+  id: string;
+  name?: string;
+  email: string;
+  imageUrl: string | null;
+  bio: string | null;
+}
+
+/** One of the caller's own reviews (`GET /reviews`), naming the restaurant it is about. */
+export interface MyReview {
+  id: number;
+  rating: number;
+  comment: string;
+  restaurant: { id: number; name: string };
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface AvailabilitySlot {
+  startAt: string;
+  endAt: string;
+  bookedGuests: number;
+  remainingSeats: number;
+}
+
+/** `GET /restaurants/{id}/availability`: a display snapshot, never the authority on whether a booking fits. */
+export interface Availability {
+  date: string;
+  closed: boolean;
+  capacity: number;
+  slots: AvailabilitySlot[];
+}
