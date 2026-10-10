@@ -2,7 +2,7 @@
     "swagger": "2.0",
     "info": {
         "description": "API สำหรับระบบจองโต๊ะและรีวิวร้านอาหาร",
-        "title": "BookingTable API",
+        "title": "Table Not Found API",
         "contact": {},
         "version": "1.0"
     },

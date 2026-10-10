@@ -402,7 +402,7 @@ host: localhost:8080
 info:
   contact: {}
   description: API สำหรับระบบจองโต๊ะและรีวิวร้านอาหาร
-  title: BookingTable API
+  title: Table Not Found API
   version: "1.0"
 paths:
   /auth/callback:

@@ -1,4 +1,4 @@
-# Booking Table API contract
+# Table Not Found API contract
 
 Hand-written contract for the restaurant reservation and review API. The generated Swagger UI
 (`/swagger/index.html`) lists the same routes; this document adds the rules behind them. Where the two

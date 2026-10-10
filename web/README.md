@@ -1,6 +1,6 @@
 # web
 
-หน้าบ้านของ Booking Table: Next.js 16 (App Router) + TypeScript + Tailwind v4 + shadcn/ui ทุกหน้าเป็น client component
+หน้าบ้านของ Table Not Found: Next.js 16 (App Router) + TypeScript + Tailwind v4 + shadcn/ui ทุกหน้าเป็น client component
 เพราะทุก endpoint ต้องใช้ Bearer token ภาพรวมของทั้งระบบ วิธีรัน และการล็อกอินอยู่ใน [README หลัก](../README.md)
 
 Next 16 ต่างจากรุ่นที่คุ้นเคยหลายจุด อ่านบันทึกสั้น ๆ ใน [NOTES.md](NOTES.md) และเอกสารใน `node_modules/next/dist/docs/` ก่อนแก้ routing
@@ -21,7 +21,7 @@ npm run build
 ```text
 app/          หน้าและ layout (รายการร้าน, รายละเอียดร้าน, /my/reservations, /my/restaurants/..., /auth/callback)
 components/   คอมโพเนนต์ของหน้า; bases/ = Button; ui/ = primitive จาก shadcn
-public/       ไฟล์ที่เสิร์ฟตรง ๆ (รูป hero ของหน้าแรก)
+public/       ไฟล์ที่เสิร์ฟตรง ๆ (รูป hero ของหน้าแรก, logo.png ที่หัวเว็บ ย่อจาก app/icon.png)
 hooks/        use-credential (สถานะล็อกอิน), use-async (โหลดข้อมูล)
 lib/          ตรรกะที่ไม่ผูกกับหน้า: api client + refresh token, auth store, เวลา Asia/Bangkok, ข้อความ error, ตัวแก้เวลาเปิด (มี *.test.ts ข้างไฟล์)
 ```

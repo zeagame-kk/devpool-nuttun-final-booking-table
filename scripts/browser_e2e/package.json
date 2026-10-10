@@ -2,7 +2,7 @@
   "name": "booking-table-browser-e2e",
   "private": true,
   "type": "module",
-  "description": "Real-browser walk through the Booking Table web app (not part of the app)",
+  "description": "Real-browser walk through the Table Not Found web app (not part of the app)",
   "scripts": {
     "start": "node run.mjs"
   },

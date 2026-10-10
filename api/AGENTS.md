@@ -1,4 +1,4 @@
-# Agent Instructions — BookingTable API
+# Agent Instructions — Table Not Found API
 
 ## Database migrations
 

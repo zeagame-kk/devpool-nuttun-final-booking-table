@@ -2,7 +2,7 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
-Booking Table: a table-reservation and review app for shabu/grill restaurants (Go + Gin + GORM + PostgreSQL API, Next.js 16 frontend, Keycloak login, Redis, Docker Compose).
+Table Not Found (formerly Booking Table; internal identifiers such as the DB, Keycloak client and Go module are still `bookingtable`): a table-reservation and review app for shabu/grill restaurants (Go + Gin + GORM + PostgreSQL API, Next.js 16 frontend, Keycloak login, Redis, Docker Compose).
 One account is both owner and customer; there are no roles. The docs and UI copy are in Thai. Read `README.md` for setup and `ARCHITECTURE.md` for the full system picture.
 
 ## Commands

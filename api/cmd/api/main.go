@@ -29,7 +29,7 @@ import (
 	ginSwagger "github.com/swaggo/gin-swagger"
 )
 
-//	@title			BookingTable API
+//	@title			Table Not Found API
 //	@version		1.0
 //	@description	API สำหรับระบบจองโต๊ะและรีวิวร้านอาหาร
 //	@host			localhost:8080

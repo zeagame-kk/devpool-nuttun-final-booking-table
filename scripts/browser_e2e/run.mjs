@@ -139,6 +139,15 @@ try {
   await pa.waitForTimeout(500);
   pa.off("request", watchApi);
   check(apiWhileSignedOut.length === 0, "…and the landing page calls no API", apiWhileSignedOut.join(","));
+  check(await see(pa, "Find a table. Find your food."), "the landing page carries the tagline");
+  check((await pa.locator("header").getByText("Table Not Found").count()) === 1, "the header shows the name Table Not Found");
+  await pa.waitForFunction(() => document.querySelector('header img[src="/logo.png"]')?.naturalWidth > 0, null, { timeout: 8000 }).catch(() => {});
+  check(await pa.evaluate(() => document.querySelector('header img[src="/logo.png"]')?.naturalWidth > 0), "…with its logo, which actually loads");
+  check((await pa.title()).startsWith("Table Not Found"), "the tab title starts with Table Not Found", await pa.title());
+  check(!(await pa.locator("body").innerText()).includes("Booking Table"), "the old name Booking Table no longer shows on the page");
+  const missing = await pa.goto(WEB + "/no-such-page");
+  check(missing?.status() === 404, "an unknown URL answers HTTP 404", String(missing?.status()));
+  check((await see(pa, "404 — Table Not Found")) && (await pa.getByRole("link", { name: "ดูร้านทั้งหมด" }).count()) === 1, "…and shows the branded 404 page with a way home");
   await pa.goto(WEB + "/my/reservations");
   check(await see(pa, "กรุณาเข้าสู่ระบบ"), "signed out: a page that needs data still shows the sign-in card");
   await pa.goto(WEB + "/");
@@ -203,6 +212,7 @@ try {
   console.log("\n== home and header ==");
   await pa.goto(WEB + "/");
   check(await see(pa, "สวัสดี"), "signed in: the home page greets the person");
+  check(!(await pa.locator("body").innerText()).includes("Booking Table"), "signed in: the old name Booking Table does not show either");
   check(await see(pa, "ร้านคะแนนสูงสุด"), "the best-rated highlight is shown on the first page");
   const profileLink = pa.getByRole("link", { name: "โปรไฟล์ของฉัน" });
   check(/E2E|e2e-/i.test((await profileLink.textContent()) ?? ""), "the header shows who is signed in", await profileLink.textContent());

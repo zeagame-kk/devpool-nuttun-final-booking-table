@@ -1950,7 +1950,7 @@ var SwaggerInfo = &swag.Spec{
 	Host:             "localhost:8080",
 	BasePath:         "/api/v1",
 	Schemes:          []string{},
-	Title:            "BookingTable API",
+	Title:            "Table Not Found API",
 	Description:      "API สำหรับระบบจองโต๊ะและรีวิวร้านอาหาร",
 	InfoInstanceName: "swagger",
 	SwaggerTemplate:  docTemplate,
