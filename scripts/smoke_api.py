@@ -172,6 +172,14 @@ def main():
         check(status == 409 and body.get("code") == "capacity_exceeded", "6 + 5 seats in a 10-seat restaurant is refused")
         status, body = json_call(customer_token, "GET", "/reservations")
         check(status == 200 and body["results"][0]["restaurant"]["name"] == name, "customer sees the booking")
+        day = tomorrow.strftime("%Y-%m-%d")
+        status, body = json_call(customer_token, "GET", f"/restaurants/{restaurant_id}/availability?date={day}")
+        remaining = {slot["startAt"][11:16]: slot["remainingSeats"] for slot in body["slots"]} if status == 200 else {}
+        check(status == 200 and not body["closed"] and body["capacity"] == 10 and len(body["slots"]) == 11, "availability lists eleven hourly slots", f"{status} {body}")
+        check(remaining.get("17:00") == 10 and remaining.get("18:00") == 4 and remaining.get("19:00") == 4 and remaining.get("20:00") == 10,
+              "the 6 booked seats show in the 18:00 and 19:00 slots only", str(remaining))
+        status, _ = json_call(customer_token, "GET", f"/restaurants/{restaurant_id}/availability?date=tomorrow")
+        check(status == 400, "availability refuses a date that is not YYYY-MM-DD")
         status, body = json_call(owner_token, "GET", f"/restaurants/{restaurant_id}/reservations")
         check(status == 200 and body["total"] == 1 and "@" not in json.dumps(body), "owner sees who booked, without an email")
         status, _ = json_call(customer_token, "GET", f"/restaurants/{restaurant_id}/reservations")
@@ -184,6 +192,11 @@ def main():
         check(status == 409 and body.get("code") == "already_reviewed", "a second review is refused")
         status, body = json_call(owner_token, "POST", f"/restaurants/{restaurant_id}/reviews", {"rating": 5, "comment": "ร้านฉัน"})
         check(status == 403 and body.get("code") == "cannot_review_own_restaurant", "the owner cannot review their own restaurant")
+        status, body = json_call(customer_token, "GET", "/reviews")
+        check(status == 200 and body["total"] == 1 and body["results"][0]["restaurant"] == {"id": restaurant_id, "name": name}
+              and body["results"][0]["rating"] == 5, "GET /reviews lists my review with the restaurant's name")
+        status, body = json_call(owner_token, "GET", "/reviews")
+        check(status == 200 and body == {"total": 0, "results": []}, "the owner has written no reviews")
         status, body = json_call(customer_token, "GET", f"/restaurants/{restaurant_id}")
         check(status == 200 and body["rating"] == {"average": 5.0, "total": 1} and body["myReview"]["rating"] == 5 and not body["isOwner"],
               "restaurant shows rating 5.0 (1) and my review")
@@ -201,6 +214,10 @@ def main():
         check(status == 204, "owner deletes the restaurant")
         status, _ = json_call(owner_token, "GET", f"/restaurants/{restaurant_id}")
         check(status == 404, "it is gone")
+        status, _ = json_call(customer_token, "GET", f"/restaurants/{restaurant_id}/availability?date={day}")
+        check(status == 404, "its availability is gone too")
+        status, body = json_call(customer_token, "GET", "/reviews")
+        check(status == 200 and body["total"] == 0, "my review of the deleted restaurant is no longer listed")
         status, body = json_call(customer_token, "GET", "/reservations")
         check(status == 200 and body["results"][0]["restaurant"]["name"] == name and body["results"][0]["status"] == "cancelled",
               "the cancelled booking still shows the deleted restaurant's name")

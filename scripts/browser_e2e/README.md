@@ -2,7 +2,7 @@
 
 Walks the real web app in a real Chrome against the real stack: sign in through Keycloak, search, sort, page,
 book, review, manage a restaurant with a picture, the owner's view, the delete guard, an expired token, and sign out.
-About 80 checks; each prints `PASS` or `FAIL`. The browser's time zone is set to New York on purpose, so every
+About 100 checks; each prints `PASS` or `FAIL`. The browser's time zone is set to New York on purpose, so every
 time that appears or is sent must still be Bangkok time.
 
 It creates two throwaway users in Keycloak (an owner and a customer) and deletes them at the end. It prints no

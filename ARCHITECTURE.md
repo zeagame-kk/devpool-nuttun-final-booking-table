@@ -218,8 +218,8 @@ error ที่ไม่รู้จักตอบ `500 internal server error` 
 | auth | `GET /auth/login`, `GET /auth/callback`, `POST /auth/exchange`, `POST /auth/refresh-token`, `POST /auth/logout` | ไม่ |
 | users | `GET/PUT /users/me` (id อื่นตอบ 404) | ใช่ |
 | ร้าน | `POST/GET /restaurants`, `GET/PUT/DELETE /restaurants/{id}`, `POST/DELETE /restaurants/{id}/image` | ใช่ (เจ้าของเท่านั้นสำหรับ PUT/DELETE/image) |
-| การจอง | `POST/GET /restaurants/{id}/reservations` (GET = มุมมองเจ้าของ), `GET /reservations`, `PUT /reservations/{id}`, `POST /reservations/{id}/cancel` | ใช่ |
-| รีวิว | `POST/GET /restaurants/{id}/reviews`, `PUT /restaurants/{id}/reviews/me` | ใช่ |
+| การจอง | `POST/GET /restaurants/{id}/reservations` (GET = มุมมองเจ้าของ), `GET /restaurants/{id}/availability?date=` (ช่วงว่างรายชั่วโมง), `GET /reservations`, `PUT /reservations/{id}`, `POST /reservations/{id}/cancel` | ใช่ |
+| รีวิว | `POST/GET /restaurants/{id}/reviews`, `PUT /restaurants/{id}/reviews/me`, `GET /reviews` (รีวิวของฉันทุกร้าน) | ใช่ |
 | รูป | `GET /uploads/restaurants/{file}` | **ไม่** (หัวข้อ 7) |
 | เอกสาร | `GET /swagger/*` (อยู่นอก `/api/v1`) | ไม่ |
 
@@ -312,6 +312,12 @@ erDiagram
 เช่น 10:00–12:00 กับ 12:00–14:00 ต่อให้ผู้จองใหม่ 11:00–13:00 ไม่เคยมีสองกลุ่มนั้นอยู่พร้อมกัน
 ตอนแก้การจอง `check` รับ `excludeID` เพื่อไม่นับที่นั่งเดิมของการจองที่กำลังแก้
 
+### ช่วงว่างรายชั่วโมงเป็นข้อมูลประกอบ ไม่ใช่ตัวตัดสิน
+
+`GET /restaurants/{id}/availability?date=YYYY-MM-DD` ตัดเวลาเปิดของวันนั้น (เวลาไทย) เป็นช่องละหนึ่งชั่วโมงแล้วหา "คนที่อยู่พร้อมกันสูงสุด" ของแต่ละช่องด้วย `PeakGuests` ตัวเดียวกับตอนจอง
+(`reservation/service.go` `Availability`, `hourlySlots`) และใช้ query "จองไหนนับ" ตัวเดียวกัน (`confirmedOverlapping`) แต่ **อ่านโดยไม่ล็อกแถวร้าน** จึงอาจล้าหลังไปชั่วขณะ
+ช่องที่ยังมีที่นั่งอาจตอบ `409 capacity_exceeded` ตอนกดจองได้ถ้ามีคนจองตัดหน้า เพราะการจองจริงตรวจซ้ำใต้ล็อกเสมอ หน้าเว็บบอกผู้ใช้เรื่องนี้ใต้ตารางช่วงว่าง
+
 ### ล็อกแถวร้านทุกครั้งที่เปลี่ยนการจอง
 
 `reservation.repository.InTx` เปิด transaction แล้ว `SELECT … FOR UPDATE` แถวของร้านก่อนอ่านอะไรอื่น
@@ -394,13 +400,14 @@ Next.js 16 (App Router) + TypeScript + Tailwind v4 + shadcn/ui **ทุกหน
 
 | route | หน้า | API ที่เรียก |
 | --- | --- | --- |
-| `/` | รายการร้าน ค้นหา เรียง แบ่งหน้า (12 ต่อหน้า) | `GET /restaurants?name&sort&page&limit` |
-| `/restaurants/[id]` | รายละเอียดร้าน จอง รีวิว | `GET /restaurants/{id}`, `GET …/reviews`, `POST …/reservations`, `POST …/reviews`, `PUT …/reviews/me` |
+| `/` | ยังไม่ล็อกอิน: หน้าแนะนำระบบ (ไม่เรียก API) ล็อกอินแล้ว: ทักทาย ค้นหา การจองถัดไป ร้านคะแนนสูงสุด และรายการร้านเรียง/แบ่งหน้า (12 ต่อหน้า) | `GET /restaurants?name&sort&page&limit`, `GET /restaurants?sort=rating&limit=3`, `GET /reservations`, `GET /users/me` |
+| `/restaurants/[id]` | รายละเอียดร้าน ช่วงว่างรายชั่วโมง จอง รีวิว | `GET /restaurants/{id}`, `GET …/availability?date`, `GET …/reviews`, `POST …/reservations`, `POST …/reviews`, `PUT …/reviews/me` |
+| `/my/profile` | ข้อมูลส่วนตัว (แก้คำแนะนำตัว) สถิติการใช้งาน การจองถัดไป รีวิวของฉัน | `GET /users/me`, `PUT /users/me`, `GET /reservations`, `GET /restaurants?mine=true&limit=1`, `GET /reviews` |
 | `/my/reservations` | การจองของฉัน แก้/ยกเลิก | `GET /reservations`, `PUT /reservations/{id}`, `POST /reservations/{id}/cancel` |
-| `/my/restaurants` | ร้านของฉัน ลบร้าน | `GET /restaurants?mine=true`, `DELETE /restaurants/{id}` |
+| `/my/restaurants` | ร้านของฉัน สรุปจำนวนร้าน/รีวิว/คะแนน ลบร้าน | `GET /restaurants?mine=true`, `DELETE /restaurants/{id}` |
 | `/my/restaurants/new` | สร้างร้าน | `POST /restaurants` |
 | `/my/restaurants/[id]/edit` | แก้ร้านและรูป | `GET/PUT /restaurants/{id}`, `POST/DELETE …/image` |
-| `/my/restaurants/[id]/reservations` | การจองของร้าน (อ่านอย่างเดียว) | `GET /restaurants/{id}/reservations?status` |
+| `/my/restaurants/[id]/reservations` | การจองของร้าน (อ่านอย่างเดียว) พร้อมสถิติ กรองสถานะฝั่งเว็บเพื่อให้ตัวเลขไม่เปลี่ยนตามตัวกรอง | `GET /restaurants/{id}`, `GET /restaurants/{id}/reservations` |
 | `/auth/callback` | รับ ticket หลังล็อกอิน | `POST /auth/exchange` |
 
 ### ชั้นของโค้ด (`web/`)
@@ -508,7 +515,7 @@ compose ปฏิเสธการสตาร์ทถ้าขาดตัว
 | Go HTTP-seam | `api/internal/apitest` | พฤติกรรมของ API ทั้งเส้น: router จริง + service + repository + PostgreSQL จริง | ปานกลาง (ใช้ Docker) |
 | Go mock (เดิมจากต้นแบบ) | `auth`, `user`, `middleware` (`mocks_test.go` สร้างด้วย mockery), `httpapi/cors_test.go` | flow auth/user และ CORS | เร็ว |
 | Vitest | `web/lib/*.test.ts` | API client + refresh, เวลา, error, เวลาเปิด, auth store | เร็วมาก |
-| เบราว์เซอร์จริง | `scripts/browser_e2e` | UI ทั้งหมดผ่าน Chrome จริง ~80 ข้อ รวม Strict Mode และ token หมดอายุ | ช้า (ต้องมี stack) |
+| เบราว์เซอร์จริง | `scripts/browser_e2e` | UI ทั้งหมดผ่าน Chrome จริง ~100 ข้อ รวม Strict Mode และ token หมดอายุ | ช้า (ต้องมี stack) |
 | Smoke ของ API | `scripts/smoke_api.py` | ล็อกอินจริงผ่าน Keycloak แล้วไล่ flow หลักด้วย HTTP | ช้า (ต้องมี stack) |
 
 หลักการเขียนเทสต์ของการจอง/ร้าน/รีวิว:
@@ -550,6 +557,8 @@ compose ปฏิเสธการสตาร์ทถ้าขาดตัว
 | กฎการจอง เวลาเปิด ลำดับตรวจ | `api/internal/reservation/service.go` (`check`, `withinOpeningHours`, `ensureChangeable`) |
 | นับที่นั่งพร้อมกัน / lead time | `reservation/peak.go`, `reservation/leadtime.go` |
 | ล็อกกันจองเกิน | `reservation/repository.go` (`InTx`) |
+| ช่วงว่างรายชั่วโมง | `reservation/service.go` (`Availability`, `hourlySlots`), `reservation/repository.go` (`Availability`, `confirmedOverlapping`) |
+| สถิติและตัวเลขในหน้าเว็บ | `web/lib/stats.ts`, `web/lib/availability.ts`, `web/lib/datetime.ts` (`bangkokDateKey`) |
 | ลบร้านที่มีการจองค้าง | `restaurant/repository.go` (`DeleteIfNoActiveReservations`) |
 | ค้นหา เรียง แบ่งหน้า คะแนนเฉลี่ย | `restaurant/repository.go` (`List`, `escapeLike`, `orderBy`) |
 | อัปโหลด/ลบรูป | `restaurant/service.go` (`SetImage`, `RemoveImage`), `storage/local.go`, `httpapi/api.go` (เสิร์ฟ) |

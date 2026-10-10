@@ -59,12 +59,21 @@ async function createUser(headers, label) {
 // --- browser helpers -------------------------------------------------------------------------------------
 async function login(page, user) {
   await page.goto(WEB + "/");
-  await page.getByRole("button", { name: "เข้าสู่ระบบ" }).click();
+  await page.getByRole("button", { name: "เข้าสู่ระบบ", exact: true }).click();
   await page.waitForURL(/keycloak\.localhost/);
   await page.fill("#username", user.email);
   await page.fill("#password", user.password);
   await page.click("#kc-login");
   await page.waitForURL(WEB + "/", { timeout: 20000 });
+}
+// Titles of the cards in the "ร้านทั้งหมด" list only (the best-rated highlight above it repeats some restaurants).
+function listTitles(page) {
+  return page.locator("section", { has: page.getByRole("heading", { name: "ร้านทั้งหมด" }) }).locator("a.text-lg").allTextContents();
+}
+// The number on a StatCard (components/stat-card.tsx), found by its label.
+async function statValue(page, label) {
+  const card = page.locator('[data-slot="card"]', { has: page.getByText(label, { exact: true }) }).first();
+  return (await card.locator("p").nth(1).textContent())?.trim();
 }
 async function see(page, text, timeout = 8000) {
   try {
@@ -119,8 +128,20 @@ try {
   pa.on("request", (r) => {
     if (r.url().endsWith("/auth/exchange")) exchanges.push(r.method());
   });
+  const apiWhileSignedOut = [];
+  const watchApi = (r) => {
+    if (r.url().startsWith(API)) apiWhileSignedOut.push(r.url());
+  };
+  pa.on("request", watchApi);
   await pa.goto(WEB + "/");
-  check(await see(pa, "กรุณาเข้าสู่ระบบ"), "signed out: sign-in card is shown");
+  check(await see(pa, "ดูช่วงว่างแล้วจองได้ทันที"), "signed out: the landing page explains the app");
+  check((await pa.getByRole("button", { name: /เข้าสู่ระบบ/ }).count()) >= 2, "…with sign-in buttons");
+  await pa.waitForTimeout(500);
+  pa.off("request", watchApi);
+  check(apiWhileSignedOut.length === 0, "…and the landing page calls no API", apiWhileSignedOut.join(","));
+  await pa.goto(WEB + "/my/reservations");
+  check(await see(pa, "กรุณาเข้าสู่ระบบ"), "signed out: a page that needs data still shows the sign-in card");
+  await pa.goto(WEB + "/");
   await login(pa, A);
   check(await see(pa, "ออกจากระบบ"), "signed in: header with sign-out is shown");
   check(exchanges.length === 1, "POST /auth/exchange is called exactly once (Strict Mode)", `calls=${exchanges.length}`);
@@ -133,6 +154,10 @@ try {
   console.log("\n== Task 4: list ==");
   await pa.goto(WEB + "/");
   check(await see(pa, "ชาบู"), "seeded restaurants are listed");
+  // The best-rated highlight shows "ชาบู" before the full list has loaded, so wait for the list itself.
+  await pa
+    .waitForFunction(() => document.querySelectorAll('main a[href^="/restaurants/"]').length >= 5, null, { timeout: 8000 })
+    .catch(() => {});
   const seedCount = await pa.locator('main a[href^="/restaurants/"]').count();
   check(seedCount >= 5, "cards render with links", `links=${seedCount}`);
 
@@ -140,7 +165,7 @@ try {
   await pa.getByRole("button", { name: "ค้นหา", exact: true }).click();
   await pa.waitForURL(/name=/);
   await pa.waitForTimeout(800);
-  const titles = await pa.locator("main a.text-lg").allTextContents();
+  const titles = await listTitles(pa);
   check(titles.length > 0 && titles.every((t) => t.includes("ชาบู")), "search by name only returns matching names", JSON.stringify(titles));
 
   await pa.goto(WEB + "/?name=%25");
@@ -165,14 +190,33 @@ try {
   }
   await pa.goto(WEB + "/");
   check(await see(pa, "หน้า 1 จาก 2"), "pager shows หน้า 1 จาก 2");
-  const firstPage = await pa.locator("main a.text-lg").allTextContents();
+  const firstPage = await listTitles(pa);
   await pa.getByRole("button", { name: "ถัดไป" }).click();
   await pa.waitForURL(/page=2/);
   check(await see(pa, "หน้า 2 จาก 2"), "next page changes the URL and shows หน้า 2 จาก 2");
   await pa.waitForTimeout(600);
-  const secondPage = await pa.locator("main a.text-lg").allTextContents();
+  const secondPage = await listTitles(pa);
   check(secondPage.length > 0 && secondPage.every((t) => !firstPage.includes(t)), "second page has different restaurants");
   for (const id of extraRestaurants.splice(0)) await apiCall(pa, "DELETE", `/restaurants/${id}`);
+
+  // ======================= home and header (signed in) ===================================================
+  console.log("\n== home and header ==");
+  await pa.goto(WEB + "/");
+  check(await see(pa, "สวัสดี"), "signed in: the home page greets the person");
+  check(await see(pa, "ร้านคะแนนสูงสุด"), "the best-rated highlight is shown on the first page");
+  const profileLink = pa.getByRole("link", { name: "โปรไฟล์ของฉัน" });
+  check(/E2E|e2e-/i.test((await profileLink.textContent()) ?? ""), "the header shows who is signed in", await profileLink.textContent());
+  await pa.waitForTimeout(500);
+  await pa.fill('input[name="name"]', "ชาบู");
+  await pa.getByRole("button", { name: "ค้นหา", exact: true }).click();
+  await pa.waitForURL(/name=/);
+  await pa.waitForTimeout(600);
+  check((await pa.getByText("ร้านคะแนนสูงสุด").count()) === 0, "while searching, the highlight steps aside");
+  await pa.goto(WEB + "/my/reservations");
+  check((await see(pa, "ยังไม่มีการจอง")) && (await see(pa, "ดูร้านทั้งหมด")), "no bookings yet: an empty state with a way forward");
+  await profileLink.click();
+  await pa.waitForURL(/\/my\/profile/);
+  check(await see(pa, "สถิติการใช้งาน"), "the header's avatar opens the profile page");
 
   // ======================= Task 7: owner creates a restaurant (Sunday!), picture, delete =================
   console.log("\n== Task 7: owner restaurant ==");
@@ -245,6 +289,10 @@ try {
   check(await see(pb, "ยังไม่มีรีวิว"), "no reviews yet: empty state is shown");
   check((await pb.getByText("เขียนรีวิว").count()) > 0 && (await pb.getByText("ร้านของคุณ").count()) === 0, "customer sees the review form");
 
+  // availability panel: pick tomorrow, nothing booked yet
+  await pb.locator('input[type="date"]').fill(tomorrow);
+  check(await see(pb, "เหลือ 20 ที่"), "availability for tomorrow: every hour shows all 20 seats");
+
   async function book(page, start, end, guests) {
     await page.fill("#start", start);
     await page.fill("#end", end);
@@ -253,12 +301,19 @@ try {
   }
   await book(pb, `${tomorrow}T18:00`, `${tomorrow}T20:00`, 12);
   check(await see(pb, "จองสำเร็จ"), "12 guests 18:00-20:00 tomorrow: จองสำเร็จ");
+  check(await see(pb, "เหลือ 8 ที่"), "…and the availability grid reloads by itself: 8 seats left in those hours");
+  check((await pb.getByText("เหลือ 8 ที่").count()) === 2, "…in exactly two one-hour slots (18:00 and 19:00)", String(await pb.getByText("เหลือ 8 ที่").count()));
   check(bookingBodies[0]?.startAt === `${tomorrow}T18:00:00+07:00` && bookingBodies[0]?.endAt === `${tomorrow}T20:00:00+07:00`,
     "sent times carry +07:00 even though the browser is in New York", JSON.stringify(bookingBodies[0]));
   await book(pb, `${tomorrow}T18:00`, `${tomorrow}T20:00`, 12);
   check(await see(pb, "ที่นั่งไม่พอสำหรับช่วงเวลานี้"), "another 12 at the same time: ที่นั่งไม่พอ");
   await book(pb, `${tomorrow}T20:00`, `${tomorrow}T21:00`, 12);
   check(await see(pb, "จองสำเร็จ"), "12 guests 20:00-21:00 (back to back): จองสำเร็จ");
+  // picking a free hour fills the form
+  await pb.getByRole("button", { name: /^21:00–22:00/ }).click();
+  check((await pb.inputValue("#start")) === `${tomorrow}T21:00` && (await pb.inputValue("#end")) === `${tomorrow}T22:00`,
+    "picking the 21:00–22:00 slot fills the booking form");
+  await pb.getByRole("button", { name: /^18:00–19:00/ }).isDisabled().then((disabled) => check(!disabled, "an hour with seats left can be picked"));
   await book(pb, `${tomorrow}T23:00`, `${tomorrow}T23:30`, 2);
   check(await see(pb, "เวลาที่เลือกอยู่นอกเวลาเปิดทำการของร้าน"), "outside opening hours: Thai message");
   await book(pb, `${yesterday}T18:00`, `${yesterday}T19:00`, 2);
@@ -280,6 +335,27 @@ try {
   await review(pb, 5, "อร่อยมาก");
   check(await see(pb, "★ 5.0"), "editing to 5 stars gives ★ 5.0 (1 รีวิว)");
   check((await pb.getByText("(1 รีวิว)").count()) > 0, "still one review, not two");
+
+  // ======================= profile and home for the customer =============================================
+  console.log("\n== profile ==");
+  await pb.goto(WEB + "/my/profile");
+  check(await see(pb, "สถิติการใช้งาน"), "profile page opens");
+  await see(pb, shopName);
+  check((await statValue(pb, "การจองทั้งหมด")) === "2", "stats: 2 bookings", await statValue(pb, "การจองทั้งหมด"));
+  check((await statValue(pb, "กำลังจะถึง")) === "2", "stats: 2 upcoming", await statValue(pb, "กำลังจะถึง"));
+  check((await statValue(pb, "ยกเลิกแล้ว")) === "0", "stats: none cancelled");
+  check((await statValue(pb, "ร้านที่เป็นเจ้าของ")) === "0", "stats: owns no restaurant");
+  check((await statValue(pb, "รีวิวที่เขียน")) === "1", "stats: 1 review written");
+  check((await statValue(pb, "คะแนนเฉลี่ยที่ให้")) === "5.0", "stats: average given 5.0", await statValue(pb, "คะแนนเฉลี่ยที่ให้"));
+  check((await see(pb, "การจองถัดไป")) && (await see(pb, "อร่อยมาก")), "the next booking and the review text are listed");
+  await pb.getByRole("button", { name: "แก้ไขคำแนะนำตัว" }).click();
+  await pb.fill('textarea[aria-label="แนะนำตัว"]', "ชอบชาบูเผ็ด ๆ");
+  await pb.getByRole("button", { name: "บันทึก", exact: true }).click();
+  check(await see(pb, "ชอบชาบูเผ็ด ๆ"), "editing the bio shows the new text");
+  await pb.reload();
+  check(await see(pb, "ชอบชาบูเผ็ด ๆ"), "…and it survives a refresh (the picture field was sent back unchanged)");
+  await pb.goto(WEB + "/");
+  check((await see(pb, "การจองถัดไปของคุณ")) && (await see(pb, "สวัสดี")), "home shows the next booking for a person who has one");
 
   // ======================= Task 6: my reservations ======================================================
   console.log("\n== Task 6: my reservations ==");
@@ -316,9 +392,12 @@ try {
   check(await see(pa, "การจองของร้าน") && (await see(pa, "Customer")), "owner sees bookings with the customer's name");
   const table = await pa.locator("table").textContent();
   check(!table.includes("@"), "no email address on the page");
+  check((await statValue(pa, "กำลังจะถึง")) === "1" && (await statValue(pa, "ยกเลิกแล้ว")) === "1" && (await statValue(pa, "แขกที่กำลังจะมา")) === "10",
+    "owner stats: 1 upcoming, 1 cancelled, 10 guests expected");
   await pa.selectOption('select[aria-label="กรองตามสถานะ"]', "cancelled");
   await pa.waitForTimeout(800);
   check((await pa.locator("tbody tr").count()) === 1, "filter ยกเลิกแล้ว shows one row");
+  check((await statValue(pa, "กำลังจะถึง")) === "1", "…and the stats do not move with the filter");
   await pa.selectOption('select[aria-label="กรองตามสถานะ"]', "confirmed");
   await pa.waitForTimeout(800);
   check((await pa.locator("tbody tr").count()) === 1, "filter ยืนยันแล้ว shows one row");
@@ -330,6 +409,7 @@ try {
   // ======================= Task 7 end: delete guard, then delete ========================================
   console.log("\n== delete guard ==");
   await pa.goto(WEB + "/my/restaurants");
+  check((await see(pa, "รีวิวทั้งหมด")) && (await statValue(pa, "ร้านของฉัน")) === "1", "my restaurants shows a summary strip (1 restaurant)");
   pa.on("dialog", (d) => d.accept());
   const card = pa.locator("main .grid > div", { hasText: shopName });
   await card.getByRole("button", { name: "ลบ" }).click();
@@ -439,7 +519,8 @@ try {
   console.log("\n== sign out ==");
   await pa.goto(WEB + "/");
   await pa.getByRole("button", { name: "ออกจากระบบ" }).click();
-  check(await see(pa, "กรุณาเข้าสู่ระบบ"), "sign out returns to the sign-in card");
+  check(await see(pa, "ดูช่วงว่างแล้วจองได้ทันที"), "sign out returns to the landing page");
+  check((await pa.getByRole("link", { name: "โปรไฟล์ของฉัน" }).count()) === 0, "…and the header no longer shows a person");
 } catch (err) {
   failures++;
   console.log("FAIL  script error:", err.message);

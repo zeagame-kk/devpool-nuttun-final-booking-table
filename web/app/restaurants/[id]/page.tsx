@@ -78,23 +78,6 @@ function RestaurantPage() {
         </div>
       </section>
 
-      <section className="flex flex-col gap-2">
-        <h2 className="text-lg font-semibold">เวลาเปิด</h2>
-        <table className="w-full max-w-sm text-sm">
-          <tbody>
-            {WEEKDAY_LABELS.map((label, weekday) => {
-              const hours = restaurant.openingHours.find((h) => h.weekday === weekday);
-              return (
-                <tr key={weekday} className="border-b">
-                  <td className="py-1 pr-4">{label}</td>
-                  <td className={hours ? "" : "text-muted-foreground"}>{hours ? `${hours.open} – ${hours.close}` : "ปิด"}</td>
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
-      </section>
-
       <section className="flex flex-col gap-3">
         <h2 className="text-lg font-semibold">ช่วงว่าง</h2>
         <AvailabilityPanel
@@ -115,6 +98,23 @@ function RestaurantPage() {
           initial={picked ?? undefined}
           onCreated={() => setBookings((n) => n + 1)}
         />
+      </section>
+
+      <section className="flex flex-col gap-2">
+        <h2 className="text-lg font-semibold">เวลาเปิด</h2>
+        <table className="w-full max-w-sm text-sm">
+          <tbody>
+            {WEEKDAY_LABELS.map((label, weekday) => {
+              const hours = restaurant.openingHours.find((h) => h.weekday === weekday);
+              return (
+                <tr key={weekday} className="border-b">
+                  <td className="py-1 pr-4">{label}</td>
+                  <td className={hours ? "" : "text-muted-foreground"}>{hours ? `${hours.open} – ${hours.close}` : "ปิด"}</td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
       </section>
 
       <ErrorAlert error={reviews.error} onRetry={reviews.reload} />
