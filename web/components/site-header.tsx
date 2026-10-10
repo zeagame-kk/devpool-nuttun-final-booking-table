@@ -28,8 +28,10 @@ export function SiteHeader() {
   return (
     <header className="border-b bg-card">
       <div className="mx-auto flex w-full max-w-5xl flex-wrap items-center gap-x-6 gap-y-2 p-4">
-        <Link href="/" className="text-lg font-semibold text-primary-strong">
-          Booking Table
+        <Link href="/" className="flex items-center gap-2 text-lg font-semibold text-primary-strong">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/logo.png" alt="" width={28} height={28} className="size-7" />
+          Table Not Found
         </Link>
         {credential === null && (
           <Button size="small" className="ml-auto" onClick={startLogin}>

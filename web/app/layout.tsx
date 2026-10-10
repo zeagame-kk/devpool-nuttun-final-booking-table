@@ -14,8 +14,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Booking Table",
-  description: "จองโต๊ะและรีวิวร้านชาบู/ปิ้งย่าง",
+  title: "Table Not Found — Find a table. Find your food.",
+  description: "Table Not Found: จองโต๊ะและรีวิวร้านชาบู/ปิ้งย่าง",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {

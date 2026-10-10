@@ -30,6 +30,7 @@ export function Landing() {
     <div className="flex flex-col gap-12">
       <section className="grid items-center gap-6 md:grid-cols-2">
         <div className="flex flex-col items-start gap-4">
+          <p className="text-sm font-semibold tracking-wide text-primary-strong">Find a table. Find your food.</p>
           <h1 className="text-3xl leading-tight font-bold md:text-4xl">
             จองโต๊ะร้านชาบูและปิ้งย่าง
             <span className="block text-primary-strong">ดูช่วงว่างแล้วจองได้ทันที</span>
@@ -50,7 +51,7 @@ export function Landing() {
       </section>
 
       <section className="flex flex-col gap-4">
-        <h2 className="text-xl font-semibold">ทำไมต้อง Booking Table</h2>
+        <h2 className="text-xl font-semibold">ทำไมต้อง Table Not Found</h2>
         <div className="grid gap-4 sm:grid-cols-3">
           <Feature icon={<Clock aria-hidden="true" />} title="ดูช่วงว่างก่อนจอง">
             เห็นที่นั่งที่เหลือของแต่ละชั่วโมง ไม่ต้องเดาว่าร้านเต็มหรือยัง
