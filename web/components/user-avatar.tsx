@@ -1,6 +1,6 @@
 import { initials } from "@/lib/user";
 
-const SIZES = { small: "size-8 text-xs", large: "size-16 text-xl" };
+const SIZES = { small: "size-[34px] text-[13px]", large: "size-16 text-xl", xlarge: "size-22 text-3xl" };
 
 /** A round picture of the person, or their initials on a soft blue disc when there is no picture. */
 export function UserAvatar({
@@ -18,7 +18,7 @@ export function UserAvatar({
     return <img src={imageUrl} alt="" className={`${box} object-cover`} />;
   }
   return (
-    <span aria-hidden="true" className={`${box} flex items-center justify-center bg-primary-subtle font-semibold text-primary-strong`}>
+    <span aria-hidden="true" className={`${box} flex items-center justify-center bg-primary-subtle font-semibold text-primary-ink`}>
       {initials(name)}
     </span>
   );

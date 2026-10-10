@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Geist_Mono, Noto_Sans_Thai } from "next/font/google";
+import { BottomNavSpacer } from "@/components/bottom-nav-spacer";
 import { SiteHeader } from "@/components/site-header";
 import "./globals.css";
 
@@ -26,7 +27,8 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
     >
       <body className="flex min-h-full flex-col">
         <SiteHeader />
-        <main className="mx-auto w-full max-w-5xl flex-1 p-4">{children}</main>
+        <main className="mx-auto w-full max-w-5xl flex-1 px-4 py-6 md:py-9">{children}</main>
+        <BottomNavSpacer />
       </body>
     </html>
   );
