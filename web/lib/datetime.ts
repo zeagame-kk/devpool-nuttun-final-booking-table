@@ -41,5 +41,12 @@ export function formatThaiDateTime(iso: string): string {
   return thaiDateTime.format(new Date(iso));
 }
 
+const thaiDate = new Intl.DateTimeFormat("th-TH", { timeZone: "UTC", dateStyle: "full" });
+
+/** "YYYY-MM-DD" -> a Thai calendar date with its weekday. The key is read as plain calendar arithmetic (UTC), so no zone shifts the day. */
+export function formatThaiDate(key: string): string {
+  return thaiDate.format(new Date(`${key}T00:00:00Z`));
+}
+
 /** Index = weekday number used by the API (0 = Sunday). */
 export const WEEKDAY_LABELS: string[] = ["อาทิตย์", "จันทร์", "อังคาร", "พุธ", "พฤหัสบดี", "ศุกร์", "เสาร์"];

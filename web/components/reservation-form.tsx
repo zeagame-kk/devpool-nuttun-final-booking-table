@@ -10,9 +10,21 @@ import { apiFetch } from "@/lib/api";
 import { toApiDateTime, validateTimeRange } from "@/lib/datetime";
 import type { SaveReservationInput } from "@/lib/types";
 
-export function ReservationForm({ restaurantId, onCreated }: { restaurantId: number; onCreated: () => void }) {
-  const [start, setStart] = useState("");
-  const [end, setEnd] = useState("");
+/**
+ * `initial` fills the times when the form is created; give the form a new `key` to start over with other values
+ * (the restaurant page does this when a free hour is picked).
+ */
+export function ReservationForm({
+  restaurantId,
+  onCreated,
+  initial,
+}: {
+  restaurantId: number;
+  onCreated: () => void;
+  initial?: { start: string; end: string };
+}) {
+  const [start, setStart] = useState(initial?.start ?? "");
+  const [end, setEnd] = useState(initial?.end ?? "");
   const [guests, setGuests] = useState("2");
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<unknown>(null);

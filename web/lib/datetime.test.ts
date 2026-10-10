@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { addDaysToKey, bangkokDateKey, fromApiDateTime, toApiDateTime, validateTimeRange, WEEKDAY_LABELS } from "@/lib/datetime";
+import { addDaysToKey, bangkokDateKey, formatThaiDate, fromApiDateTime, toApiDateTime, validateTimeRange, WEEKDAY_LABELS } from "@/lib/datetime";
 
 // npm test runs with TZ=America/New_York, so any code that leans on the machine's zone fails here.
 
@@ -79,5 +79,19 @@ describe("addDaysToKey", () => {
     expect(addDaysToKey("2026-12-31", 1)).toBe("2027-01-01");
     expect(addDaysToKey("2028-02-28", 1)).toBe("2028-02-29");
     expect(addDaysToKey("2027-03-01", -1)).toBe("2027-02-28");
+  });
+});
+
+describe("formatThaiDate", () => {
+  it("writes a date key as a Thai calendar date with its weekday, whatever the machine's zone", () => {
+    const text = formatThaiDate("2026-10-12");
+
+    expect(text).toContain("จันทร์"); // 12 October 2026 is a Monday
+    expect(text).toContain("12");
+    expect(text).toContain("ตุลาคม");
+  });
+
+  it("does not slip to the previous day west of Greenwich", () => {
+    expect(formatThaiDate("2026-10-13")).toContain("อังคาร");
   });
 });

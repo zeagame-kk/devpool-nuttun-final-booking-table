@@ -1,8 +1,10 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { AuthGuard } from "@/components/auth-guard";
+import { AvailabilityPanel } from "@/components/availability-panel";
 import { buttonVariants } from "@/components/bases/button";
 import { ErrorAlert } from "@/components/error-alert";
 import { RatingText, RestaurantImage } from "@/components/restaurant-card";
@@ -18,6 +20,8 @@ function RestaurantPage() {
   const { id } = useParams<{ id: string }>();
   const detail = useAsync(() => apiFetch<RestaurantDetail>(`/restaurants/${id}`), [id]);
   const reviews = useAsync(() => apiFetch<ListResponse<Review>>(`/restaurants/${id}/reviews`), [id]);
+  const [picked, setPicked] = useState<{ start: string; end: string; key: number } | null>(null);
+  const [bookings, setBookings] = useState(0); // counts bookings made here, to reload the availability
 
   const restaurant = detail.data;
   if (detail.error) {
@@ -68,8 +72,25 @@ function RestaurantPage() {
       </section>
 
       <section className="flex flex-col gap-3">
+        <h2 className="text-lg font-semibold">ช่วงว่าง</h2>
+        <AvailabilityPanel
+          restaurantId={restaurant.id}
+          refreshKey={bookings}
+          onPick={(values) => {
+            setPicked({ ...values, key: Date.now() });
+            document.getElementById("reservation-form")?.scrollIntoView({ behavior: "smooth", block: "center" });
+          }}
+        />
+      </section>
+
+      <section id="reservation-form" className="flex flex-col gap-3">
         <h2 className="text-lg font-semibold">จองโต๊ะ</h2>
-        <ReservationForm restaurantId={restaurant.id} onCreated={() => undefined} />
+        <ReservationForm
+          key={picked?.key ?? "empty"}
+          restaurantId={restaurant.id}
+          initial={picked ?? undefined}
+          onCreated={() => setBookings((n) => n + 1)}
+        />
       </section>
 
       <ErrorAlert error={reviews.error} />
