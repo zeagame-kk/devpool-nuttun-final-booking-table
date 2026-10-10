@@ -1,11 +1,11 @@
 # Browser end-to-end check
 
 Walks the real web app in a real Chrome against the real stack: sign in through Keycloak, search, sort, page,
-book, review, manage a restaurant with a picture, the owner's view, the delete guard, an expired token, and sign out.
-About 100 checks; each prints `PASS` or `FAIL`. The browser's time zone is set to New York on purpose, so every
+book, review, manage a restaurant with a picture, the owner's view, the delete guard, an expired token, sign out, and sign up through Keycloak's form.
+About 120 checks; each prints `PASS` or `FAIL`. The browser's time zone is set to New York on purpose, so every
 time that appears or is sent must still be Bangkok time.
 
-It creates two throwaway users in Keycloak (an owner and a customer) and deletes them at the end. It prints no
+It creates two throwaway users in Keycloak (an owner and a customer) and deletes them at the end; the person it signs up through the form is found by email and deleted too. It prints no
 passwords or tokens. The restaurants it creates are its own (it deletes them again), and it only reads the seeded
 ones, so the seed data is left as it was.
 

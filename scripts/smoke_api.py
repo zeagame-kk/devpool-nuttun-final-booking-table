@@ -132,6 +132,16 @@ def main():
         created.append(customer)
         owner_token, customer_token = login(owner), login(customer)
 
+        # --- sign-up entry: the same redirect as /auth/login, but Keycloak is asked for its sign-up form ---------
+        no_follow = urllib.request.build_opener(NoRedirect)
+        status, headers, _ = call(no_follow, f"{API}/auth/register")
+        query = urllib.parse.parse_qs(urllib.parse.urlparse(headers.get("Location", "")).query)
+        check(status == 302 and query.get("prompt") == ["create"] and bool(query.get("state")),
+              "GET /auth/register redirects to Keycloak's sign-up form with a state", f"{status} {headers.get('Location')}")
+        status, headers, _ = call(no_follow, f"{API}/auth/login")
+        query = urllib.parse.parse_qs(urllib.parse.urlparse(headers.get("Location", "")).query)
+        check(status == 302 and "prompt" not in query, "GET /auth/login still opens the sign-in form")
+
         # --- restaurant -------------------------------------------------------------------
         name = "ชาบูทดสอบ " + secrets.token_hex(2)
         every_day = [{"weekday": day, "open": "11:00", "close": "22:00"} for day in range(7)]

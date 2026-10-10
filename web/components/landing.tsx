@@ -1,7 +1,7 @@
 "use client";
 
 import { Button } from "@/components/bases/button";
-import { startLogin } from "@/lib/auth";
+import { startLogin, startRegister } from "@/lib/auth";
 
 const STEPS = [
   { title: "เลือกร้าน", text: "ค้นหาตามชื่อ หรือเรียงตามคะแนนและจำนวนรีวิว" },
@@ -30,9 +30,14 @@ export function Landing() {
           <p className="text-base leading-[1.7] text-muted-foreground md:text-lg">
             ไม่ต้องโทรถามว่าโต๊ะว่างไหม ดูที่นั่งที่เหลือรายชั่วโมง จอง แก้ หรือยกเลิกได้เอง และอ่านรีวิวก่อนตัดสินใจ
           </p>
-          <Button size="large" className="mt-1" onClick={startLogin}>
-            เข้าสู่ระบบเพื่อจองโต๊ะ
-          </Button>
+          <div className="mt-1 flex flex-wrap gap-3">
+            <Button size="large" onClick={startLogin}>
+              เข้าสู่ระบบเพื่อจองโต๊ะ
+            </Button>
+            <Button size="large" variant="outline" onClick={startRegister}>
+              สมัครสมาชิก
+            </Button>
+          </div>
         </div>
 
         <div className="relative h-[300px] md:h-[420px]" aria-hidden="true">

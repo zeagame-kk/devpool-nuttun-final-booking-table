@@ -54,7 +54,13 @@ docker compose exec -T postgres psql -U postgres -d bookingtable -v ON_ERROR_STO
 
 ## ล็อกอินครั้งแรก
 
-realm `pea` **ปิดการสมัครสมาชิกเอง** และผู้ใช้จากข้อมูลตัวอย่างเป็นบัญชีปลอมที่ล็อกอินไม่ได้ ต้องสร้างผู้ใช้ใน Keycloak ก่อน:
+ผู้ใช้จากข้อมูลตัวอย่างเป็นบัญชีปลอมที่ล็อกอินไม่ได้ ต้องมีบัญชีจริงก่อน มี 2 ทาง
+
+**ทางที่ 1 สมัครเอง (ง่ายสุด):** เปิด http://localhost:3000 กดปุ่ม **สมัครสมาชิก** กรอกอีเมล ชื่อ นามสกุล และรหัสผ่านในหน้าของ Keycloak (เป็นภาษาไทย) เสร็จแล้วระบบล็อกอินให้เลย
+
+> ถ้า volume ของ Keycloak มีข้อมูลอยู่ก่อนที่มีปุ่มสมัคร (ไฟล์ import ใช้เฉพาะตอน volume ว่าง) ให้รัน `./scripts/keycloak_realm_settings.sh` หนึ่งครั้งเพื่อเปิดการสมัคร ตั้งชื่อหน้า Keycloak เป็น Table Not Found และตั้งภาษาไทยเป็นค่าเริ่มต้น
+
+**ทางที่ 2 สร้างใน Keycloak admin:**
 
 1. เปิด http://localhost:8180 เข้าด้วย `admin` แล้วเลือก realm **pea** (มุมซ้ายบน)
 2. Users → Add user: ใส่อีเมล เปิด *Email verified* แล้ว Create
@@ -74,7 +80,7 @@ api/        Go API: cmd/api (main), internal/{restaurant,reservation,review,auth
             migrations/ (goose), seed/ (ข้อมูลและรูปตัวอย่าง), docs/ (API.md, ARCHITECTURE.md, TESTING.md, swagger)
 web/        Next.js: app/ (หน้า), components/, hooks/, lib/ (ตรรกะและเทสต์) ดู web/README.md
 keycloak/   realm snapshot ที่ import ตอน compose ขึ้น (ดู keycloak/README.md)
-scripts/    smoke_api.py, seed_images.sh, browser_e2e/ (ทดสอบด้วยเบราว์เซอร์จริง)
+scripts/    smoke_api.py, seed_images.sh, keycloak_realm_settings.sh, browser_e2e/ (ทดสอบด้วยเบราว์เซอร์จริง)
 docs/initial/   เอกสารต้นทาง: โจทย์, design, SPEC, แผน backend/frontend, เอกสารอ้างอิงจากคอร์ส
 docs/design/    ชุดส่งดีไซน์ (brief, token, ภาพหน้าจอ 29 ภาพ, ไอคอนและรูปตัวอย่าง) และผลที่ได้กลับจาก Claude Design (claude-design/)
 DESIGN.md       design system ของเว็บ

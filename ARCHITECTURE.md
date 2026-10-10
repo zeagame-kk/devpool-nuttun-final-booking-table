@@ -92,11 +92,11 @@ sequenceDiagram
     participant K as Keycloak :8180
     participant D as PostgreSQL
 
-    B->>W: กดปุ่มเข้าสู่ระบบ
-    B->>A: GET /api/v1/auth/login (ทั้งหน้า ไม่ใช่ fetch)
+    B->>W: กดปุ่มเข้าสู่ระบบ (หรือ สมัครสมาชิก)
+    B->>A: GET /api/v1/auth/login หรือ /auth/register (ทั้งหน้า ไม่ใช่ fetch)
     A->>R: เก็บ state สุ่ม 5 นาที
-    A-->>B: 302 ไป Keycloak (พร้อม state)
-    B->>K: กรอกอีเมลและรหัสผ่าน
+    A-->>B: 302 ไป Keycloak (พร้อม state; /auth/register เติม prompt=create ให้ Keycloak เปิดฟอร์มสมัคร)
+    B->>K: กรอกอีเมลและรหัสผ่าน (หรือกรอกฟอร์มสมัคร)
     K-->>B: 302 กลับ /api/v1/auth/callback?code=...&state=...
     B->>A: GET /auth/callback
     A->>R: ใช้ state แล้วลบทันที (GETDEL)
@@ -215,7 +215,7 @@ error ที่ไม่รู้จักตอบ `500 internal server error` 
 
 | กลุ่ม | route | ต้องล็อกอิน |
 | --- | --- | --- |
-| auth | `GET /auth/login`, `GET /auth/callback`, `POST /auth/exchange`, `POST /auth/refresh-token`, `POST /auth/logout` | ไม่ |
+| auth | `GET /auth/login`, `GET /auth/register`, `GET /auth/callback`, `POST /auth/exchange`, `POST /auth/refresh-token`, `POST /auth/logout` | ไม่ |
 | users | `GET/PUT /users/me` (id อื่นตอบ 404) | ใช่ |
 | ร้าน | `POST/GET /restaurants`, `GET/PUT/DELETE /restaurants/{id}`, `POST/DELETE /restaurants/{id}/image` | ใช่ (เจ้าของเท่านั้นสำหรับ PUT/DELETE/image) |
 | การจอง | `POST/GET /restaurants/{id}/reservations` (GET = มุมมองเจ้าของ), `GET /restaurants/{id}/availability?date=` (ช่วงว่างรายชั่วโมง), `GET /reservations`, `PUT /reservations/{id}`, `POST /reservations/{id}/cancel` | ใช่ |

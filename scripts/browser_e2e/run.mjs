@@ -133,6 +133,7 @@ function apiCall(page, method, p, body) {
 
 const admin = await adminHeaders();
 const users = [];
+const signedUpEmails = []; // people created through the sign-up form; found by email at cleanup
 const extraRestaurants = [];
 const browser = await chromium.launch({ executablePath: CHROME, headless: true });
 const problems = [];
@@ -550,12 +551,37 @@ try {
   check(pa.url() === WEB + "/", "sign out from a deep page goes to the home page", pa.url());
   check(await see(pa, "ดูช่วงว่างแล้วจองได้ทันที"), "sign out returns to the landing page");
   check((await userMenu(pa).count()) === 0, "…and the header no longer shows a person");
+
+  // ======================= sign up ======================================================================
+  console.log("\n== sign up ==");
+  const newcomer = { email: `e2e-signup-${randomBytes(3).toString("hex")}@example.com`, password: randomBytes(12).toString("base64url") };
+  signedUpEmails.push(newcomer.email);
+  await pa.goto(WEB + "/");
+  await pa.getByRole("button", { name: "สมัครสมาชิก", exact: true }).click();
+  await pa.waitForURL(/keycloak\.localhost/);
+  check((await pa.locator("#password-confirm").count()) === 1, "สมัครสมาชิก opens Keycloak's sign-up form, not the sign-in form");
+  check((await pa.locator("html").getAttribute("lang")) === "th", "…and the form is in Thai");
+  check((await pa.title()).includes("Table Not Found"), "…titled Table Not Found", await pa.title());
+  await pa.fill("#email", newcomer.email);
+  await pa.fill("#firstName", "สมัคร");
+  await pa.fill("#lastName", "ทดสอบ");
+  await pa.fill("#password", newcomer.password);
+  await pa.fill("#password-confirm", newcomer.password);
+  await pa.locator('input[type="submit"]').click();
+  await pa.waitForURL(WEB + "/", { timeout: 20000 });
+  check(await signedIn(pa), "after signing up the person is signed in and back on the home page");
+  await userMenu(pa).click();
+  check(await see(pa, newcomer.email), "…and the menu shows the new account's email");
 } catch (err) {
   failures++;
   console.log("FAIL  script error:", err.message);
 } finally {
   // cleanup: the throwaway Keycloak users
   for (const u of users) await fetch(`${KC}/admin/realms/${REALM}/users/${u.id}`, { method: "DELETE", headers: admin });
+  for (const email of signedUpEmails) {
+    const found = await (await fetch(`${KC}/admin/realms/${REALM}/users?email=${encodeURIComponent(email)}&exact=true`, { headers: admin })).json();
+    for (const u of found) await fetch(`${KC}/admin/realms/${REALM}/users/${u.id}`, { method: "DELETE", headers: admin });
+  }
   await browser.close();
 }
 

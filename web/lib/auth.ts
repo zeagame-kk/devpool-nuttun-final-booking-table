@@ -1,10 +1,15 @@
-import { apiFetch, LOGIN_URL } from "@/lib/api";
+import { apiFetch, LOGIN_URL, REGISTER_URL } from "@/lib/api";
 import { localStorageAuthStore } from "@/lib/auth-store";
 import type { Credential } from "@/lib/types";
 
 /** Sign in is a full-page navigation (API -> Keycloak -> API -> /auth/callback), never a fetch. */
 export function startLogin(): void {
   window.location.href = LOGIN_URL;
+}
+
+/** Sign up is the same full-page navigation; after the form Keycloak signs the new person in through the same callback. */
+export function startRegister(): void {
+  window.location.href = REGISTER_URL;
 }
 
 /** Trade the one-time ticket from the callback URL for a credential and keep it. A ticket works only once. */

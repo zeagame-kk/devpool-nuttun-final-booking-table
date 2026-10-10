@@ -5,6 +5,8 @@ export const API_BASE: string = process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://
 
 /** Signing in is a full-page navigation to the API (which redirects to Keycloak), never a fetch. */
 export const LOGIN_URL = `${API_BASE}/auth/login`;
+/** Same flow, but Keycloak opens its sign-up form first. */
+export const REGISTER_URL = `${API_BASE}/auth/register`;
 
 export class ApiError extends Error {
   status: number;
