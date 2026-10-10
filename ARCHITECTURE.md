@@ -95,7 +95,7 @@ sequenceDiagram
     B->>W: กดปุ่มเข้าสู่ระบบ (หรือ สมัครสมาชิก)
     B->>A: GET /api/v1/auth/login หรือ /auth/register (ทั้งหน้า ไม่ใช่ fetch)
     A->>R: เก็บ state สุ่ม 5 นาที
-    A-->>B: 302 ไป Keycloak (พร้อม state; /auth/register เติม prompt=create ให้ Keycloak เปิดฟอร์มสมัคร)
+    A-->>B: 302 ไป Keycloak (พร้อม state, ถ้าเป็น /auth/register จะเติม prompt=create ให้ Keycloak เปิดฟอร์มสมัคร)
     B->>K: กรอกอีเมลและรหัสผ่าน (หรือกรอกฟอร์มสมัคร)
     K-->>B: 302 กลับ /api/v1/auth/callback?code=...&state=...
     B->>A: GET /auth/callback
