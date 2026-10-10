@@ -7,9 +7,9 @@ import { AuthGuard } from "@/components/auth-guard";
 import { buttonVariants } from "@/components/bases/button";
 import { EmptyState } from "@/components/empty-state";
 import { ErrorAlert } from "@/components/error-alert";
+import { NextBookingCard } from "@/components/next-booking-card";
 import { ProfileHeader } from "@/components/profile-header";
 import { StatCard } from "@/components/stat-card";
-import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useAsync } from "@/hooks/use-async";
 import { useMe } from "@/hooks/use-me";
@@ -59,19 +59,7 @@ function Profile() {
       {bookings?.next && (
         <section className="flex flex-col gap-3">
           <h2 className="text-lg font-semibold">การจองถัดไป</h2>
-          <Card>
-            <CardContent className="flex flex-wrap items-center gap-x-4 gap-y-1">
-              <Link href={`/restaurants/${bookings.next.restaurant.id}`} className="font-semibold hover:text-primary-strong">
-                {bookings.next.restaurant.name}
-              </Link>
-              <span className="text-sm">
-                {formatThaiDateTime(bookings.next.startAt)} · {bookings.next.guests} คน
-              </span>
-              <Link href="/my/reservations" className="ml-auto text-sm text-primary-strong underline-offset-4 hover:underline">
-                จัดการการจอง
-              </Link>
-            </CardContent>
-          </Card>
+          <NextBookingCard reservation={bookings.next} />
         </section>
       )}
 

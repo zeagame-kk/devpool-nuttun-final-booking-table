@@ -15,3 +15,6 @@ fetched from Unsplash's image service at 1200x800 (centre crop) as a JPEG.
 
 The file name must stay `<restaurant id>-seed.jpg`: `seed.sql` points `image_url` at
 `/uploads/restaurants/<id>-seed.jpg`, and `scripts/seed_images.sh` copies the files there.
+
+`web/public/hero.jpg` (the picture at the top of the landing page for visitors who are not signed in) is a copy of
+`9002-seed.jpg`, so the credit in the table above applies to it too.
