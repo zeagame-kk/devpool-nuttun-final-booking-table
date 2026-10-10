@@ -18,9 +18,13 @@ func (req SaveReservationRequest) ToInput() Input {
 	return Input{StartAt: req.StartAt, EndAt: req.EndAt, Guests: req.Guests}
 }
 
+// RestaurantRef is the restaurant of a reservation. imageUrl is null when it has no picture, and
+// cancellationLeadMinutes is the rule it applied when the reservation is changed or cancelled.
 type RestaurantRef struct {
-	ID   int    `json:"id"`
-	Name string `json:"name"`
+	ID                      int     `json:"id"`
+	Name                    string  `json:"name"`
+	ImageURL                *string `json:"imageUrl"`
+	CancellationLeadMinutes int     `json:"cancellationLeadMinutes"`
 }
 
 // MyReservationResponse is a reservation as its booker sees it.
@@ -36,13 +40,18 @@ type MyReservationResponse struct {
 
 func NewMyReservationResponse(view ReservationView) MyReservationResponse {
 	return MyReservationResponse{
-		ID:         view.ID,
-		Restaurant: RestaurantRef{ID: view.RestaurantID, Name: view.RestaurantName},
-		StartAt:    view.StartAt,
-		EndAt:      view.EndAt,
-		Guests:     view.Guests,
-		Status:     view.Status,
-		CreatedAt:  view.CreatedAt,
+		ID: view.ID,
+		Restaurant: RestaurantRef{
+			ID:                      view.RestaurantID,
+			Name:                    view.RestaurantName,
+			ImageURL:                view.RestaurantImageURL,
+			CancellationLeadMinutes: view.RestaurantLeadMinutes,
+		},
+		StartAt:   view.StartAt,
+		EndAt:     view.EndAt,
+		Guests:    view.Guests,
+		Status:    view.Status,
+		CreatedAt: view.CreatedAt,
 	}
 }
 

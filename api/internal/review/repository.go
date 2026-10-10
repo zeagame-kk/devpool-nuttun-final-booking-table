@@ -109,7 +109,7 @@ func (repo *repository) ListByUser(ctx context.Context, userID uuid.UUID) ([]MyR
 	views := []MyReviewView{}
 	if err := repo.db.WithContext(ctx).
 		Table("reviews").
-		Select("reviews.*, restaurants.name AS restaurant_name").
+		Select("reviews.*, restaurants.name AS restaurant_name, restaurants.image_url AS restaurant_image_url").
 		Joins("JOIN restaurants ON restaurants.id = reviews.restaurant_id AND restaurants.deleted_at IS NULL").
 		Where("reviews.user_id = ?", userID).
 		Order("reviews.updated_at DESC, reviews.id DESC").

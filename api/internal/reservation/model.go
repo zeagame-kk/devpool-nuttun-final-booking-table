@@ -29,8 +29,10 @@ type Reservation struct {
 // joined without hiding deleted ones, so old reservations keep showing where they were.
 type ReservationView struct {
 	Reservation
-	RestaurantName string
-	CustomerName   string
+	RestaurantName        string
+	RestaurantImageURL    *string
+	RestaurantLeadMinutes int
+	CustomerName          string
 }
 
 // Input is what a customer chooses when booking or changing a reservation.

@@ -25,7 +25,8 @@ func NewRepository(db *gorm.DB) *repository {
 func (repo *repository) viewQuery(ctx context.Context) *gorm.DB {
 	return repo.db.WithContext(ctx).
 		Table("reservations").
-		Select("reservations.*, restaurants.name AS restaurant_name, COALESCE(users.name, '') AS customer_name").
+		Select("reservations.*, restaurants.name AS restaurant_name, restaurants.image_url AS restaurant_image_url, " +
+			"restaurants.cancellation_lead_minutes AS restaurant_lead_minutes, COALESCE(users.name, '') AS customer_name").
 		Joins("JOIN restaurants ON restaurants.id = reservations.restaurant_id").
 		Joins("LEFT JOIN users ON users.id = reservations.user_id")
 }

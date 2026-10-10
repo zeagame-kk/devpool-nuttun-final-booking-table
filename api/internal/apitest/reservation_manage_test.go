@@ -15,8 +15,10 @@ import (
 type reservationJSON struct {
 	ID         int `json:"id"`
 	Restaurant struct {
-		ID   int    `json:"id"`
-		Name string `json:"name"`
+		ID                      int     `json:"id"`
+		Name                    string  `json:"name"`
+		ImageURL                *string `json:"imageUrl"`
+		CancellationLeadMinutes int     `json:"cancellationLeadMinutes"`
 	} `json:"restaurant"`
 	StartAt   time.Time `json:"startAt"`
 	EndAt     time.Time `json:"endAt"`
@@ -397,5 +399,49 @@ func TestReservationListMine(t *testing.T) {
 		response := a.do(nobody, http.MethodGet, "/reservations", nil)
 
 		assert.JSONEq(t, `{"total":0,"results":[]}`, response.Body.String())
+	})
+}
+
+func TestReservationListMine_RestaurantPictureAndLeadTime(t *testing.T) {
+	a := newApp(t)
+	owner := a.newUser("เจ้าของ")
+	customer := a.newUser("ลูกค้า")
+	withPicture := a.seedRestaurant(owner, restaurantOpts{Name: "มีรูป", LeadMinutes: 90, ImageURL: "/uploads/restaurants/1-abc.png"})
+	noPicture := a.seedRestaurant(owner, restaurantOpts{Name: "ไม่มีรูป", LeadMinutes: 45})
+	a.seedReservation(withPicture, customer, mondayAt(18, 0), mondayAt(19, 0), 2, "confirmed")
+	a.seedReservation(noPicture, customer, mondayAt(20, 0), mondayAt(21, 0), 2, "confirmed")
+
+	byName := func() map[string]reservationJSON {
+		list := decode[reservationListJSON](t, a.do(customer, http.MethodGet, "/reservations", nil))
+		result := map[string]reservationJSON{}
+		for _, item := range list.Results {
+			result[item.Restaurant.Name] = item
+		}
+		return result
+	}
+
+	t.Run("each reservation carries its restaurant's picture and cancellation lead time", func(t *testing.T) {
+		items := byName()
+
+		require.NotNil(t, items["มีรูป"].Restaurant.ImageURL)
+		assert.Equal(t, "/uploads/restaurants/1-abc.png", *items["มีรูป"].Restaurant.ImageURL)
+		assert.Equal(t, 90, items["มีรูป"].Restaurant.CancellationLeadMinutes)
+		assert.Equal(t, 45, items["ไม่มีรูป"].Restaurant.CancellationLeadMinutes)
+	})
+
+	t.Run("a restaurant without a picture says imageUrl is null", func(t *testing.T) {
+		response := a.do(customer, http.MethodGet, "/reservations", nil)
+
+		assert.Nil(t, byName()["ไม่มีรูป"].Restaurant.ImageURL)
+		assert.Contains(t, response.Body.String(), `"imageUrl":null`)
+	})
+
+	t.Run("a deleted restaurant keeps both on old reservations", func(t *testing.T) {
+		require.NoError(t, a.db.Exec("UPDATE restaurants SET deleted_at = now() WHERE id = ?", withPicture).Error)
+
+		items := byName()
+
+		require.NotNil(t, items["มีรูป"].Restaurant.ImageURL)
+		assert.Equal(t, 90, items["มีรูป"].Restaurant.CancellationLeadMinutes)
 	})
 }

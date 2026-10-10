@@ -1579,8 +1579,14 @@ const docTemplate = `{
         "internal_reservation.RestaurantRef": {
             "type": "object",
             "properties": {
+                "cancellationLeadMinutes": {
+                    "type": "integer"
+                },
                 "id": {
                     "type": "integer"
+                },
+                "imageUrl": {
+                    "type": "string"
                 },
                 "name": {
                     "type": "string"
@@ -1849,6 +1855,9 @@ const docTemplate = `{
             "properties": {
                 "id": {
                     "type": "integer"
+                },
+                "imageUrl": {
+                    "type": "string"
                 },
                 "name": {
                     "type": "string"

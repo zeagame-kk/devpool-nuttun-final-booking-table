@@ -309,8 +309,9 @@ type reviewOfMineJSON struct {
 }
 
 type restRef struct {
-	ID   int    `json:"id"`
-	Name string `json:"name"`
+	ID       int     `json:"id"`
+	Name     string  `json:"name"`
+	ImageURL *string `json:"imageUrl"`
 }
 
 func TestReviewListMine(t *testing.T) {
@@ -358,4 +359,29 @@ func TestReviewListMine(t *testing.T) {
 
 		assert.Equal(t, http.StatusUnauthorized, response.Code)
 	})
+}
+
+func TestReviewListMine_RestaurantPicture(t *testing.T) {
+	a := newApp(t)
+	owner := a.newUser("เจ้าของ")
+	me := a.newUser("ฉัน")
+	withPicture := a.seedRestaurant(owner, restaurantOpts{Name: "มีรูป", ImageURL: "/uploads/restaurants/1-abc.png"})
+	noPicture := a.seedRestaurant(owner, restaurantOpts{Name: "ไม่มีรูป"})
+	a.seedReview(withPicture, me, 5)
+	a.seedReview(noPicture, me, 3)
+
+	response := a.do(me, http.MethodGet, "/reviews", nil)
+
+	require.Equal(t, http.StatusOK, response.Code, response.Body.String())
+	list := decode[struct {
+		Results []reviewOfMineJSON `json:"results"`
+	}](t, response)
+	byName := map[string]restRef{}
+	for _, item := range list.Results {
+		byName[item.Restaurant.Name] = item.Restaurant
+	}
+	require.NotNil(t, byName["มีรูป"].ImageURL)
+	assert.Equal(t, "/uploads/restaurants/1-abc.png", *byName["มีรูป"].ImageURL)
+	assert.Nil(t, byName["ไม่มีรูป"].ImageURL)
+	assert.Contains(t, response.Body.String(), `"imageUrl":null`)
 }

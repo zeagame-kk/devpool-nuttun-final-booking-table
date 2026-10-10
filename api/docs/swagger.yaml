@@ -159,8 +159,12 @@ definitions:
     type: object
   internal_reservation.RestaurantRef:
     properties:
+      cancellationLeadMinutes:
+        type: integer
       id:
         type: integer
+      imageUrl:
+        type: string
       name:
         type: string
     type: object
@@ -341,6 +345,8 @@ definitions:
     properties:
       id:
         type: integer
+      imageUrl:
+        type: string
       name:
         type: string
     type: object

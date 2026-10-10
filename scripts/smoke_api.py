@@ -171,7 +171,10 @@ def main():
                                  {"startAt": start, "endAt": end, "guests": 5})
         check(status == 409 and body.get("code") == "capacity_exceeded", "6 + 5 seats in a 10-seat restaurant is refused")
         status, body = json_call(customer_token, "GET", "/reservations")
-        check(status == 200 and body["results"][0]["restaurant"]["name"] == name, "customer sees the booking")
+        restaurant_ref = body["results"][0]["restaurant"] if status == 200 else {}
+        check(status == 200 and restaurant_ref.get("name") == name, "customer sees the booking")
+        check(restaurant_ref.get("imageUrl") == image_url and restaurant_ref.get("cancellationLeadMinutes") == 60,
+              "the booking carries the restaurant's picture and cancellation lead time", str(restaurant_ref))
         day = tomorrow.strftime("%Y-%m-%d")
         status, body = json_call(customer_token, "GET", f"/restaurants/{restaurant_id}/availability?date={day}")
         remaining = {slot["startAt"][11:16]: slot["remainingSeats"] for slot in body["slots"]} if status == 200 else {}
@@ -193,7 +196,7 @@ def main():
         status, body = json_call(owner_token, "POST", f"/restaurants/{restaurant_id}/reviews", {"rating": 5, "comment": "ร้านฉัน"})
         check(status == 403 and body.get("code") == "cannot_review_own_restaurant", "the owner cannot review their own restaurant")
         status, body = json_call(customer_token, "GET", "/reviews")
-        check(status == 200 and body["total"] == 1 and body["results"][0]["restaurant"] == {"id": restaurant_id, "name": name}
+        check(status == 200 and body["total"] == 1 and body["results"][0]["restaurant"] == {"id": restaurant_id, "name": name, "imageUrl": image_url}
               and body["results"][0]["rating"] == 5, "GET /reviews lists my review with the restaurant's name")
         status, body = json_call(owner_token, "GET", "/reviews")
         check(status == 200 and body == {"total": 0, "results": []}, "the owner has written no reviews")

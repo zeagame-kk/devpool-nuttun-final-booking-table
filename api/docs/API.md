@@ -89,7 +89,7 @@ Reservation, as its booker sees it (`GET /reservations`, answer of `PUT /reserva
 ```json
 {
   "id": 7,
-  "restaurant": { "id": 9001, "name": "ชาบูทองคำ" },
+  "restaurant": { "id": 9001, "name": "ชาบูทองคำ", "imageUrl": "/uploads/restaurants/9001-seed.jpg", "cancellationLeadMinutes": 60 },
   "startAt": "2026-10-12T11:00:00Z",
   "endAt": "2026-10-12T13:00:00Z",
   "guests": 4,
@@ -98,7 +98,9 @@ Reservation, as its booker sees it (`GET /reservations`, answer of `PUT /reserva
 }
 ```
 
-`status` is `confirmed` or `cancelled`. The restaurant's name is kept even after the restaurant is deleted.
+`status` is `confirmed` or `cancelled`. `restaurant` also carries `imageUrl` (`null` when it has no picture) and
+`cancellationLeadMinutes` (the rule that applies to changing or cancelling this booking). The restaurant's name,
+picture and lead time are kept even after the restaurant is deleted.
 
 Reservation, as the restaurant's owner sees it (`GET /restaurants/{id}/reservations`): the same, with
 `"customer": {"id", "name"}` instead of `restaurant`. The customer's email is never included.
@@ -114,7 +116,7 @@ Review (`GET /restaurants/{id}/reviews`, answer of `PUT .../reviews/me`):
 ```
 
 One of the caller's own reviews (`GET /reviews`): a review as above, with
-`"restaurant": {"id", "name"}` instead of `user`.
+`"restaurant": {"id", "name", "imageUrl"}` instead of `user` (`imageUrl` is `null` when the restaurant has no picture).
 
 ## Restaurants
 

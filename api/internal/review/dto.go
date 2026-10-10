@@ -56,8 +56,9 @@ func NewListReviewsResponse(views []ReviewView) httputil.ListResponse[ReviewResp
 }
 
 type RestaurantRef struct {
-	ID   int    `json:"id"`
-	Name string `json:"name"`
+	ID       int     `json:"id"`
+	Name     string  `json:"name"`
+	ImageURL *string `json:"imageUrl"`
 }
 
 // MyReviewItemResponse is one of the caller's reviews, naming the restaurant it is about.
@@ -77,7 +78,7 @@ func NewListMyReviewsResponse(views []MyReviewView) httputil.ListResponse[MyRevi
 			ID:         view.ID,
 			Rating:     view.Rating,
 			Comment:    view.Comment,
-			Restaurant: RestaurantRef{ID: view.RestaurantID, Name: view.RestaurantName},
+			Restaurant: RestaurantRef{ID: view.RestaurantID, Name: view.RestaurantName, ImageURL: view.RestaurantImageURL},
 			CreatedAt:  view.CreatedAt,
 			UpdatedAt:  view.UpdatedAt,
 		}
