@@ -36,6 +36,14 @@ docker volume rm bookingtable-all-in-one-keycloak-data
 docker compose up -d
 ```
 
+## Sign-up and login-page settings
+
+The import file turns on self sign-up (`registrationAllowed`), titles the login page "Table Not Found" (`displayName`)
+and makes Thai the default language with English selectable (`internationalizationEnabled`, `supportedLocales`,
+`defaultLocale`). Because an existing realm is never re-imported, a Keycloak whose volume already has data gets the
+same settings by running `./scripts/keycloak_realm_settings.sh` once (safe to repeat; it uses the container's own
+bootstrap admin, so no password is typed).
+
 ## Refreshing the snapshot
 
 After changing anything in the Admin Console (new client, scope, user, realm setting, etc.),

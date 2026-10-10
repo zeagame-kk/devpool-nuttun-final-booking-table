@@ -1,6 +1,7 @@
 {
   "id": "d6c658c8-c6ec-49cf-9b93-5817cb0d4d86",
   "realm": "pea",
+  "displayName": "Table Not Found",
   "notBefore": 0,
   "defaultSignatureAlgorithm": "RS256",
   "revokeRefreshToken": true,
@@ -27,7 +28,7 @@
   "oauth2DevicePollingInterval": 5,
   "enabled": true,
   "sslRequired": "external",
-  "registrationAllowed": false,
+  "registrationAllowed": true,
   "registrationEmailAsUsername": true,
   "rememberMe": false,
   "verifyEmail": false,
@@ -1789,7 +1790,12 @@
       }
     ]
   },
-  "internationalizationEnabled": false,
+  "internationalizationEnabled": true,
+  "supportedLocales": [
+    "en",
+    "th"
+  ],
+  "defaultLocale": "th",
   "authenticationFlows": [
     {
       "id": "fcb7c8cd-c19d-423a-814a-b0b6fc1f8ef0",
