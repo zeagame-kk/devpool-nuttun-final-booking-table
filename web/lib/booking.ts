@@ -54,3 +54,42 @@ export function selectionTimes(slots: AvailabilitySlot[], startIndex: number, ho
 export function minRemaining(slots: AvailabilitySlot[], startIndex: number, hours: number): number {
   return Math.min(...slots.slice(startIndex, startIndex + hours).map((slot) => slot.remainingSeats));
 }
+
+/**
+ * The slot a reservation starts in and how many of the day's hours it touches (at most three), so a change
+ * can open with the current choice selected. Null when the reservation is not on this day.
+ */
+export function selectionFor(slots: AvailabilitySlot[], startAt: string, endAt: string): { startIndex: number; hours: number } | null {
+  const start = new Date(startAt).getTime();
+  const end = new Date(endAt).getTime();
+  const startIndex = slots.findIndex((slot) => new Date(slot.startAt).getTime() <= start && start < new Date(slot.endAt).getTime());
+  if (startIndex === -1) return null;
+
+  let hours = 0;
+  while (hours < MAX_HOURS && startIndex + hours < slots.length && new Date(slots[startIndex + hours].startAt).getTime() < end) hours++;
+
+  return { startIndex, hours: Math.max(1, hours) };
+}
+
+/**
+ * Changing a reservation must not count its own seats against it (the server does not). In the hours the
+ * reservation overlaps, give its guests back, never beyond the capacity.
+ */
+export function creditSeats(
+  slots: AvailabilitySlot[],
+  capacity: number,
+  credit: { startAt: string; endAt: string; guests: number } | null,
+): AvailabilitySlot[] {
+  if (!credit) return slots;
+  const creditStart = new Date(credit.startAt).getTime();
+  const creditEnd = new Date(credit.endAt).getTime();
+
+  return slots.map((slot) => {
+    const overlaps = new Date(slot.startAt).getTime() < creditEnd && new Date(slot.endAt).getTime() > creditStart;
+    if (!overlaps) return slot;
+
+    const given = Math.min(credit.guests, slot.bookedGuests, capacity - slot.remainingSeats);
+
+    return { ...slot, bookedGuests: slot.bookedGuests - given, remainingSeats: slot.remainingSeats + given };
+  });
+}

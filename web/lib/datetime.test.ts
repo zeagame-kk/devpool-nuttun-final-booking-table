@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   addDaysToKey,
   bangkokClock,
+  cancelDeadlineText,
   bangkokDateKey,
   formatThaiDate,
   formatThaiDateShort,
@@ -145,5 +146,19 @@ describe("formatThaiMonthYear", () => {
   it("writes the month in full with the Buddhist-era year", () => {
     expect(formatThaiMonthYear("2026-10-12")).toBe("ตุลาคม พ.ศ. 2569");
     expect(formatThaiMonthYear("2027-01-01")).toBe("มกราคม พ.ศ. 2570");
+  });
+});
+
+describe("cancelDeadlineText", () => {
+  it("says until when a reservation can be cancelled, from its start and the restaurant's lead time", () => {
+    expect(cancelDeadlineText("2026-10-12T12:00:00+07:00", 60)).toBe("ยกเลิกได้ถึง 11:00 วันที่ 12 ต.ค.");
+  });
+
+  it("moves to the previous day when the lead time reaches back past midnight", () => {
+    expect(cancelDeadlineText("2026-10-12T00:30:00+07:00", 90)).toBe("ยกเลิกได้ถึง 23:00 วันที่ 11 ต.ค.");
+  });
+
+  it("uses Bangkok time whatever the machine's zone", () => {
+    expect(cancelDeadlineText("2026-10-12T05:00:00Z", 30)).toBe("ยกเลิกได้ถึง 11:30 วันที่ 12 ต.ค.");
   });
 });

@@ -3,7 +3,6 @@
 import { useState, type FormEvent } from "react";
 import { Button } from "@/components/bases/button";
 import { ErrorAlert } from "@/components/error-alert";
-import { Card, CardContent } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
 import { UserAvatar } from "@/components/user-avatar";
 import { apiFetch } from "@/lib/api";
@@ -41,50 +40,37 @@ export function ProfileHeader({ me, onSaved }: { me: Me; onSaved: () => void }) 
   }
 
   return (
-    <Card>
-      <CardContent className="flex flex-col gap-4 sm:flex-row sm:items-start">
-        <UserAvatar name={name} imageUrl={me.imageUrl} size="large" />
-        <div className="flex min-w-0 flex-1 flex-col gap-2">
-          <div>
-            <h1 className="truncate text-xl font-semibold">{name}</h1>
-            <p className="truncate text-sm text-muted-foreground">{me.email}</p>
-          </div>
+    <div className="flex flex-col gap-3.5 rounded-[20px] border border-border-subtle bg-card p-6">
+      <UserAvatar name={name} imageUrl={me.imageUrl} size="xlarge" />
+      <div className="flex flex-col gap-0.5">
+        <h1 className="text-2xl font-bold break-words">{name}</h1>
+        <p className="text-sm break-all text-muted-foreground">{me.email}</p>
+      </div>
 
-          {editing ? (
-            <form onSubmit={save} className="flex flex-col gap-2">
-              <Textarea
-                value={bio}
-                onChange={(e) => setBio(e.target.value)}
-                placeholder="แนะนำตัวสั้น ๆ"
-                aria-label="แนะนำตัว"
-              />
-              <ErrorAlert error={error} />
-              <div className="flex gap-2">
-                <Button type="submit" size="small" disabled={saving}>
-                  {saving ? "กำลังบันทึก…" : "บันทึก"}
-                </Button>
-                <Button type="button" variant="outline" size="small" disabled={saving} onClick={close}>
-                  ยกเลิก
-                </Button>
-              </div>
-            </form>
-          ) : (
-            <>
-              {me.bio ? (
-                <p className="whitespace-pre-wrap text-sm">{me.bio}</p>
-              ) : (
-                <p className="text-sm text-muted-foreground">ยังไม่มีคำแนะนำตัว</p>
-              )}
-              <div>
-                <Button variant="outline" size="small" onClick={() => setEditing(true)}>
-                  แก้ไขคำแนะนำตัว
-                </Button>
-              </div>
-            </>
-          )}
-          <p className="text-xs text-muted-foreground">ชื่อและอีเมลมาจากบัญชีที่ใช้เข้าสู่ระบบ แก้ไขที่นี่ไม่ได้</p>
-        </div>
-      </CardContent>
-    </Card>
+      {editing ? (
+        <form onSubmit={save} className="flex flex-col gap-2.5">
+          <Textarea value={bio} onChange={(e) => setBio(e.target.value)} placeholder="เช่น ชอบชาบูน้ำดำ ไปกันทุกศุกร์" aria-label="แนะนำตัว" className="min-h-24" />
+          <ErrorAlert error={error} />
+          <div className="flex gap-2">
+            <Button type="button" variant="outline" className="flex-1" disabled={saving} onClick={close}>
+              ยกเลิก
+            </Button>
+            <Button type="submit" className="flex-1" disabled={saving}>
+              {saving ? "กำลังบันทึก…" : "บันทึก"}
+            </Button>
+          </div>
+        </form>
+      ) : (
+        <>
+          <p className={`text-[15px] leading-relaxed whitespace-pre-wrap ${me.bio ? "" : "text-muted-foreground"}`}>
+            {me.bio || "ยังไม่มีคำแนะนำตัว"}
+          </p>
+          <Button variant="outline" onClick={() => setEditing(true)}>
+            แก้ไขคำแนะนำตัว
+          </Button>
+        </>
+      )}
+      <p className="border-t border-background pt-3 text-[13px] text-muted-foreground">ชื่อและอีเมลมาจากบัญชีที่ใช้เข้าสู่ระบบ แก้ไขที่นี่ไม่ได้</p>
+    </div>
   );
 }

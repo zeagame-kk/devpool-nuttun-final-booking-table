@@ -100,6 +100,14 @@ export function formatThaiMonthYear(key: string): string {
   return `${thaiMonthName.format(new Date(`${key}T00:00:00Z`))} พ.ศ. ${thaiDateParts(key).yearBE}`;
 }
 
+/** "ยกเลิกได้ถึง 11:00 วันที่ 12 ต.ค." : the last moment a reservation can be cancelled, from its start and the restaurant's lead time. */
+export function cancelDeadlineText(startAt: string, leadMinutes: number): string {
+  const deadline = new Date(new Date(startAt).getTime() - leadMinutes * 60_000);
+  const parts = thaiDateParts(bangkokDateKey(deadline));
+
+  return `ยกเลิกได้ถึง ${bangkokClock(deadline.toISOString())} วันที่ ${parts.day} ${parts.monthShort}`;
+}
+
 /** "HH:mm" of an RFC 3339 instant in Bangkok time. */
 export function bangkokClock(iso: string): string {
   return fromApiDateTime(iso).slice(11);

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { durationOptions, minRemaining, selectionTimes, slotState } from "@/lib/booking";
+import { creditSeats, durationOptions, minRemaining, selectionFor, selectionTimes, slotState } from "@/lib/booking";
 import type { AvailabilitySlot } from "@/lib/types";
 
 // Eleven one-hour slots 11:00-22:00 on 2026-10-12 (Bangkok), capacity 10, with the seats left given per slot.
@@ -97,5 +97,47 @@ describe("minRemaining", () => {
     expect(minRemaining(slots, 5, 3)).toBe(2); // 6, 4, 2
     expect(minRemaining(slots, 7, 3)).toBe(0); // 2, 0, 3
     expect(minRemaining(slots, 0, 1)).toBe(10);
+  });
+});
+
+describe("selectionFor", () => {
+  it("finds the slot a reservation starts in and how many hours it covers", () => {
+    expect(selectionFor(slots, "2026-10-12T18:00:00+07:00", "2026-10-12T20:00:00+07:00")).toEqual({ startIndex: 7, hours: 2 });
+    expect(selectionFor(slots, "2026-10-12T11:00:00+07:00", "2026-10-12T12:00:00+07:00")).toEqual({ startIndex: 0, hours: 1 });
+  });
+
+  it("starts in the hour that contains a half-hour start and covers every hour it touches", () => {
+    expect(selectionFor(slots, "2026-10-12T12:30:00+07:00", "2026-10-12T13:30:00+07:00")).toEqual({ startIndex: 1, hours: 2 });
+  });
+
+  it("covers at most three hours", () => {
+    expect(selectionFor(slots, "2026-10-12T11:00:00+07:00", "2026-10-12T15:00:00+07:00")).toEqual({ startIndex: 0, hours: 3 });
+  });
+
+  it("is null when the reservation is not on this day", () => {
+    expect(selectionFor(slots, "2026-10-13T18:00:00+07:00", "2026-10-13T19:00:00+07:00")).toBeNull();
+    expect(selectionFor([], "2026-10-12T18:00:00+07:00", "2026-10-12T19:00:00+07:00")).toBeNull();
+  });
+});
+
+describe("creditSeats", () => {
+  it("gives back the seats of the reservation being changed in the hours it overlaps, up to the capacity", () => {
+    const credited = creditSeats(slots, 10, { startAt: "2026-10-12T16:00:00+07:00", endAt: "2026-10-12T18:00:00+07:00", guests: 3 });
+
+    expect(credited.map((slot) => slot.remainingSeats)).toEqual([10, 10, 10, 10, 10, 9, 7, 2, 0, 3, 8]);
+    expect(credited[5].bookedGuests).toBe(1);
+    expect(credited[6].bookedGuests).toBe(3);
+  });
+
+  it("never offers more than the capacity or fewer than zero booked", () => {
+    const credited = creditSeats(slots, 10, { startAt: "2026-10-12T11:00:00+07:00", endAt: "2026-10-12T12:00:00+07:00", guests: 4 });
+
+    expect(credited[0].remainingSeats).toBe(10);
+    expect(credited[0].bookedGuests).toBe(0);
+  });
+
+  it("leaves the slots alone when there is nothing to credit or it is another day", () => {
+    expect(creditSeats(slots, 10, null)).toEqual(slots);
+    expect(creditSeats(slots, 10, { startAt: "2026-10-13T18:00:00+07:00", endAt: "2026-10-13T19:00:00+07:00", guests: 5 })).toEqual(slots);
   });
 });
