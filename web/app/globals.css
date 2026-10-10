@@ -40,6 +40,21 @@
   --color-primary: var(--primary);
   --color-primary-strong: var(--primary-strong);
   --color-primary-subtle: var(--primary-subtle);
+  --color-primary-ink: var(--primary-ink);
+  --color-primary-hover: var(--primary-hover);
+  --color-primary-border: var(--primary-border);
+  --color-accent-border: var(--accent-border);
+  --color-destructive-strong: var(--destructive-strong);
+  --color-destructive-subtle: var(--destructive-subtle);
+  --color-destructive-border: var(--destructive-border);
+  --color-success-subtle: var(--success-subtle);
+  --color-success-ink: var(--success-ink);
+  --color-border-subtle: var(--border-subtle);
+  --color-surface-inverse: var(--surface-inverse);
+  --color-surface-inverse-foreground: var(--surface-inverse-foreground);
+  --color-surface-inverse-muted: var(--surface-inverse-muted);
+  --color-surface-inverse-border: var(--surface-inverse-border);
+  --color-surface-inverse-link: var(--surface-inverse-link);
   --color-popover-foreground: var(--popover-foreground);
   --color-popover: var(--popover);
   --color-card-foreground: var(--card-foreground);
@@ -54,43 +69,55 @@
 }
 
 :root {
-  --background: #f0f2f5; /* Facebook's page grey: white cards stand out on it */
-  --foreground: #050505;
+  --background: #f6f5f2; /* warm off-white: white cards stand out on it */
+  --foreground: #1a1c20;
   --card: hsl(0 0% 100%);
-  --card-foreground: hsl(240 6% 10%);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.145 0 0);
-  /* Facebook blue for buttons and focus (the current button blue, not the older #1877f2, so white text on it is 4.8:1) */
-  --primary: #0866ff;
+  --card-foreground: #1a1c20;
+  --popover: hsl(0 0% 100%);
+  --popover-foreground: #1a1c20;
+  /* brand blue = the app icon's blue; white text on it is 5.2:1 */
+  --primary: #1262ee;
   --primary-foreground: hsl(0 0% 100%);
-  --primary-hover: #0759e0;
-  --primary-subtle: #e7f3ff;
-  --primary-border: #cfe3ff;
-  /* blue for text on a light background (links, brand): 5.3:1 on white, 4.7:1 on the page grey and on --primary-subtle */
+  --primary-hover: #0e52cc;
+  --primary-subtle: #eaf1fe;
+  --primary-border: #cfdcf8;
+  /* blue for text on a light background (links, brand name): 5.3:1 on white */
   --primary-strong: #1568d8;
-  --secondary: #e4e6eb;
-  --secondary-foreground: #050505;
-  --muted: #e4e6eb;
-  --muted-foreground: #65676b;
+  /* darker blue for text on --primary-subtle (chips, avatars, the current menu item) */
+  --primary-ink: #0f4fc0;
+  --secondary: #eeede8;
+  --secondary-foreground: #1a1c20;
+  --muted: #eeede8;
+  --muted-foreground: #5f6168;
   --accent: hsl(35 100% 55%);
   --accent-foreground: hsl(33 100% 12%);
-  --accent-subtle: hsl(36 100% 93%);
-  --accent-strong: hsl(35 100% 35%);
-  --destructive: hsl(0 74% 51%);
-  --destructive-strong: hsl(357 68% 42%);
-  --destructive-subtle: hsl(0 86% 97%);
-  --success: hsl(157 78% 27%);
-  --success-subtle: hsl(156 47% 93%);
-  --border: #ced0d4;
-  --border-subtle: hsl(0 0% 94%);
-  --input: #ced0d4;
-  --ring: #0866ff;
+  --accent-subtle: #fff1dc;
+  --accent-border: #f1d2a0;
+  /* amber text on --accent-subtle: 4.8:1 (stars, "almost full") */
+  --accent-strong: #9a5b00;
+  --destructive: #d4342c;
+  --destructive-strong: #a3221b;
+  --destructive-subtle: #fdecea;
+  --destructive-border: #f2b8b3;
+  --success: #0f7a55;
+  --success-subtle: #e5f4ee;
+  --success-ink: #0b5e42;
+  --border: #e3e1da;
+  --border-subtle: #ebe9e3; /* card outlines */
+  --input: #d6d3cb; /* form fields are a step darker than the card outlines */
+  --ring: #1262ee;
+  /* dark card on the light page: the next booking, the owner call to action */
+  --surface-inverse: #1a1c20;
+  --surface-inverse-foreground: hsl(0 0% 100%);
+  --surface-inverse-muted: #c9cad0;
+  --surface-inverse-border: #34363c;
+  --surface-inverse-link: #9fc0ff;
   --chart-1: oklch(0.87 0 0);
   --chart-2: oklch(0.556 0 0);
   --chart-3: oklch(0.439 0 0);
   --chart-4: oklch(0.371 0 0);
   --chart-5: oklch(0.269 0 0);
-  --radius: 0.625rem;
+  --radius: 0.75rem;
   --sidebar: oklch(0.985 0 0);
   --sidebar-foreground: oklch(0.145 0 0);
   --sidebar-primary: oklch(0.205 0 0);
