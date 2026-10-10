@@ -68,12 +68,45 @@ async function login(page, user) {
 }
 // Titles of the cards in the "ร้านทั้งหมด" list only (the best-rated highlight above it repeats some restaurants).
 function listTitles(page) {
-  return page.locator("section", { has: page.getByRole("heading", { name: "ร้านทั้งหมด" }) }).locator("a.text-lg").allTextContents();
+  return page.locator("section", { has: page.getByRole("heading", { name: "ร้านทั้งหมด" }) }).locator("article a").allTextContents();
 }
 // The number on a StatCard (components/stat-card.tsx), found by its label.
 async function statValue(page, label) {
   const card = page.locator('[data-slot="card"]', { has: page.getByText(label, { exact: true }) }).first();
   return (await card.locator("p").nth(1).textContent())?.trim();
+}
+// The signed-in person's menu in the header (the avatar chip); sign-out and the profile link live inside it.
+const userMenu = (page) => page.getByRole("button", { name: "เมนูผู้ใช้" });
+async function signedIn(page) {
+  try {
+    await userMenu(page).waitFor({ timeout: 8000 });
+    return true;
+  } catch {
+    return false;
+  }
+}
+async function chooseFromUserMenu(page, name) {
+  await userMenu(page).click();
+  await page.getByRole("menuitem", { name }).click();
+}
+// The restaurant page's booking flow: pick a day (0 = today), tap an hour, choose 1-3 hours, set the people, press book.
+async function pickDay(page, offset) {
+  await page.getByRole("group", { name: "เลือกวัน" }).getByRole("button").nth(offset).click();
+}
+async function pickSlot(page, from) {
+  await page.getByRole("button", { name: new RegExp(`^${from}–`) }).click();
+}
+async function setParty(page, guests) {
+  const group = page.getByRole("group", { name: "จำนวนคน" });
+  const current = async () => Number(((await group.locator("[aria-live]").textContent()) ?? "").replace(/\D/g, ""));
+  while ((await current()) < guests) await group.getByRole("button", { name: "เพิ่มจำนวนคน" }).click();
+  while ((await current()) > guests) await group.getByRole("button", { name: "ลดจำนวนคน" }).click();
+}
+async function book(page, { from, hours, guests }) {
+  await pickSlot(page, from);
+  await page.getByRole("button", { name: `${hours} ชม.` }).click();
+  await setParty(page, guests);
+  await page.getByRole("button", { name: "จองโต๊ะ" }).click();
 }
 async function see(page, text, timeout = 8000) {
   try {
@@ -152,12 +185,12 @@ try {
   check(await see(pa, "กรุณาเข้าสู่ระบบ"), "signed out: a page that needs data still shows the sign-in card");
   await pa.goto(WEB + "/");
   await login(pa, A);
-  check(await see(pa, "ออกจากระบบ"), "signed in: header with sign-out is shown");
+  check(await signedIn(pa), "signed in: the header shows the user menu");
   check(exchanges.length === 1, "POST /auth/exchange is called exactly once (Strict Mode)", `calls=${exchanges.length}`);
   await pa.reload();
-  check(await see(pa, "ออกจากระบบ"), "still signed in after refresh");
+  check(await signedIn(pa), "still signed in after refresh");
   await login(pb, B);
-  check(await see(pb, "ออกจากระบบ"), "second account signs in");
+  check(await signedIn(pb), "second account signs in");
 
   // ======================= Task 4: list, search, sort, pagination ======================================
   console.log("\n== Task 4: list ==");
@@ -181,15 +214,15 @@ try {
   check(await see(pa, "ไม่พบร้านที่ค้นหา"), "searching % is a plain character (no results, no error)");
 
   await pa.goto(WEB + "/");
-  await pa.selectOption('select[aria-label="เรียงลำดับ"]', "rating");
+  await pa.getByRole("radio", { name: "คะแนนสูงสุด" }).click();
   await pa.waitForURL(/sort=rating/);
   await pa.waitForTimeout(800);
-  const ratingTexts = await pa.locator("main .grid > div").evaluateAll((cards) => cards.map((c) => (c.textContent.match(/★ ([0-9.]+)|ยังไม่มีรีวิว/) || [""])[0]));
+  const ratingTexts = await pa.locator("main .grid > article").evaluateAll((cards) => cards.map((c) => (c.textContent.match(/★ ([0-9.]+)|ยังไม่มีรีวิว/) || [""])[0]));
   const nums = ratingTexts.map((t) => (t.startsWith("★") ? parseFloat(t.slice(2)) : -1));
   check(nums.every((v, i) => i === 0 || v <= nums[i - 1]), "sorted by average rating, unreviewed last", JSON.stringify(ratingTexts));
   check(ratingTexts.includes("ยังไม่มีรีวิว"), "a restaurant without reviews says ยังไม่มีรีวิว");
   await pa.reload();
-  check(await pa.locator('select[aria-label="เรียงลำดับ"]').inputValue() === "rating", "sort survives a refresh (state is in the URL)");
+  check((await pa.getByRole("radio", { name: "คะแนนสูงสุด" }).getAttribute("aria-checked")) === "true", "sort survives a refresh (state is in the URL)");
 
   // Make 13+ restaurants visible so the pager has a second page (removed again at the end).
   const everyDay = [0, 1, 2, 3, 4, 5, 6].map((weekday) => ({ weekday, open: "11:00", close: "22:00" }));
@@ -214,8 +247,7 @@ try {
   check(await see(pa, "สวัสดี"), "signed in: the home page greets the person");
   check(!(await pa.locator("body").innerText()).includes("Booking Table"), "signed in: the old name Booking Table does not show either");
   check(await see(pa, "ร้านคะแนนสูงสุด"), "the best-rated highlight is shown on the first page");
-  const profileLink = pa.getByRole("link", { name: "โปรไฟล์ของฉัน" });
-  check(/E2E|e2e-/i.test((await profileLink.textContent()) ?? ""), "the header shows who is signed in", await profileLink.textContent());
+  check(/E2E|e2e-/i.test((await userMenu(pa).textContent()) ?? ""), "the header shows who is signed in", await userMenu(pa).textContent());
   await pa.waitForTimeout(500);
   await pa.fill('input[name="name"]', "ชาบู");
   await pa.getByRole("button", { name: "ค้นหา", exact: true }).click();
@@ -224,9 +256,9 @@ try {
   check((await pa.getByText("ร้านคะแนนสูงสุด").count()) === 0, "while searching, the highlight steps aside");
   await pa.goto(WEB + "/my/reservations");
   check((await see(pa, "ยังไม่มีการจอง")) && (await see(pa, "ดูร้านทั้งหมด")), "no bookings yet: an empty state with a way forward");
-  await profileLink.click();
+  await chooseFromUserMenu(pa, "โปรไฟล์ของฉัน");
   await pa.waitForURL(/\/my\/profile/);
-  check(await see(pa, "สถิติการใช้งาน"), "the header's avatar opens the profile page");
+  check(await see(pa, "สถิติการใช้งาน"), "the user menu opens the profile page");
 
   // ======================= Task 7: owner creates a restaurant (Sunday!), picture, delete =================
   console.log("\n== Task 7: owner restaurant ==");
@@ -277,8 +309,8 @@ try {
   check(await see(pa, "บันทึกแล้ว"), "saving the edit shows บันทึกแล้ว");
   await pa.goto(`${WEB}/restaurants/${shopId}`);
   check(await see(pa, shopName), "detail page opens");
-  const sundayRow = await pa.locator("table tr", { hasText: "อาทิตย์" }).textContent();
-  check(sundayRow.includes("11:00") && sundayRow.includes("22:00"), "Sunday hours are shown on the detail page", sundayRow);
+  check(await see(pa, "เปิดทุกวัน 11:00–22:00"), "the opening hours are summarised on the detail page");
+  check((await pa.getByText("11–22", { exact: true }).count()) === 7, "the week strip shows 11–22 for all seven days, Sunday included");
   check(await see(pa, "ร้านของคุณ ไม่สามารถรีวิวได้"), "owner sees no review form");
   check(await see(pa, "จัดการร้าน"), "owner sees the manage link");
   check((await pa.locator('img[alt="' + shopName + '"]').count()) === 1, "detail page shows the picture");
@@ -286,7 +318,6 @@ try {
   // ======================= Task 5: customer books and reviews ============================================
   console.log("\n== Task 5: customer ==");
   const tomorrow = bangkokDate(1);
-  const yesterday = bangkokDate(-1);
   const bookingBodies = [];
   pb.on("request", (r) => {
     if (r.method() === "POST" && r.url().endsWith(`/restaurants/${shopId}/reservations`)) bookingBodies.push(JSON.parse(r.postData()));
@@ -299,35 +330,26 @@ try {
   check(await see(pb, "ยังไม่มีรีวิว"), "no reviews yet: empty state is shown");
   check((await pb.getByText("เขียนรีวิว").count()) > 0 && (await pb.getByText("ร้านของคุณ").count()) === 0, "customer sees the review form");
 
-  // availability panel: pick tomorrow, nothing booked yet
-  await pb.locator('input[type="date"]').fill(tomorrow);
+  // pick tomorrow in the day strip: nothing booked yet
+  check(await pb.getByRole("button", { name: "จองโต๊ะ" }).isDisabled(), "the book button waits until an hour is picked");
+  await pickDay(pb, 1);
   check(await see(pb, "เหลือ 20 ที่"), "availability for tomorrow: every hour shows all 20 seats");
 
-  async function book(page, start, end, guests) {
-    await page.fill("#start", start);
-    await page.fill("#end", end);
-    await page.fill("#guests", String(guests));
-    await page.getByRole("button", { name: "จองโต๊ะ" }).click();
-  }
-  await book(pb, `${tomorrow}T18:00`, `${tomorrow}T20:00`, 12);
+  await book(pb, { from: "18:00", hours: 2, guests: 12 });
   check(await see(pb, "จองสำเร็จ"), "12 guests 18:00-20:00 tomorrow: จองสำเร็จ");
   check(await see(pb, "เหลือ 8 ที่"), "…and the availability grid reloads by itself: 8 seats left in those hours");
   check((await pb.getByText("เหลือ 8 ที่").count()) === 2, "…in exactly two one-hour slots (18:00 and 19:00)", String(await pb.getByText("เหลือ 8 ที่").count()));
-  check(bookingBodies[0]?.startAt === `${tomorrow}T18:00:00+07:00` && bookingBodies[0]?.endAt === `${tomorrow}T20:00:00+07:00`,
+  check(bookingBodies[0]?.startAt === `${tomorrow}T18:00:00+07:00` && bookingBodies[0]?.endAt === `${tomorrow}T20:00:00+07:00` && bookingBodies[0]?.guests === 12,
     "sent times carry +07:00 even though the browser is in New York", JSON.stringify(bookingBodies[0]));
-  await book(pb, `${tomorrow}T18:00`, `${tomorrow}T20:00`, 12);
+  await book(pb, { from: "18:00", hours: 2, guests: 12 });
   check(await see(pb, "ที่นั่งไม่พอสำหรับช่วงเวลานี้"), "another 12 at the same time: ที่นั่งไม่พอ");
-  await book(pb, `${tomorrow}T20:00`, `${tomorrow}T21:00`, 12);
+  check(await see(pb, "ลองลดจำนวนคน หรือเลือกช่วงเวลาอื่น"), "…with a hint on what to try");
+  await book(pb, { from: "20:00", hours: 1, guests: 12 });
   check(await see(pb, "จองสำเร็จ"), "12 guests 20:00-21:00 (back to back): จองสำเร็จ");
-  // picking a free hour fills the form
-  await pb.getByRole("button", { name: /^21:00–22:00/ }).click();
-  check((await pb.inputValue("#start")) === `${tomorrow}T21:00` && (await pb.inputValue("#end")) === `${tomorrow}T22:00`,
-    "picking the 21:00–22:00 slot fills the booking form");
-  await pb.getByRole("button", { name: /^18:00–19:00/ }).isDisabled().then((disabled) => check(!disabled, "an hour with seats left can be picked"));
-  await book(pb, `${tomorrow}T23:00`, `${tomorrow}T23:30`, 2);
-  check(await see(pb, "เวลาที่เลือกอยู่นอกเวลาเปิดทำการของร้าน"), "outside opening hours: Thai message");
-  await book(pb, `${yesterday}T18:00`, `${yesterday}T19:00`, 2);
-  check(await see(pb, "ไม่สามารถจองย้อนหลังได้"), "in the past: Thai message");
+  // the last hour of the day cannot be stretched past closing
+  await pickSlot(pb, "21:00");
+  check(await pb.getByRole("complementary", { name: "จองโต๊ะ" }).getByText("21:00–22:00").isVisible(), "picking the 21:00 slot shows 21:00–22:00 in the booking card");
+  check(await pb.getByRole("button", { name: "2 ชม." }).isDisabled(), "…and 2 hours is not offered (the restaurant closes at 22:00)");
 
   // review
   async function review(page, stars, text) {
@@ -421,7 +443,7 @@ try {
   await pa.goto(WEB + "/my/restaurants");
   check((await see(pa, "รีวิวทั้งหมด")) && (await statValue(pa, "ร้านของฉัน")) === "1", "my restaurants shows a summary strip (1 restaurant)");
   pa.on("dialog", (d) => d.accept());
-  const card = pa.locator("main .grid > div", { hasText: shopName });
+  const card = pa.locator("main .grid > article", { hasText: shopName });
   await card.getByRole("button", { name: "ลบ" }).click();
   check(await see(pa, "ลบร้านไม่ได้ เพราะยังมีการจองที่ค้างอยู่"), "delete with an active booking: blocked with the Thai message");
   await pb.goto(WEB + "/my/reservations");
@@ -429,9 +451,9 @@ try {
   await pb.getByRole("button", { name: "ยกเลิก" }).click();
   await pb.waitForTimeout(800);
   await pa.reload();
-  await pa.locator("main .grid > div", { hasText: shopName }).getByRole("button", { name: "ลบ" }).click();
+  await pa.locator("main .grid > article", { hasText: shopName }).getByRole("button", { name: "ลบ" }).click();
   await pa.waitForTimeout(1200);
-  check((await pa.locator("main .grid > div", { hasText: shopName }).count()) === 0, "after the booking is cancelled the restaurant can be deleted");
+  check((await pa.locator("main .grid > article", { hasText: shopName }).count()) === 0, "after the booking is cancelled the restaurant can be deleted");
   await pb.goto(WEB + "/my/reservations");
   check(await see(pb, shopName), "the customer still sees the deleted restaurant's name in old bookings");
 
@@ -491,13 +513,9 @@ try {
   });
   await pb.goto(WEB + "/restaurants/9001");
   await see(pb, "จองโต๊ะ");
-  await pb.fill("#start", `${tomorrow}T20:00`);
-  await pb.fill("#end", `${tomorrow}T18:00`);
-  await pb.fill("#guests", "2");
-  await pb.getByRole("button", { name: "จองโต๊ะ" }).click();
-  check(await see(pb, "เวลาสิ้นสุดต้องหลังเวลาเริ่ม"), "end before start: explained in Thai");
+  check(await pb.getByRole("button", { name: "จองโต๊ะ" }).isDisabled(), "no hour picked: the book button is off and nothing can be sent");
   await pb.waitForTimeout(500);
-  check(bookings.length === 0, "…and no request was sent");
+  check(bookings.length === 0, "…and no booking request was sent");
 
   await pa.goto(WEB + "/my/restaurants/new");
   await pa.fill("#name", "   ");
@@ -528,9 +546,9 @@ try {
   // ======================= sign out =====================================================================
   console.log("\n== sign out ==");
   await pa.goto(WEB + "/");
-  await pa.getByRole("button", { name: "ออกจากระบบ" }).click();
+  await chooseFromUserMenu(pa, "ออกจากระบบ");
   check(await see(pa, "ดูช่วงว่างแล้วจองได้ทันที"), "sign out returns to the landing page");
-  check((await pa.getByRole("link", { name: "โปรไฟล์ของฉัน" }).count()) === 0, "…and the header no longer shows a person");
+  check((await userMenu(pa).count()) === 0, "…and the header no longer shows a person");
 } catch (err) {
   failures++;
   console.log("FAIL  script error:", err.message);
