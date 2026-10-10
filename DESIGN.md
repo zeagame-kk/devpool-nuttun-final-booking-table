@@ -58,7 +58,7 @@ Design system ของเว็บ (`web/`) เขียนจากหน้�
 | `Input`, `Textarea` | `components/ui/` | สูง 44 ขอบ 1.5px; โฟกัส: ขอบฟ้า + วงฟ้าอ่อน |
 | `Card`, `Badge`, `Skeleton`, `Label` | `components/ui/` | การ์ดขอบ `--border-subtle` |
 | `DropdownMenu*` | `components/ui/dropdown-menu.tsx` | ห่อ Menu ของ `@base-ui/react` (ไม่ได้เพิ่ม dependency) |
-| `SiteHeader`, `BottomNavSpacer` | `components/site-header.tsx` | เดสก์ท็อป: โลโก้ + เมนู pill + ชิปผู้ใช้เปิดเมนู (โปรไฟล์/ออกจากระบบ); มือถือ: แถวเดียว + แถบเมนูล่าง |
+| `SiteHeader`, `BottomNavSpacer` | `components/site-header.tsx`, `components/bottom-nav-spacer.tsx` | เดสก์ท็อป: โลโก้ + เมนู pill + ชิปผู้ใช้เปิดเมนู (โปรไฟล์/ออกจากระบบ แล้วกลับหน้าแรก); มือถือ: แถวเดียว + แถบเมนูล่าง |
 | `EmptyState`, `ErrorAlert` (+ลองอีกครั้ง, `hint`) | `components/` | หน้าว่างเป็นการ์ดขาว วงไอคอนฟ้าอ่อน |
 | `StatCard` (tone primary/plain), `StatPill` | `components/stat-card.tsx` | `role="group"` + ชื่อป้าย อ่านค่าผ่าน `<strong>` |
 | `SegmentedControl` | `components/segmented-control.tsx` | เดสก์ท็อป: แท็บในราง; มือถือ: pill เลื่อนข้าง ใช้เรียงลำดับและกรองสถานะ |
@@ -67,9 +67,9 @@ Design system ของเว็บ (`web/`) เขียนจากหน้�
 | `AvailabilityPicker`, `BookingCard` / `BookingBar` | `components/` | ช่วงว่าง + กล่องจองข้างหน้าร้าน / แถบจองติดล่างบนมือถือ |
 | `ReservationEditor` | `components/reservation-editor.tsx` | แก้การจองในการ์ด ใช้ตัวเลือกชุดเดียวกับตอนจอง |
 | `RestaurantCard`, `RestaurantImage`, `RatingText`, `TopRated` | `components/` | การ์ดร้าน (มือถือเป็นแถว), ภาพเต็มพร้อมอันดับ (เฉพาะจอกว้าง) |
-| `NextBookingCard`, `HoursStrip`, `DayLoadBars` | `components/` | การ์ดเข้ม, แถบเวลาเปิด 7 ช่อง, กราฟที่นั่งรายชั่วโมง |
+| `NextBookingCard`, `HoursStrip`, `DayLoadBars` (+`LoadLegend`) | `components/` | การ์ดเข้ม, แถบเวลาเปิด 7 ช่อง, กราฟที่นั่งรายชั่วโมง (+คำอธิบายสี) |
 | `RestaurantForm`, `OpeningHoursEditor`, `ImageUploader` | `components/` | ฟอร์มเป็นการ์ด, สวิตช์รายวัน (checkbox จริงที่แต่งเป็นสวิตช์), ตัวอย่างการ์ดสด, แถบปุ่มติดล่าง |
-| `ProfileHeader`, `UserAvatar`, `Stars`, `StarPicker`, `StatusBadge`, `Pager`, `Landing`, `ReviewSection` | `components/` | |
+| `ProfileHeader`, `UserAvatar`, `Stars`, `StarPicker`, `StatusBadge`, `Pager`, `Landing` (ปุ่มเข้าสู่ระบบและสมัครสมาชิก), `ReviewSection`, `AuthGuard` | `components/` | |
 | ตรรกะที่ไม่ผูกกับหน้า (มีเทสต์) | `lib/booking.ts`, `lib/owner-day.ts`, `lib/stats.ts`, `lib/datetime.ts`, `lib/opening-hours.ts`, `lib/availability.ts` | สถานะช่วงเวลา, จัดกลุ่มรายวัน + กราฟรายชั่วโมง, สถิติ, วันที่ไทย, สรุปเวลาเปิด |
 | hook | `hooks/use-slot-picker.ts` (ใช้ร่วม), `use-booking.ts`, `use-me.ts`, `use-async.ts` | |
 

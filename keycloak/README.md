@@ -28,17 +28,19 @@ to start while a required secret is unset.
 If the volume already has data, Keycloak's import strategy is `IGNORE_EXISTING`: a realm that
 already exists is left untouched and the import is skipped. So restarting an existing dev
 environment never clobbers local changes made through the Admin Console. To force a clean
-re-import, remove the volume first:
+re-import, remove the volume first (Docker puts the project folder's name in front of the volume name, so look it up
+with `docker volume ls` and never remove another project's volume):
 
 ```bash
 docker compose down
-docker volume rm bookingtable-all-in-one-keycloak-data
+docker volume rm "$(docker volume ls -q | grep 'bookingtable-all-in-one-keycloak-data$')"
 docker compose up -d
 ```
 
 ## Sign-up and login-page settings
 
-The import file turns on self sign-up (`registrationAllowed`), titles the login page "Table Not Found" (`displayName`)
+The import file turns on self sign-up with the email as the username (`registrationAllowed`, `registrationEmailAsUsername`,
+`loginWithEmailAllowed`), titles the login page "Table Not Found" (`displayName`)
 and makes Thai the default language with English selectable (`internationalizationEnabled`, `supportedLocales`,
 `defaultLocale`). Because an existing realm is never re-imported, a Keycloak whose volume already has data gets the
 same settings by running `./scripts/keycloak_realm_settings.sh` once (safe to repeat; it uses the container's own

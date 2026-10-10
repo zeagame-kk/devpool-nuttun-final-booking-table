@@ -1,6 +1,6 @@
 # เอกสารต้นทาง (initial)
 
-โฟลเดอร์นี้เก็บเอกสารที่ทำให้เกิดแอป Booking Table: โจทย์ สิ่งที่ตกลงกันตอน brainstorming spec และแผน implement
+โฟลเดอร์นี้เก็บเอกสารที่ทำให้เกิดแอป Booking Table (ตอนนี้ชื่อ Table Not Found): โจทย์ สิ่งที่ตกลงกันตอน brainstorming spec และแผน implement
 ทั้งหมดเขียน ณ ตอนวางแผน (2026-10-08) เป็น **บันทึกของที่มาและเหตุผล** ไม่ใช่เอกสารของระบบที่ใช้งานอยู่
 
 > เอกสารที่ตรงกับโค้ดจริงอยู่ที่ [../../api/docs/API.md](../../api/docs/API.md) (สัญญาของ API),
@@ -52,5 +52,5 @@ Final Exam MVP ของนักเรียน Full-Stack: เว็บจอ�
 - `Backend_PLAN.md` แนะนำให้เพิ่ม `keycloak` ใน `/etc/hosts` ซึ่งผิด (พอร์ต 8080 คือ API) ของจริงใช้ `keycloak.localhost:8180` กับ `extra_hosts` ใน `compose.yml`
 - `SPEC.md` เขียนว่าโปรเจกต์ไม่ใช่ git repo และยังไม่ตั้งค่า issue tracker (ตอนนี้เป็น git repo แล้ว ไม่ใช้ issue tracker)
 - `Frontend_PLAN.md` ตั้ง script `typecheck` เป็น `tsc --noEmit` ของจริงเป็น `next typegen && tsc --noEmit` และใช้ฟอนต์ Geist ของจริงใช้ Noto Sans Thai
-- ธีมสีในแผนยังเป็นของ template (ม่วง) ของจริงเป็นโทนฟ้าแบบ Facebook แล้ว
+- ธีมสีในแผนยังเป็นของ template (ม่วง) ของจริงเป็นโทนฟ้า primary `#1262ee` บนพื้นขาวอมเทาอุ่นแล้ว (ค่าปัจจุบันอยู่ใน `DESIGN.md` ที่ root)
 - ข้อความที่ระบุตัวเลขหรือรายการสถานะ (เช่น "รอผู้ใช้ตรวจไฟล์" ใน `design.md`) เป็นสถานะ ณ ตอนนั้น

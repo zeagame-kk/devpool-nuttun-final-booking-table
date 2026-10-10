@@ -19,11 +19,11 @@ npm run build
 ## โครงสร้าง
 
 ```text
-app/          หน้าและ layout (รายการร้าน, รายละเอียดร้าน, /my/reservations, /my/restaurants/..., /auth/callback)
+app/          หน้าและ layout (หน้าแรก/รายการร้าน, รายละเอียดร้าน, /my/reservations, /my/profile, /my/restaurants/..., /auth/callback)
 components/   คอมโพเนนต์ของหน้า; bases/ = Button; ui/ = primitive จาก shadcn
-public/       ไฟล์ที่เสิร์ฟตรง ๆ (รูป hero ของหน้าแรก, logo.png ที่หัวเว็บ ย่อจาก app/icon.png)
-hooks/        use-credential (สถานะล็อกอิน), use-async (โหลดข้อมูล)
-lib/          ตรรกะที่ไม่ผูกกับหน้า: api client + refresh token, auth store, เวลา Asia/Bangkok, ข้อความ error, ตัวแก้เวลาเปิด (มี *.test.ts ข้างไฟล์)
+public/       ไฟล์ที่เสิร์ฟตรง ๆ (รูปของหน้าแรก hero.jpg กับ landing-hotpot.jpg, logo.png ที่หัวเว็บ ย่อจาก app/icon.png)
+hooks/        use-credential (สถานะล็อกอิน), use-me (โปรไฟล์ของคนที่ล็อกอิน), use-async (โหลดข้อมูล), use-slot-picker และ use-booking (เลือกวัน/ช่วงเวลา/จำนวนคน แล้วจอง)
+lib/          ตรรกะที่ไม่ผูกกับหน้า: api client + refresh token, auth store, เวลา Asia/Bangkok, ข้อความ error, ตัวแก้เวลาเปิด, สถานะและการเลือกช่วงจอง (booking, availability), การจัดกลุ่มรายวันของเจ้าของร้าน (owner-day), stats, ชื่อที่แสดง (user) (มี *.test.ts ข้างไฟล์)
 ```
 
 ไอคอนของเว็บคือไฟล์ในโฟลเดอร์ `app/` ที่ Next ใส่ `<link>` ให้เอง: `icon.png` (512px, แท็บ/Android), `apple-icon.png` (180px พื้นเต็มสี่เหลี่ยมสำหรับ iOS) และ `favicon.ico` (16/32/48px)

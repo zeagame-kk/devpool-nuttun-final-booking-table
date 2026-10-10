@@ -70,7 +70,7 @@ flowchart LR
 | container | image / build | พอร์ตบนเครื่อง | หน้าที่ | ข้อมูลที่เก็บ |
 | --- | --- | --- | --- | --- |
 | `web` | build จาก `web/` (`node:24-alpine`) รัน `npm run dev` | 3000 | หน้าเว็บ (client component ทั้งหมด) | ไม่มี (token อยู่ใน `localStorage` ของ browser) |
-| `api` | build จาก `api/` (Go 1.26 → `distroless/static:nonroot`) | 8080 | REST API, OAuth client ของ Keycloak, เสิร์ฟรูป | ไม่มี state ในตัว |
+| `api` | build จาก `api/` (Go 1.26 → `gcr.io/distroless/static-debian12:nonroot`) | 8080 | REST API, OAuth client ของ Keycloak, เสิร์ฟรูป | ไม่มี state ในตัว |
 | `postgres` | `postgres:17` | 5532 | ฐานข้อมูลหลัก (`bookingtable`) | volume `…-pgdata` |
 | `redis` | `redis:8.10-alpine` | 6479 | `state` ของ OAuth (5 นาที) และ ticket ล็อกอิน (30 วินาที) | ไม่มี volume: สูญหายเมื่อสร้าง container ใหม่ ผลคือผู้ใช้ที่กำลังล็อกอินอยู่กดใหม่ |
 | `keycloak` | `quay.io/keycloak/keycloak:26.7` โหมด `start-dev --import-realm` | 8180 | ผู้ให้บริการยืนยันตัวตน (OIDC) realm `pea`, client `bookingtable` | volume `…-keycloak-data`; import realm จาก `keycloak/import/` ตอน volume ว่าง |
@@ -123,7 +123,7 @@ sequenceDiagram
 อื่น ๆ:
 
 - **refresh:** `POST /auth/refresh-token` เป็นตัวกลางไปที่ token endpoint ของ Keycloak (ส่ง client secret แทน browser) ฝั่งเว็บเรียกอัตโนมัติเมื่อได้ 401 (หัวข้อ 8)
-- **logout:** `POST /auth/logout` บอก Keycloak ให้ยกเลิก refresh token (ต้องได้ 204)
+- **logout:** `POST /auth/logout` บอก Keycloak ให้ยกเลิก refresh token (ต้องได้ 204) ฝั่งเว็บล้าง credential แม้ API ล่ม แล้ว `router.replace("/")` พาไปหน้าแรกจากหน้าไหนก็ได้ (`replace` เพื่อให้ Back ไม่กลับไปหน้าที่ต้องล็อกอิน)
 - **ทำไมต้อง `keycloak.localhost:8180` ทั้งสองฝั่ง:** URL ที่ browser เปิดกับ `iss` ใน token ต้องตรงกับที่ API ใช้ทำ discovery
   `compose.yml` จึงตั้ง `KEYCLOAK_BASE_URL=http://keycloak.localhost:8180` และให้ container `api` ชี้ `keycloak.localhost` ไปที่ host ด้วย `extra_hosts: host-gateway`
   (browser รุ่นใหม่ resolve `*.localhost` เป็น loopback เอง)
@@ -415,7 +415,7 @@ Next.js 16 (App Router) + TypeScript + Tailwind v4 + shadcn/ui **ทุกหน
 ```mermaid
 flowchart TB
     app["app/<br/>หน้าและ layout (page.tsx)"] --> comp["components/<br/>ฟอร์ม การ์ด AuthGuard SiteHeader ..."]
-    app --> hooks["hooks/<br/>useCredential, useAsync, useSlotPicker, useBooking"]
+    app --> hooks["hooks/<br/>useCredential, useAsync, useMe, useSlotPicker, useBooking"]
     comp --> hooks
     comp --> lib["lib/<br/>ตรรกะที่ไม่ผูกกับหน้า (มีเทสต์)"]
     hooks --> lib
@@ -488,7 +488,7 @@ compose ปฏิเสธการสตาร์ทถ้าขาดตัว
 
 ### Docker
 
-- **api:** multi-stage: build ด้วย `golang:1.26-alpine` เป็นไบนารี static แล้วรันบน `distroless/static:nonroot` (ผู้ใช้ `65532`, ไม่มี shell) พร้อม tzdata และโฟลเดอร์ uploads ที่เป็นของผู้ใช้นั้น
+- **api:** multi-stage: build ด้วย `golang:1.26-alpine` เป็นไบนารี static แล้วรันบน `gcr.io/distroless/static-debian12:nonroot` (ผู้ใช้ `65532`, ไม่มี shell) พร้อม tzdata และโฟลเดอร์ uploads ที่เป็นของผู้ใช้นั้น
 - **web:** image แบบ dev (`next dev`) ที่ bind mount `./web` เข้า `/app` ให้ hot reload (บน Colima การจับไฟล์ที่แก้อาจพลาด: `docker compose restart web`) ไม่ใช่ image สำหรับ production
 - **migration ไม่รันตอนสตาร์ท:** รัน `goose up` เองหลังขึ้น stack ส่วน `seed.sql` และ `seed_images.sh` ไม่บังคับและรันซ้ำได้
 
@@ -511,11 +511,11 @@ compose ปฏิเสธการสตาร์ทถ้าขาดตัว
 
 | ชั้น | อยู่ที่ไหน | ทดสอบอะไร | ช้า/เร็ว |
 | --- | --- | --- | --- |
-| Go unit (ฟังก์ชันบริสุทธิ์) | `reservation/peak_test.go`, `leadtime_test.go`, `storage/local_test.go` | นับคนพร้อมกัน กฎ lead time การเขียนไฟล์ | เร็วมาก |
+| Go unit (ฟังก์ชันบริสุทธิ์) | `reservation/peak_test.go`, `leadtime_test.go`, `slots_test.go`, `storage/local_test.go` | นับคนพร้อมกัน กฎ lead time การตัดช่วงรายชั่วโมง การเขียนไฟล์ | เร็วมาก |
 | Go HTTP-seam | `api/internal/apitest` | พฤติกรรมของ API ทั้งเส้น: router จริง + service + repository + PostgreSQL จริง | ปานกลาง (ใช้ Docker) |
-| Go mock (เดิมจากต้นแบบ) | `auth`, `user`, `middleware` (`mocks_test.go` สร้างด้วย mockery), `httpapi/cors_test.go` | flow auth/user และ CORS | เร็ว |
-| Vitest | `web/lib/*.test.ts` | API client + refresh, เวลา, error, เวลาเปิด, auth store | เร็วมาก |
-| เบราว์เซอร์จริง | `scripts/browser_e2e` | UI ทั้งหมดผ่าน Chrome จริง ~100 ข้อ รวม Strict Mode และ token หมดอายุ | ช้า (ต้องมี stack) |
+| Go mock (เดิมจากต้นแบบ) | `user/handler_test.go`, `user/service_test.go` (ใช้ mock จาก mockery), `httpapi/cors_test.go` | flow ของ user และ CORS (`auth` กับ `middleware` มี `mocks_test.go` แต่ยังไม่มีเทสต์ ฝั่ง auth ตรวจด้วย smoke และ e2e) | เร็ว |
+| Vitest | `web/lib/*.test.ts` | API client + refresh, เวลา, error, เวลาเปิด, สถานะและการเลือกช่วงจอง, การจัดกลุ่มรายวันของเจ้าของร้าน, สถิติ, ที่นั่งที่เหลือ, ชื่อที่แสดง, auth store | เร็วมาก |
+| เบราว์เซอร์จริง | `scripts/browser_e2e` | UI ทั้งหมดผ่าน Chrome จริง 122 ข้อ รวม Strict Mode, token หมดอายุ, ออกจากระบบและสมัครสมาชิก | ช้า (ต้องมี stack) |
 | Smoke ของ API | `scripts/smoke_api.py` | ล็อกอินจริงผ่าน Keycloak แล้วไล่ flow หลักด้วย HTTP | ช้า (ต้องมี stack) |
 
 หลักการเขียนเทสต์ของการจอง/ร้าน/รีวิว:

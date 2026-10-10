@@ -7,8 +7,8 @@ differ, the code and its tests (`api/internal/apitest`) are the truth.
 ## Conventions
 
 - Base path: `/api/v1`.
-- Every endpoint needs `Authorization: Bearer <access-token>`, except `/auth/*` and the picture files
-  under `/uploads/*`.
+- Every endpoint needs `Authorization: Bearer <access-token>`, except `/auth/*`, the picture files
+  under `/uploads/*` and the Swagger UI under `/swagger/*`.
 - Request bodies are JSON (`Content-Type: application/json`), except the picture upload (see
   [Pictures](#pictures)). Responses are JSON. Field names are camelCase.
 - Timestamps are RFC 3339 strings with any offset (`2026-10-12T18:00:00+07:00` and
@@ -44,7 +44,7 @@ holds a short-lived one-time ticket.
 | POST | `/auth/exchange` | Body `{"ticket": "..."}`. The ticket works once and for 30 seconds. Answers `{accessToken, refreshToken, bearerType, expiresAt}`. |
 | POST | `/auth/refresh-token` | Body `{"refreshToken": "..."}`. Answers a new credential. |
 | POST | `/auth/logout` | Body `{"refreshToken": "..."}`. 204. |
-| GET | `/users/me` | `{id, name, email, imageUrl, bio}`. |
+| GET | `/users/me` | `{id, name, email, imageUrl, bio}` (`name` is left out when Keycloak gives none). |
 | PUT | `/users/me` | Body `{imageUrl?, bio?}`. |
 
 Accounts sign in with their **email address**, and anyone can sign up with one (the landing page's "สมัครสมาชิก" button goes to `/auth/register`). A person is created in the `users` table the first time they

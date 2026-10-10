@@ -1,13 +1,17 @@
 # Browser end-to-end check
 
 Walks the real web app in a real Chrome against the real stack: sign in through Keycloak, search, sort, page,
-book, review, manage a restaurant with a picture, the owner's view, the delete guard, an expired token, sign out, and sign up through Keycloak's form.
-About 120 checks; each prints `PASS` or `FAIL`. The browser's time zone is set to New York on purpose, so every
+book, review, manage a restaurant with a picture, the owner's view, the delete guard, an expired token, sign out from a deep page (`/my/reservations`, it must land on the home page),
+and sign up through Keycloak's Thai form. 122 checks; each prints `PASS` or `FAIL`. The browser's time zone is set to New York on purpose, so every
 time that appears or is sent must still be Bangkok time.
 
 It creates two throwaway users in Keycloak (an owner and a customer) and deletes them at the end; the person it signs up through the form is found by email and deleted too. It prints no
 passwords or tokens. The restaurants it creates are its own (it deletes them again), and it only reads the seeded
 ones, so the seed data is left as it was.
+
+The API cannot remove everything the run writes: reviews, cancelled bookings, the `users` rows and the soft-deleted
+restaurants stay in Postgres (all owned by `e2e-*@example.com` accounts). They do no harm, and the SQL in
+[docs/design/README.md](../../docs/design/README.md) removes them if you change its pattern from `e2e-design-%` to `e2e-%`.
 
 ## Run
 
@@ -15,6 +19,9 @@ ones, so the seed data is left as it was.
 # 1) the stack, migrations and seed (see the root README), with web on http://localhost:3000
 docker compose up -d --build
 (cd api && goose up)
+docker compose exec -T postgres psql -U postgres -d bookingtable -v ON_ERROR_STOP=1 < api/seed/seed.sql && ./scripts/seed_images.sh
+# a Keycloak volume made before self sign-up existed: ./scripts/keycloak_realm_settings.sh (once; the sign-up
+# checks expect the Thai form titled Table Not Found)
 
 # 2) once: install the one dependency (playwright-core, it brings no browser of its own)
 cd scripts/browser_e2e && npm ci

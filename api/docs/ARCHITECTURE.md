@@ -53,5 +53,6 @@ files are served by Gin's static handler under `/api/v1/uploads`. In Docker the 
 ## Testing
 
 Tests go through the HTTP router with the real service and repository and a real PostgreSQL container
-(`internal/apitest`); `PeakGuests`, `leadTimeOK` and the file storage have plain unit tests. See
+(`internal/apitest`); `PeakGuests`, `leadTimeOK`, the hourly slot cutting (`slots_test.go`) and the file storage have plain unit tests,
+and `user` (with mockery mocks) and the CORS settings have their own. See
 [TESTING.md](TESTING.md) and the repository README for how to run them.

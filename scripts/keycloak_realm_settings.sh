@@ -5,8 +5,8 @@
 #
 #   ./scripts/keycloak_realm_settings.sh        (the compose stack must be running: docker compose up -d)
 #
-# Sets: people can register themselves, the login page is titled "Table Not Found", Thai is the default language
-# (English stays selectable). Safe to run again. It uses the bootstrap admin that the container already knows, so
+# Sets: people can register themselves with their email (which is also their username and how they sign in), the
+# login page is titled "Table Not Found", Thai is the default language (English stays selectable). Safe to run again. It uses the bootstrap admin that the container already knows, so
 # no password is typed or printed here.
 set -euo pipefail
 cd "$(dirname "$0")/.."
@@ -22,6 +22,8 @@ docker compose exec -T "$SERVICE" sh -c '
     --user "$KC_BOOTSTRAP_ADMIN_USERNAME" --password "$KC_BOOTSTRAP_ADMIN_PASSWORD" >/dev/null
   $KCADM update realms/'"$REALM"' $CFG \
     -s registrationAllowed=true \
+    -s registrationEmailAsUsername=true \
+    -s loginWithEmailAllowed=true \
     -s "displayName=Table Not Found" \
     -s internationalizationEnabled=true \
     -s "supportedLocales=[\"en\",\"th\"]" \
