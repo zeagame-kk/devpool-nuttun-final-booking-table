@@ -76,7 +76,8 @@ web/        Next.js: app/ (หน้า), components/, hooks/, lib/ (ตรร�
 keycloak/   realm snapshot ที่ import ตอน compose ขึ้น (ดู keycloak/README.md)
 scripts/    smoke_api.py, seed_images.sh, browser_e2e/ (ทดสอบด้วยเบราว์เซอร์จริง)
 docs/initial/   เอกสารต้นทาง: โจทย์, design, SPEC, แผน backend/frontend, เอกสารอ้างอิงจากคอร์ส
-docs/design/    ชุดส่งดีไซน์: brief, token, ภาพหน้าจอ 29 ภาพ, ไอคอนและรูปตัวอย่าง
+docs/design/    ชุดส่งดีไซน์ (brief, token, ภาพหน้าจอ 29 ภาพ, ไอคอนและรูปตัวอย่าง) และผลที่ได้กลับจาก Claude Design (claude-design/)
+DESIGN.md       design system ของเว็บ
 compose.yml     postgres, redis, keycloak, api, web
 ARCHITECTURE.md สถาปัตยกรรมทั้งระบบ (ภาพรวม service, ล็อกอิน, กฎการจอง, frontend)
 ```
@@ -135,6 +136,7 @@ python3 -I scripts/smoke_api.py
 | [api/docs/ARCHITECTURE.md](api/docs/ARCHITECTURE.md) | โครงสร้างข้อมูล กฎการจอง และวิธีกันจองเกิน |
 | [api/docs/TESTING.md](api/docs/TESTING.md) | แนวทางเขียนเทสต์ฝั่ง Go |
 | [web/README.md](web/README.md), [web/NOTES.md](web/NOTES.md) | โครงสร้างหน้าบ้านและข้อสังเกตของ Next 16 |
+| [DESIGN.md](DESIGN.md) | design system ของเว็บ: token (พร้อมคอนทราสต์ที่วัดแล้ว), component, pattern ของหน้า และกติกาเวลาแก้ UI |
 | [docs/design/](docs/design/README.md) | ชุดส่งดีไซน์ให้ Claude Design: brief, design token, ภาพหน้าจอทุกหน้าและทุกสถานะ (สร้างใหม่ได้ด้วยสคริปต์), ไอคอนและรูปตัวอย่าง |
 | [docs/initial/](docs/initial/README.md) | ที่มาของงาน: โจทย์ การตัดสินใจตอน brainstorming SPEC และแผน (บันทึกประวัติ อาจต่างจากของจริงบางจุด) |
 

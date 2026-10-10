@@ -401,9 +401,9 @@ Next.js 16 (App Router) + TypeScript + Tailwind v4 + shadcn/ui **ทุกหน
 | route | หน้า | API ที่เรียก |
 | --- | --- | --- |
 | `/` | ยังไม่ล็อกอิน: หน้าแนะนำระบบ (ไม่เรียก API) ล็อกอินแล้ว: ทักทาย ค้นหา การจองถัดไป ร้านคะแนนสูงสุด และรายการร้านเรียง/แบ่งหน้า (12 ต่อหน้า) | `GET /restaurants?name&sort&page&limit`, `GET /restaurants?sort=rating&limit=3`, `GET /reservations`, `GET /users/me` |
-| `/restaurants/[id]` | รายละเอียดร้าน ช่วงว่างรายชั่วโมง จอง รีวิว | `GET /restaurants/{id}`, `GET …/availability?date`, `GET …/reviews`, `POST …/reservations`, `POST …/reviews`, `PUT …/reviews/me` |
+| `/restaurants/[id]` | รายละเอียดร้าน แถบ 7 วัน ช่วงว่างรายชั่วโมง กล่องจอง (เลือกช่วงเวลา 1–3 ชม. + จำนวนคน) รีวิว | `GET /restaurants/{id}`, `GET …/availability?date`, `GET …/reviews`, `POST …/reservations`, `POST …/reviews`, `PUT …/reviews/me` |
 | `/my/profile` | ข้อมูลส่วนตัว (แก้คำแนะนำตัว) สถิติการใช้งาน การจองถัดไป รีวิวของฉัน | `GET /users/me`, `PUT /users/me`, `GET /reservations`, `GET /restaurants?mine=true&limit=1`, `GET /reviews` |
-| `/my/reservations` | การจองของฉัน แก้/ยกเลิก | `GET /reservations`, `PUT /reservations/{id}`, `POST /reservations/{id}/cancel` |
+| `/my/reservations` | การจองของฉัน (กำลังจะถึง/ผ่านมา/ยกเลิก) แก้ในการ์ดด้วยตัวเลือกชุดเดียวกับตอนจอง และยกเลิก | `GET /reservations` (restaurant มี `imageUrl`, `cancellationLeadMinutes`), `GET /restaurants/{id}`, `GET …/availability?date`, `PUT /reservations/{id}`, `POST /reservations/{id}/cancel` |
 | `/my/restaurants` | ร้านของฉัน สรุปจำนวนร้าน/รีวิว/คะแนน ลบร้าน | `GET /restaurants?mine=true`, `DELETE /restaurants/{id}` |
 | `/my/restaurants/new` | สร้างร้าน | `POST /restaurants` |
 | `/my/restaurants/[id]/edit` | แก้ร้านและรูป | `GET/PUT /restaurants/{id}`, `POST/DELETE …/image` |
@@ -415,7 +415,7 @@ Next.js 16 (App Router) + TypeScript + Tailwind v4 + shadcn/ui **ทุกหน
 ```mermaid
 flowchart TB
     app["app/<br/>หน้าและ layout (page.tsx)"] --> comp["components/<br/>ฟอร์ม การ์ด AuthGuard SiteHeader ..."]
-    app --> hooks["hooks/<br/>useCredential, useAsync"]
+    app --> hooks["hooks/<br/>useCredential, useAsync, useSlotPicker, useBooking"]
     comp --> hooks
     comp --> lib["lib/<br/>ตรรกะที่ไม่ผูกกับหน้า (มีเทสต์)"]
     hooks --> lib
@@ -452,11 +452,11 @@ flowchart TB
 
 ### เวลา ข้อความ และธีม
 
-- **เวลา** (`lib/datetime.ts`): ค่าจาก `<input type="datetime-local">` คือเวลาไทย `toApiDateTime` ต่อ `:00+07:00` ด้วยสตริง (ไม่ใช้ `Date` ท้องถิ่น) `fromApiDateTime` แปลงกลับเป็นเวลาไทยด้วยการบวก 7 ชั่วโมง
+- **เวลา** (`lib/datetime.ts`): ผู้ใช้ไม่พิมพ์เวลาเอง การจองส่ง `startAt`/`endAt` ที่ได้จากช่วงเวลา (slot) ของ API (เป็น `+07:00` อยู่แล้ว) ส่วนวัน/นาฬิกาที่แสดงคำนวณจากเวลาไทยด้วยการบวก 7 ชั่วโมงหรือ `Intl` เขตเวลา `UTC`/`Asia/Bangkok` (`bangkokDateKey`, `thaiDateParts`, `bangkokClock`)
   `formatThaiDateTime` ใช้ `Intl` เขตเวลา `Asia/Bangkok` ทั้งหมดจึงไม่ขึ้นกับเขตเวลาของ browser (เทสต์รันด้วย `TZ=America/New_York` เพื่อจับโค้ดที่พึ่งเขตเวลาเครื่อง)
 - **ข้อความผิดพลาด** (`lib/errors.ts`): `messageForError` แปลง `code` เป็นข้อความไทย ถ้าไม่มี `code` ใช้ตาม status และ `isNotFound` ใช้แยก 404
 - **เวลาเปิดรายวัน** (`lib/opening-hours.ts`): แปลงระหว่างรายการจาก API กับแถว 7 วันของฟอร์ม ตรวจก่อนส่ง (ต้องเปิดอย่างน้อย 1 วัน, เวลาครบ, ปิดหลังเปิด); weekday 0 (อาทิตย์) ต้องไม่หายเพราะเป็นค่า falsy
-- **ธีม:** token สี (โทนฟ้าแบบ Facebook) อยู่ใน `web/app/globals.css` (`--primary`, `--primary-strong` สำหรับตัวหนังสือสีฟ้า, `--primary-subtle`) และฟอนต์ Noto Sans Thai ใน `app/layout.tsx`;
+- **ธีม:** ระบบออกแบบอยู่ใน [DESIGN.md](DESIGN.md) token สีอยู่ใน `web/app/globals.css` (พื้นขาวนวล, ฟ้า `--primary` ตรงไอคอนแอป, `--primary-strong` สำหรับตัวหนังสือสีฟ้า, `--primary-subtle`) และฟอนต์ Noto Sans Thai ใน `app/layout.tsx`;
   ปุ่มใช้ `components/bases/button.tsx` ส่วน primitive อื่นมาจาก shadcn ใน `components/ui/`
 
 ที่มา: `web/lib/*`, `web/hooks/*`, `web/app/*`, `web/components/*`
@@ -548,7 +548,7 @@ compose ปฏิเสธการสตาร์ทถ้าขาดตัว
 - **ไม่มีอีเมลแจ้งเตือน**, ไม่มี dark mode (token โหมดมืดยังเป็นของ template และไม่มีสวิตช์), ไม่มี role/แอดมิน
 - **`APP_PORT` ไม่ถูกใช้:** `config` ตรวจค่านี้แต่ `cmd/api/main.go` ฟังที่ `:8080` ตายตัว และตั้งโหมด release หลังสร้าง router (พบตอนเขียนเอกสารนี้ ยังไม่ได้แก้)
 - **Safari ล็อกอินไม่ได้** ผ่าน HTTP (cookie `Secure`)
-- ฝั่งเว็บ: ฟอร์มวันที่ของการจองกับการแก้การจองเป็นโค้ดซ้ำสองที่, `now` ในหน้าการจองของฉันค้างตอน mount (ปุ่มแก้/ยกเลิกอาจแสดงต่ออีกพักหลังการจองเริ่ม แต่ server ปฏิเสธอยู่ดี)
+- ฝั่งเว็บ: `now` ในหน้าการจองของฉันค้างตอน mount (ปุ่มแก้/ยกเลิกอาจแสดงต่ออีกพักหลังการจองเริ่ม แต่ server ปฏิเสธอยู่ดี)
 
 ## 13. แผนที่โค้ด
 

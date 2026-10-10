@@ -47,6 +47,9 @@ function bangkokDate(offsetDays) {
   return new Intl.DateTimeFormat("en-CA", { timeZone: "Asia/Bangkok" }).format(new Date(Date.now() + offsetDays * 86400000));
 }
 const weekdayOf = (key) => new Date(`${key}T00:00:00Z`).getUTCDay(); // 0 = Sunday
+const offsetOf = (key) => [0, 1, 2, 3, 4, 5, 6, 7, 8].findIndex((offset) => bangkokDate(offset) === key);
+// The restaurant page's day strip: today is tile 0.
+const pickDay = (page, key) => page.getByRole("group", { name: "เลือกวัน" }).getByRole("button").nth(offsetOf(key)).click();
 
 async function adminHeaders() {
   const res = await fetch(`${KC}/realms/master/protocol/openid-connect/token`, {
@@ -218,7 +221,7 @@ try {
   console.log("owner");
   await pa.goto(`${WEB}/restaurants/${r1}`);
   await pa.getByText("ร้านของคุณ ไม่สามารถรีวิวได้").waitFor();
-  await pa.locator('input[type="date"]').fill(day);
+  await pickDay(pa, day);
   await pa.getByText("เต็ม", { exact: true }).first().waitFor();
   await shot(pa, "06-restaurant-owner-view");
   await pa.goto(WEB + "/my/restaurants");
@@ -239,20 +242,21 @@ try {
   await pc.goto(`${WEB}/restaurants/${r1}`);
   await pc.getByText("ช่วงว่าง").first().waitFor();
   await shot(pc, "05a-restaurant-today");
-  await pc.locator('input[type="date"]').fill(day);
+  await pickDay(pc, day);
   await pc.getByText("เต็ม", { exact: true }).first().waitFor();
   await shot(pc, "05-restaurant-customer-view");
   await pc.getByRole("button", { name: /^11:00–12:00/ }).click();
   await pc.waitForTimeout(700);
   await shot(pc, "05b-restaurant-slot-picked");
-  await pc.fill("#start", `${day}T19:00`);
-  await pc.fill("#end", `${day}T20:00`);
-  await pc.fill("#guests", "5");
+  // 18:00 for two hours reaches into the full 19:00 hour: five guests cannot be seated
+  await pc.getByRole("button", { name: /^18:00–/ }).click();
+  await pc.getByRole("button", { name: "2 ชม." }).click();
+  for (let i = 0; i < 3; i++) await pc.getByRole("button", { name: "เพิ่มจำนวนคน" }).click();
   await pc.getByRole("button", { name: "จองโต๊ะ" }).click();
-  await pc.getByText("ที่นั่งไม่พอสำหรับช่วงเวลานี้").waitFor();
+  await pc.getByText("ที่นั่งไม่พอสำหรับช่วงเวลานี้").first().waitFor();
   await shot(pc, "05c-restaurant-booking-error");
-  await pc.locator('input[type="date"]').fill(sunday);
-  await pc.getByText("ร้านปิดในวันนี้").waitFor();
+  await pickDay(pc, sunday);
+  await pc.getByText("ร้านปิดวันอาทิตย์").waitFor();
   await shot(pc, "13-availability-closed-day");
   await pc.goto(WEB + "/my/reservations");
   await pc.getByText("ยังไม่มีการจอง").waitFor();
@@ -299,7 +303,7 @@ try {
     await page.goto(WEB + url);
     await page.getByText(wait).first().waitFor();
     if (name === "m03-restaurant") {
-      await page.locator('input[type="date"]').fill(day);
+      await pickDay(page, day);
       await page.getByText("เต็ม", { exact: true }).first().waitFor();
     }
     await shot(page, name);
