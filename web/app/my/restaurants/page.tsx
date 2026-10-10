@@ -2,12 +2,17 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { Store } from "lucide-react";
 import { AuthGuard } from "@/components/auth-guard";
 import { Button, buttonVariants } from "@/components/bases/button";
+import { EmptyState } from "@/components/empty-state";
 import { ErrorAlert } from "@/components/error-alert";
 import { RestaurantCard } from "@/components/restaurant-card";
+import { StatCard } from "@/components/stat-card";
+import { Skeleton } from "@/components/ui/skeleton";
 import { useAsync } from "@/hooks/use-async";
 import { apiFetch } from "@/lib/api";
+import { summarizeRestaurants } from "@/lib/stats";
 import type { ListResponse, RestaurantSummary } from "@/lib/types";
 
 function MyRestaurants() {
@@ -16,6 +21,7 @@ function MyRestaurants() {
     [],
   );
   const [deleteError, setDeleteError] = useState<unknown>(null);
+  const summary = data ? summarizeRestaurants(data.results) : null;
 
   async function remove(restaurant: RestaurantSummary) {
     if (!window.confirm(`ลบร้าน "${restaurant.name}" ?`)) return;
@@ -36,15 +42,32 @@ function MyRestaurants() {
           สร้างร้านใหม่
         </Link>
       </div>
-      <ErrorAlert error={error} />
+      <ErrorAlert error={error} onRetry={reload} />
       <ErrorAlert error={deleteError} />
-      {loading && !data && <p className="text-muted-foreground">กำลังโหลด…</p>}
+      {loading && !data && !error && (
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3" aria-label="กำลังโหลดร้านของฉัน">
+          {Array.from({ length: 3 }, (_, index) => (
+            <Skeleton key={index} className="h-64" />
+          ))}
+        </div>
+      )}
       {data && data.results.length === 0 && (
-        <div className="flex flex-col items-start gap-3">
-          <p className="text-muted-foreground">คุณยังไม่มีร้าน</p>
-          <Link href="/my/restaurants/new" className={buttonVariants()}>
-            สร้างร้านใหม่
-          </Link>
+        <EmptyState
+          icon={Store}
+          title="คุณยังไม่มีร้าน"
+          description="สร้างร้านแรกของคุณ ใส่เวลาเปิด จำนวนที่นั่ง และรูป แล้วลูกค้าจะจองได้ทันที"
+          action={
+            <Link href="/my/restaurants/new" className={buttonVariants()}>
+              สร้างร้านใหม่
+            </Link>
+          }
+        />
+      )}
+      {summary && summary.count > 0 && (
+        <div className="grid grid-cols-3 gap-3">
+          <StatCard label="ร้านของฉัน" value={summary.count} />
+          <StatCard label="รีวิวทั้งหมด" value={summary.reviews} />
+          <StatCard label="คะแนนเฉลี่ย" value={summary.average?.toFixed(1) ?? "–"} hint={summary.average === null ? "ยังไม่มีรีวิว" : "ถ่วงตามจำนวนรีวิว"} />
         </div>
       )}
       {data && data.results.length > 0 && (

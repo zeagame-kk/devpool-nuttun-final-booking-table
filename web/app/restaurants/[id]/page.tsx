@@ -3,13 +3,16 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
+import { Store } from "lucide-react";
 import { AuthGuard } from "@/components/auth-guard";
 import { AvailabilityPanel } from "@/components/availability-panel";
 import { buttonVariants } from "@/components/bases/button";
+import { EmptyState } from "@/components/empty-state";
 import { ErrorAlert } from "@/components/error-alert";
 import { RatingText, RestaurantImage } from "@/components/restaurant-card";
 import { ReservationForm } from "@/components/reservation-form";
 import { ReviewSection } from "@/components/review-section";
+import { Skeleton } from "@/components/ui/skeleton";
 import { useAsync } from "@/hooks/use-async";
 import { apiFetch } from "@/lib/api";
 import { WEEKDAY_LABELS } from "@/lib/datetime";
@@ -25,9 +28,30 @@ function RestaurantPage() {
 
   const restaurant = detail.data;
   if (detail.error) {
-    return isNotFound(detail.error) ? <p className="text-muted-foreground">ไม่พบร้านนี้</p> : <ErrorAlert error={detail.error} />;
+    return isNotFound(detail.error) ? (
+      <EmptyState
+        icon={Store}
+        title="ไม่พบร้านนี้"
+        description="ร้านอาจถูกลบไปแล้ว"
+        action={
+          <Link href="/" className={buttonVariants({ size: "small" })}>
+            ดูร้านทั้งหมด
+          </Link>
+        }
+      />
+    ) : (
+      <ErrorAlert error={detail.error} onRetry={detail.reload} />
+    );
   }
-  if (!restaurant) return <p className="text-muted-foreground">กำลังโหลด…</p>;
+  if (!restaurant) {
+    return (
+      <div className="flex flex-col gap-4" aria-label="กำลังโหลดร้าน">
+        <Skeleton className="h-56" />
+        <Skeleton className="h-6 w-1/2" />
+        <Skeleton className="h-24" />
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-col gap-8">
@@ -93,7 +117,7 @@ function RestaurantPage() {
         />
       </section>
 
-      <ErrorAlert error={reviews.error} />
+      <ErrorAlert error={reviews.error} onRetry={reviews.reload} />
       <ReviewSection
         restaurantId={restaurant.id}
         isOwner={restaurant.isOwner}

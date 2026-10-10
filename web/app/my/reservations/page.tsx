@@ -2,12 +2,15 @@
 
 import { useState, type FormEvent } from "react";
 import Link from "next/link";
+import { CalendarDays } from "lucide-react";
 import { AuthGuard } from "@/components/auth-guard";
-import { Button } from "@/components/bases/button";
+import { Button, buttonVariants } from "@/components/bases/button";
+import { EmptyState } from "@/components/empty-state";
 import { ErrorAlert } from "@/components/error-alert";
 import { StatusBadge } from "@/components/status-badge";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Skeleton } from "@/components/ui/skeleton";
 import { useAsync } from "@/hooks/use-async";
 import { apiFetch } from "@/lib/api";
 import { formatThaiDateTime, fromApiDateTime, toApiDateTime, validateTimeRange } from "@/lib/datetime";
@@ -127,9 +130,26 @@ function MyReservations() {
   return (
     <div className="flex flex-col gap-4">
       <h1 className="text-xl font-semibold">การจองของฉัน</h1>
-      <ErrorAlert error={error} />
-      {loading && !data && <p className="text-muted-foreground">กำลังโหลด…</p>}
-      {data && data.results.length === 0 && <p className="text-muted-foreground">ยังไม่มีการจอง</p>}
+      <ErrorAlert error={error} onRetry={reload} />
+      {loading && !data && !error && (
+        <div className="flex flex-col gap-3" aria-label="กำลังโหลดการจอง">
+          {Array.from({ length: 3 }, (_, index) => (
+            <Skeleton key={index} className="h-24" />
+          ))}
+        </div>
+      )}
+      {data && data.results.length === 0 && (
+        <EmptyState
+          icon={CalendarDays}
+          title="ยังไม่มีการจอง"
+          description="เลือกร้านที่ถูกใจแล้วจองโต๊ะได้เลย ดูช่วงที่ว่างได้ในหน้าร้าน"
+          action={
+            <Link href="/" className={buttonVariants({ size: "small" })}>
+              ดูร้านทั้งหมด
+            </Link>
+          }
+        />
+      )}
       {data && data.results.length > 0 && (
         <ul className="flex flex-col gap-3">
           {data.results.map((reservation) => (
