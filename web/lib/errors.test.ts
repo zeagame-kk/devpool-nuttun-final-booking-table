@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { isNotFound, messageForError } from "@/lib/errors";
+import { isApiCode, isNotFound, messageForError } from "@/lib/errors";
 
 describe("messageForError", () => {
   it.each([
@@ -52,5 +52,19 @@ describe("isNotFound", () => {
     expect(isNotFound({ status: 403 })).toBe(false);
     expect(isNotFound(new Error("404"))).toBe(false);
     expect(isNotFound(undefined)).toBe(false);
+  });
+});
+
+describe("isApiCode", () => {
+  it("is true only for an API error that carries that business code", () => {
+    expect(isApiCode({ status: 409, code: "capacity_exceeded" }, "capacity_exceeded")).toBe(true);
+    expect(isApiCode({ status: 409, code: "already_reviewed" }, "capacity_exceeded")).toBe(false);
+    expect(isApiCode({ status: 409 }, "capacity_exceeded")).toBe(false);
+  });
+
+  it("is false for anything that is not an API error", () => {
+    expect(isApiCode(new Error("boom"), "capacity_exceeded")).toBe(false);
+    expect(isApiCode(null, "capacity_exceeded")).toBe(false);
+    expect(isApiCode(undefined, "capacity_exceeded")).toBe(false);
   });
 });

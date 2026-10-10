@@ -1,6 +1,6 @@
 import { initials } from "@/lib/user";
 
-const SIZES = { small: "size-[34px] text-[13px]", large: "size-16 text-xl", xlarge: "size-22 text-3xl" };
+const SIZES = { small: "size-[34px] text-[13px]", medium: "size-10 text-sm", large: "size-16 text-xl", xlarge: "size-22 text-3xl" };
 
 /** A round picture of the person, or their initials on a soft blue disc when there is no picture. */
 export function UserAvatar({

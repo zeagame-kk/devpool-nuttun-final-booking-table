@@ -19,3 +19,10 @@ export function initials(name: string): string {
 
   return letters.length > 0 ? letters.join("") : "?";
 }
+
+/** The first word of a name for a greeting; for an email address, the part before the @. */
+export function firstName(name: string): string {
+  const word = name.trim().split(/\s+/)[0] ?? "";
+
+  return word.includes("@") ? word.split("@")[0] : word;
+}

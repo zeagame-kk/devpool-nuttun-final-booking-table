@@ -1,4 +1,3 @@
-import { fromApiDateTime } from "@/lib/datetime";
 import type { AvailabilitySlot } from "@/lib/types";
 
 export type SeatLevel = "full" | "low" | "open";
@@ -12,11 +11,6 @@ export function seatLevel(remainingSeats: number, capacity: number): SeatLevel {
   }
 
   return remainingSeats / capacity <= LOW_SEAT_RATIO ? "low" : "open";
-}
-
-/** The datetime-local values (Bangkok time) that fill the booking form for a slot. */
-export function slotToFormValues(slot: Pick<AvailabilitySlot, "startAt" | "endAt">): { start: string; end: string } {
-  return { start: fromApiDateTime(slot.startAt), end: fromApiDateTime(slot.endAt) };
 }
 
 /** A booking cannot begin in the past, so a slot that has started cannot be chosen from its beginning. */

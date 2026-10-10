@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { displayName, initials } from "@/lib/user";
+import { displayName, firstName, initials } from "@/lib/user";
 
 describe("displayName", () => {
   it("uses the name", () => {
@@ -35,5 +35,20 @@ describe("initials", () => {
 
   it("works on an email address too, with its first letter", () => {
     expect(initials("somchai@example.com")).toBe("S");
+  });
+});
+
+describe("firstName", () => {
+  it("is the first word of the name", () => {
+    expect(firstName("สมศรี ใจดี")).toBe("สมศรี");
+    expect(firstName("  alice   bob ")).toBe("alice");
+  });
+
+  it("is the part before the @ when the name is an email address", () => {
+    expect(firstName("somchai@example.com")).toBe("somchai");
+  });
+
+  it("is empty for an empty name", () => {
+    expect(firstName("")).toBe("");
   });
 });

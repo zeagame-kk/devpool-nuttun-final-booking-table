@@ -44,3 +44,8 @@ export function messageForError(err: unknown): string {
 export function isNotFound(err: unknown): boolean {
   return isErrorLike(err) && err.status === 404;
 }
+
+/** True when the API answered with this business-rule code (for example "capacity_exceeded"). */
+export function isApiCode(err: unknown, code: string): boolean {
+  return isErrorLike(err) && err.code === code;
+}
