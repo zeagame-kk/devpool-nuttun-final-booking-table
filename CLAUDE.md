@@ -70,4 +70,4 @@ node scripts/browser_e2e/run.mjs             # real Chrome walk-through (`cd scr
 
 ## Git
 
-Use `git checkout -b` branches, not git worktrees. There is no remote configured; do not merge into `main` or push unless asked. The AI skill folders (`.agents`, `.claude`, `skills-lock.json`) are git-ignored on purpose.
+Use `git checkout -b` branches, not git worktrees. The remote is `origin` = https://github.com/zeagame-kk/devpool-nuttun-final-booking-table (public) and `main` tracks `origin/main`; do not merge into `main`, push, or rewrite/force-push history unless asked. Commit messages carry no `Co-Authored-By: Claude` trailer (the history was rewritten to remove them); never push the local branch `backup/before-trailer-removal`, it still has them. The AI skill folders (`.agents`, `.claude`, `skills-lock.json`) are git-ignored on purpose.
